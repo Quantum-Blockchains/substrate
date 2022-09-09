@@ -20,6 +20,36 @@ use super::*;
 use frame_election_provider_support::SortedListProvider;
 use frame_support::traits::OnRuntimeUpgrade;
 
+pub mod v11 {
+	use super::*;
+	use frame_support::{storage_alias, pallet_prelude::ValueQuery};
+
+	#[storage_alias]
+	type HistoryDepth<T: Config> = StorageValue<Pallet<T>, u32, ValueQuery>;
+	
+	/// Clean up History Depth from storage
+	///
+	/// We will be depending on the configurable value of History Depth post this release.
+	pub struct MigrateToV11<T>(sp_std::marker::PhantomData<T>);
+	impl<T: Config> OnRuntimeUpgrade for MigrateToV11<T> {
+		fn on_runtime_upgrade() -> frame_support::weights::Weight {
+			if StorageVersion::<T>::get() == Releases::V10_0_0 {
+
+				// may be just check its greater?
+				debug_assert_eq!(T::EraHistoryDepth::get(), HistoryDepth::<T>::get());
+				HistoryDepth::<T>::kill();
+				StorageVersion::<T>::put(Releases::V11_0_0);
+
+				log!(info, "MigrateToV11 executed successfully");
+				T::DbWeight::get().reads_writes(1, 1)
+			} else {
+				log!(warn, "MigrateToV11 should be removed.");
+				T::DbWeight::get().reads(1)
+			}
+		}
+	}
+}
+
 pub mod v10 {
 	use super::*;
 	use frame_support::storage_alias;

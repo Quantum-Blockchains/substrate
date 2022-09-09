@@ -886,6 +886,7 @@ enum Releases {
 	V8_0_0,  // populate `VoterList`.
 	V9_0_0,  // inject validators into `VoterList` as well.
 	V10_0_0, // remove `EarliestUnappliedSlash`.
+	V11_0_0, // remove `HistoryDepth`.
 }
 
 impl Default for Releases {
