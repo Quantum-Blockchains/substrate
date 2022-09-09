@@ -36,7 +36,7 @@ pub mod v11 {
 			if StorageVersion::<T>::get() == Releases::V10_0_0 {
 
 				// may be just check its greater?
-				debug_assert_eq!(T::EraHistoryDepth::get(), HistoryDepth::<T>::get());
+				debug_assert_eq!(T::HistoryDepth::get(), HistoryDepth::<T>::get());
 				HistoryDepth::<T>::kill();
 				StorageVersion::<T>::put(Releases::V11_0_0);
 
