@@ -2332,14 +2332,14 @@
 		<span class="kw">type</span> <span class="ident">DbWeight</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
 		<span class="kw">type</span> <span class="ident">Index</span> <span class="op">=</span> <span class="ident">u64</span>;
-		<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 		<span class="kw">type</span> <span class="ident">BlockNumber</span> <span class="op">=</span> <span class="ident">u64</span>;
 		<span class="kw">type</span> <span class="ident">Hash</span> <span class="op">=</span> <span class="ident">sp_core::H256</span>;
 		<span class="kw">type</span> <span class="ident">Hashing</span> <span class="op">=</span> <span class="ident">BlakeTwo256</span>;
 		<span class="kw">type</span> <span class="ident">AccountId</span> <span class="op">=</span> <span class="ident">u64</span>;
 		<span class="kw">type</span> <span class="ident">Lookup</span> <span class="op">=</span> <span class="ident">IdentityLookup</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Header</span> <span class="op">=</span> <span class="ident">Header</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">BlockHashCount</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span><span class="number">250</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Version</span> <span class="op">=</span> <span class="ident">RuntimeVersion</span>;
 		<span class="kw">type</span> <span class="ident">PalletInfo</span> <span class="op">=</span> <span class="ident">PalletInfo</span>;
@@ -2355,7 +2355,7 @@
 	<span class="kw">type</span> <span class="ident">Balance</span> <span class="op">=</span> <span class="ident">u64</span>;
 	<span class="kw">impl</span> <span class="ident">pallet_balances::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 		<span class="kw">type</span> <span class="ident">Balance</span> <span class="op">=</span> <span class="ident">Balance</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">DustRemoval</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">ExistentialDeposit</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span><span class="number">1</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">AccountStore</span> <span class="op">=</span> <span class="ident">System</span>;
@@ -2369,7 +2369,7 @@
 		<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TransactionByteFee</span>: <span class="ident">Balance</span> <span class="op">=</span> <span class="number">0</span>;
 	}
 	<span class="kw">impl</span> <span class="ident">pallet_transaction_payment::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">OnChargeTransaction</span> <span class="op">=</span> <span class="ident">CurrencyAdapter</span><span class="op">&lt;</span><span class="ident">Balances</span>, ()<span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">OperationalFeeMultiplier</span> <span class="op">=</span> <span class="ident">ConstU8</span><span class="op">&lt;</span><span class="number">5</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">WeightToFee</span> <span class="op">=</span> <span class="ident">IdentityFee</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span>;
@@ -2396,7 +2396,7 @@
 		<span class="ident">frame_system::CheckWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>,
 		<span class="ident">pallet_transaction_payment::ChargeTransactionPayment</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>,
 	);
-	<span class="kw">type</span> <span class="ident">TestXt</span> <span class="op">=</span> <span class="ident">sp_runtime::testing::TestXt</span><span class="op">&lt;</span><span class="ident">Call</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
+	<span class="kw">type</span> <span class="ident">TestXt</span> <span class="op">=</span> <span class="ident">sp_runtime::testing::TestXt</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">TestBlock</span> <span class="op">=</span> <span class="ident">Block</span><span class="op">&lt;</span><span class="ident">TestXt</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">TestUncheckedExtrinsic</span> <span class="op">=</span> <span class="ident">TestXt</span>;
 
@@ -2435,8 +2435,8 @@
 		<span class="prelude-val">Some</span>((<span class="ident">who</span>, <span class="ident">extra</span>(<span class="ident">nonce</span>, <span class="ident">fee</span>)))
 	}
 
-	<span class="kw">fn</span> <span class="ident">call_transfer</span>(<span class="ident">dest</span>: <span class="ident">u64</span>, <span class="ident">value</span>: <span class="ident">u64</span>) -&gt; <span class="ident">Call</span> {
-		<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>, <span class="ident">value</span> })
+	<span class="kw">fn</span> <span class="ident">call_transfer</span>(<span class="ident">dest</span>: <span class="ident">u64</span>, <span class="ident">value</span>: <span class="ident">u64</span>) -&gt; <span class="ident">RuntimeCall</span> {
+		<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>, <span class="ident">value</span> })
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2579,7 +2579,7 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">new_test_ext</span>(<span class="number">10000</span>);
 		<span class="comment">// given: TestXt uses the encoded len as fixed Len:</span>
 		<span class="kw">let</span> <span class="ident">xt</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-			<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+			<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 			<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>),
 		);
 		<span class="kw">let</span> <span class="ident">encoded</span> <span class="op">=</span> <span class="ident">xt</span>.<span class="ident">encode</span>();
@@ -2602,7 +2602,7 @@
 
 			<span class="kw">for</span> <span class="ident">nonce</span> <span class="kw">in</span> <span class="number">0</span>..<span class="op">=</span><span class="ident">num_to_exhaust_block</span> {
 				<span class="kw">let</span> <span class="ident">xt</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-					<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+					<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 					<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="ident">nonce</span>.<span class="ident">into</span>(), <span class="number">0</span>),
 				);
 				<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Executive::apply_extrinsic</span>(<span class="ident">xt</span>);
@@ -2627,15 +2627,15 @@
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">block_weight_and_size_is_stored_per_tx</span>() {
 		<span class="kw">let</span> <span class="ident">xt</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-			<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+			<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 			<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>),
 		);
 		<span class="kw">let</span> <span class="ident">x1</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-			<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+			<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 			<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>),
 		);
 		<span class="kw">let</span> <span class="ident">x2</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-			<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+			<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 			<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>),
 		);
 		<span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">xt</span>.<span class="ident">clone</span>().<span class="ident">encode</span>().<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>;
@@ -2691,8 +2691,8 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">validate_unsigned</span>() {
-		<span class="kw">let</span> <span class="ident">valid</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">Call::Custom</span>(<span class="ident">custom::Call::allowed_unsigned</span> {}), <span class="prelude-val">None</span>);
-		<span class="kw">let</span> <span class="ident">invalid</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">Call::Custom</span>(<span class="ident">custom::Call::unallowed_unsigned</span> {}), <span class="prelude-val">None</span>);
+		<span class="kw">let</span> <span class="ident">valid</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">RuntimeCall::Custom</span>(<span class="ident">custom::Call::allowed_unsigned</span> {}), <span class="prelude-val">None</span>);
+		<span class="kw">let</span> <span class="ident">invalid</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">RuntimeCall::Custom</span>(<span class="ident">custom::Call::unallowed_unsigned</span> {}), <span class="prelude-val">None</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">new_test_ext</span>(<span class="number">1</span>);
 
 		<span class="ident">t</span>.<span class="ident">execute_with</span>(<span class="op">|</span><span class="op">|</span> {
@@ -2730,7 +2730,7 @@
 					<span class="ident">id</span>, <span class="kw-2">&amp;</span><span class="number">1</span>, <span class="number">110</span>, <span class="ident">lock</span>,
 				);
 				<span class="kw">let</span> <span class="ident">xt</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-					<span class="ident">Call::System</span>(<span class="ident">SystemCall::remark</span> { <span class="ident">remark</span>: <span class="macro">vec!</span>[<span class="number">1u8</span>] }),
+					<span class="ident">RuntimeCall::System</span>(<span class="ident">SystemCall::remark</span> { <span class="ident">remark</span>: <span class="macro">vec!</span>[<span class="number">1u8</span>] }),
 					<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>),
 				);
 				<span class="kw">let</span> <span class="ident">weight</span> <span class="op">=</span> <span class="ident">xt</span>.<span class="ident">get_dispatch_info</span>().<span class="ident">weight</span> <span class="op">+</span>
@@ -2906,7 +2906,7 @@
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">custom_runtime_upgrade_is_called_when_using_execute_block_trait</span>() {
 		<span class="kw">let</span> <span class="ident">xt</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-			<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+			<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 			<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>),
 		);
 
@@ -3005,7 +3005,7 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">calculating_storage_root_twice_works</span>() {
-		<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">Call::Custom</span>(<span class="ident">custom::Call::calculate_storage_root</span> {});
+		<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">RuntimeCall::Custom</span>(<span class="ident">custom::Call::calculate_storage_root</span> {});
 		<span class="kw">let</span> <span class="ident">xt</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">call</span>, <span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>));
 
 		<span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">new_test_ext</span>(<span class="number">1</span>).<span class="ident">execute_with</span>(<span class="op">|</span><span class="op">|</span> {
@@ -3032,10 +3032,10 @@
 	<span class="attribute">#[<span class="ident">should_panic</span>(<span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;Invalid inherent position for extrinsic at index 1&quot;</span>)]</span>
 	<span class="kw">fn</span> <span class="ident">invalid_inherent_position_fail</span>() {
 		<span class="kw">let</span> <span class="ident">xt1</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(
-			<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
+			<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="number">33</span>, <span class="ident">value</span>: <span class="number">0</span> }),
 			<span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>),
 		);
-		<span class="kw">let</span> <span class="ident">xt2</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">Call::Custom</span>(<span class="ident">custom::Call::inherent_call</span> {}), <span class="prelude-val">None</span>);
+		<span class="kw">let</span> <span class="ident">xt2</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">RuntimeCall::Custom</span>(<span class="ident">custom::Call::inherent_call</span> {}), <span class="prelude-val">None</span>);
 
 		<span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">new_test_ext</span>(<span class="number">1</span>).<span class="ident">execute_with</span>(<span class="op">|</span><span class="op">|</span> {
 			<span class="comment">// Let&#39;s build some fake block.</span>
@@ -3060,7 +3060,7 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">valid_inherents_position_works</span>() {
-		<span class="kw">let</span> <span class="ident">xt1</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">Call::Custom</span>(<span class="ident">custom::Call::inherent_call</span> {}), <span class="prelude-val">None</span>);
+		<span class="kw">let</span> <span class="ident">xt1</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">RuntimeCall::Custom</span>(<span class="ident">custom::Call::inherent_call</span> {}), <span class="prelude-val">None</span>);
 		<span class="kw">let</span> <span class="ident">xt2</span> <span class="op">=</span> <span class="ident">TestXt::new</span>(<span class="ident">call_transfer</span>(<span class="number">33</span>, <span class="number">0</span>), <span class="ident">sign_extra</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>));
 
 		<span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">new_test_ext</span>(<span class="number">1</span>).<span class="ident">execute_with</span>(<span class="op">|</span><span class="op">|</span> {

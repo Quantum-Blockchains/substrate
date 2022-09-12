@@ -308,7 +308,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_benchmark_extrinsic</span>(
 	<span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="ident">FullClient</span>,
 	<span class="ident">sender</span>: <span class="ident">sp_core::sr25519::Pair</span>,
-	<span class="ident">call</span>: <span class="ident">runtime::Call</span>,
+	<span class="ident">call</span>: <span class="ident">runtime::RuntimeCall</span>,
 	<span class="ident">nonce</span>: <span class="ident">u32</span>,
 ) -&gt; <span class="ident">runtime::UncheckedExtrinsic</span> {
 	<span class="kw">let</span> <span class="ident">genesis_hash</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">block_hash</span>(<span class="number">0</span>).<span class="ident">ok</span>().<span class="ident">flatten</span>().<span class="ident">expect</span>(<span class="string">&quot;Genesis block exists; qed&quot;</span>);

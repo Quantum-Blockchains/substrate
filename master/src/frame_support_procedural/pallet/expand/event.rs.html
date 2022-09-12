@@ -179,6 +179,7 @@
 <span id="173">173</span>
 <span id="174">174</span>
 <span id="175">175</span>
+<span id="176">176</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2020-2022 Parity Technologies (UK) Ltd.</span>
@@ -242,7 +243,8 @@
 	<span class="kw">let</span> <span class="ident">event_where_clause</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">event</span>.<span class="ident">where_clause</span>;
 
 	<span class="comment">// NOTE: actually event where clause must be a subset of config where clause because of</span>
-	<span class="comment">// `type Event: From&lt;Event&lt;Self&gt;&gt;`. But we merge either way for potential better error message</span>
+	<span class="comment">// `type RuntimeEvent: From&lt;Event&lt;Self&gt;&gt;`. But we merge either way for potential better error</span>
+	<span class="comment">// message</span>
 	<span class="kw">let</span> <span class="ident">completed_where_clause</span> <span class="op">=</span>
 		<span class="ident"><span class="kw">super</span>::merge_where_clauses</span>(<span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">event</span>.<span class="ident">where_clause</span>, <span class="kw-2">&amp;</span><span class="ident">def</span>.<span class="ident">config</span>.<span class="ident">where_clause</span>]);
 
@@ -317,13 +319,13 @@
 			<span class="kw">impl</span><span class="op">&lt;</span>#<span class="ident">type_impl_gen</span><span class="op">&gt;</span> <span class="ident">Pallet</span><span class="op">&lt;</span>#<span class="ident">type_use_gen</span><span class="op">&gt;</span> #<span class="ident">completed_where_clause</span> {
 				#<span class="ident">fn_vis</span> <span class="kw">fn</span> <span class="ident">deposit_event</span>(<span class="ident">event</span>: <span class="ident">Event</span><span class="op">&lt;</span>#<span class="ident">event_use_gen</span><span class="op">&gt;</span>) {
 					<span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="op">&lt;</span>
-						<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span> #<span class="ident">trait_use_gen</span><span class="op">&gt;</span><span class="ident">::Event</span> <span class="kw">as</span>
+						<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span> #<span class="ident">trait_use_gen</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span> <span class="kw">as</span>
 						<span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span>#<span class="ident">event_use_gen</span><span class="op">&gt;</span><span class="op">&gt;</span>
 					<span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">event</span>);
 
 					<span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="op">&lt;</span>
-						<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span> #<span class="ident">trait_use_gen</span><span class="op">&gt;</span><span class="ident">::Event</span> <span class="kw">as</span>
-						<span class="ident">Into</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> #<span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>
+						<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span> #<span class="ident">trait_use_gen</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span> <span class="kw">as</span>
+						<span class="ident">Into</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> #<span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>
 					<span class="op">&gt;</span><span class="ident">::into</span>(<span class="ident">event</span>);
 
 					<span class="op">&lt;</span>#<span class="ident">frame_system::Pallet</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::deposit_event</span>(<span class="ident">event</span>)

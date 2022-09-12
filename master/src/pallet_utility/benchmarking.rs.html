@@ -121,7 +121,7 @@
 
 <span class="kw">const</span> <span class="ident">SEED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
 
-<span class="kw">fn</span> <span class="ident">assert_last_event</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Config</span><span class="op">&gt;</span>(<span class="ident">generic_event</span>: <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Event</span>) {
+<span class="kw">fn</span> <span class="ident">assert_last_event</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Config</span><span class="op">&gt;</span>(<span class="ident">generic_event</span>: <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span>) {
 	<span class="ident">frame_system::Pallet</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::assert_last_event</span>(<span class="ident">generic_event</span>.<span class="ident">into</span>());
 }
 
@@ -129,7 +129,7 @@
 	<span class="ident">where_clause</span> { <span class="kw">where</span> <span class="op">&lt;</span><span class="ident">T::Origin</span> <span class="kw">as</span> <span class="ident">frame_support::traits::OriginTrait</span><span class="op">&gt;</span><span class="ident">::PalletsOrigin</span>: <span class="ident">Clone</span> }
 	<span class="ident">batch</span> {
 		<span class="kw">let</span> <span class="ident">c</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="number">1000</span>;
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 		<span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="ident">c</span> {
 			<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">frame_system::Call::remark</span> { <span class="ident">remark</span>: <span class="macro">vec!</span>[] }.<span class="ident">into</span>();
 			<span class="ident">calls</span>.<span class="ident">push</span>(<span class="ident">call</span>);
@@ -150,7 +150,7 @@
 
 	<span class="ident">batch_all</span> {
 		<span class="kw">let</span> <span class="ident">c</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="number">1000</span>;
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 		<span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="ident">c</span> {
 			<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">frame_system::Call::remark</span> { <span class="ident">remark</span>: <span class="macro">vec!</span>[] }.<span class="ident">into</span>();
 			<span class="ident">calls</span>.<span class="ident">push</span>(<span class="ident">call</span>);
@@ -171,7 +171,7 @@
 
 	<span class="ident">force_batch</span> {
 		<span class="kw">let</span> <span class="ident">c</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="number">1000</span>;
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 		<span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span> .. <span class="ident">c</span> {
 			<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">frame_system::Call::remark</span> { <span class="ident">remark</span>: <span class="macro">vec!</span>[] }.<span class="ident">into</span>();
 			<span class="ident">calls</span>.<span class="ident">push</span>(<span class="ident">call</span>);

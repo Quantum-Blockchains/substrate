@@ -703,6 +703,7 @@
 <span id="697">697</span>
 <span id="698">698</span>
 <span id="699">699</span>
+<span id="700">700</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -740,8 +741,8 @@
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>};
 <span class="kw">use</span> <span class="ident">futures::executor</span>;
 <span class="kw">use</span> <span class="ident">kitchensink_runtime</span>::{
-	<span class="ident">constants::currency::DOLLARS</span>, <span class="ident">AccountId</span>, <span class="ident">BalancesCall</span>, <span class="ident">Call</span>, <span class="ident">CheckedExtrinsic</span>, <span class="ident">MinimumPeriod</span>,
-	<span class="ident">Signature</span>, <span class="ident">SystemCall</span>, <span class="ident">UncheckedExtrinsic</span>,
+	<span class="ident">constants::currency::DOLLARS</span>, <span class="ident">AccountId</span>, <span class="ident">BalancesCall</span>, <span class="ident">CheckedExtrinsic</span>, <span class="ident">MinimumPeriod</span>,
+	<span class="ident">RuntimeCall</span>, <span class="ident">Signature</span>, <span class="ident">SystemCall</span>, <span class="ident">UncheckedExtrinsic</span>,
 };
 <span class="kw">use</span> <span class="ident">node_primitives::Block</span>;
 <span class="kw">use</span> <span class="ident">sc_block_builder::BlockBuilderProvider</span>;
@@ -1013,12 +1014,12 @@
 				)),
 				<span class="ident">function</span>: <span class="kw">match</span> <span class="self">self</span>.<span class="ident">content</span>.<span class="ident">block_type</span> {
 					<span class="ident">BlockType::RandomTransfersKeepAlive</span> =&gt;
-						<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer_keep_alive</span> {
+						<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer_keep_alive</span> {
 							<span class="ident">dest</span>: <span class="ident">sp_runtime::MultiAddress::Id</span>(<span class="ident">receiver</span>),
 							<span class="ident">value</span>: <span class="ident">kitchensink_runtime::ExistentialDeposit::get</span>() <span class="op">+</span> <span class="number">1</span>,
 						}),
 					<span class="ident">BlockType::RandomTransfersReaping</span> =&gt; {
-						<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> {
+						<span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> {
 							<span class="ident">dest</span>: <span class="ident">sp_runtime::MultiAddress::Id</span>(<span class="ident">receiver</span>),
 							<span class="comment">// Transfer so that ending balance would be 1 less than existential</span>
 							<span class="comment">// deposit so that we kill the sender account.</span>
@@ -1026,7 +1027,8 @@
 								(<span class="ident">kitchensink_runtime::ExistentialDeposit::get</span>() <span class="op">-</span> <span class="number">1</span>),
 						})
 					},
-					<span class="ident">BlockType::Noop</span> =&gt; <span class="ident">Call::System</span>(<span class="ident">SystemCall::remark</span> { <span class="ident">remark</span>: <span class="ident">Vec::new</span>() }),
+					<span class="ident">BlockType::Noop</span> =&gt;
+						<span class="ident">RuntimeCall::System</span>(<span class="ident">SystemCall::remark</span> { <span class="ident">remark</span>: <span class="ident">Vec::new</span>() }),
 				},
 			},
 			<span class="self">self</span>.<span class="ident">runtime_version</span>.<span class="ident">spec_version</span>,

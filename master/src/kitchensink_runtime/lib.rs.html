@@ -2214,6 +2214,10 @@
 <span id="2208">2208</span>
 <span id="2209">2209</span>
 <span id="2210">2210</span>
+<span id="2211">2211</span>
+<span id="2212">2212</span>
+<span id="2213">2213</span>
+<span id="2214">2214</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.</span>
@@ -2421,7 +2425,7 @@
 	<span class="kw">type</span> <span class="ident">BlockLength</span> <span class="op">=</span> <span class="ident">RuntimeBlockLength</span>;
 	<span class="kw">type</span> <span class="ident">DbWeight</span> <span class="op">=</span> <span class="ident">RocksDbWeight</span>;
 	<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">Index</span> <span class="op">=</span> <span class="ident">Index</span>;
 	<span class="kw">type</span> <span class="ident">BlockNumber</span> <span class="op">=</span> <span class="ident">BlockNumber</span>;
 	<span class="kw">type</span> <span class="ident">Hash</span> <span class="op">=</span> <span class="ident">Hash</span>;
@@ -2429,7 +2433,7 @@
 	<span class="kw">type</span> <span class="ident">AccountId</span> <span class="op">=</span> <span class="ident">AccountId</span>;
 	<span class="kw">type</span> <span class="ident">Lookup</span> <span class="op">=</span> <span class="ident">Indices</span>;
 	<span class="kw">type</span> <span class="ident">Header</span> <span class="op">=</span> <span class="ident">generic::Header</span><span class="op">&lt;</span><span class="ident">BlockNumber</span>, <span class="ident">BlakeTwo256</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">BlockHashCount</span> <span class="op">=</span> <span class="ident">BlockHashCount</span>;
 	<span class="kw">type</span> <span class="ident">Version</span> <span class="op">=</span> <span class="ident">Version</span>;
 	<span class="kw">type</span> <span class="ident">PalletInfo</span> <span class="op">=</span> <span class="ident">PalletInfo</span>;
@@ -2445,8 +2449,8 @@
 <span class="kw">impl</span> <span class="ident">pallet_randomness_collective_flip::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {}
 
 <span class="kw">impl</span> <span class="ident">pallet_utility::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">PalletsOrigin</span> <span class="op">=</span> <span class="ident">OriginCaller</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_utility::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
@@ -2459,8 +2463,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_multisig::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">DepositBase</span> <span class="op">=</span> <span class="ident">DepositBase</span>;
 	<span class="kw">type</span> <span class="ident">DepositFactor</span> <span class="op">=</span> <span class="ident">DepositFactor</span>;
@@ -2502,25 +2506,28 @@
 		<span class="ident"><span class="self">Self</span>::Any</span>
 	}
 }
-<span class="kw">impl</span> <span class="ident">InstanceFilter</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ProxyType</span> {
-	<span class="kw">fn</span> <span class="ident">filter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Call</span>) -&gt; <span class="ident">bool</span> {
+<span class="kw">impl</span> <span class="ident">InstanceFilter</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ProxyType</span> {
+	<span class="kw">fn</span> <span class="ident">filter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">RuntimeCall</span>) -&gt; <span class="ident">bool</span> {
 		<span class="kw">match</span> <span class="self">self</span> {
 			<span class="ident">ProxyType::Any</span> =&gt; <span class="bool-val">true</span>,
 			<span class="ident">ProxyType::NonTransfer</span> =&gt; <span class="op">!</span><span class="macro">matches!</span>(
 				<span class="ident">c</span>,
-				<span class="ident">Call::Balances</span>(..) <span class="op">|</span>
-					<span class="ident">Call::Assets</span>(..) <span class="op">|</span> <span class="ident">Call::Uniques</span>(..) <span class="op">|</span>
-					<span class="ident">Call::Vesting</span>(<span class="ident">pallet_vesting::Call::vested_transfer</span> { .. }) <span class="op">|</span>
-					<span class="ident">Call::Indices</span>(<span class="ident">pallet_indices::Call::transfer</span> { .. })
+				<span class="ident">RuntimeCall::Balances</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Assets</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Uniques</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Vesting</span>(<span class="ident">pallet_vesting::Call::vested_transfer</span> { .. }) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Indices</span>(<span class="ident">pallet_indices::Call::transfer</span> { .. })
 			),
 			<span class="ident">ProxyType::Governance</span> =&gt; <span class="macro">matches!</span>(
 				<span class="ident">c</span>,
-				<span class="ident">Call::Democracy</span>(..) <span class="op">|</span>
-					<span class="ident">Call::Council</span>(..) <span class="op">|</span> <span class="ident">Call::Society</span>(..) <span class="op">|</span>
-					<span class="ident">Call::TechnicalCommittee</span>(..) <span class="op">|</span>
-					<span class="ident">Call::Elections</span>(..) <span class="op">|</span> <span class="ident">Call::Treasury</span>(..)
+				<span class="ident">RuntimeCall::Democracy</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Council</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Society</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::TechnicalCommittee</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Elections</span>(..) <span class="op">|</span>
+					<span class="ident">RuntimeCall::Treasury</span>(..)
 			),
-			<span class="ident">ProxyType::Staking</span> =&gt; <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="ident">Call::Staking</span>(..)),
+			<span class="ident">ProxyType::Staking</span> =&gt; <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="ident">RuntimeCall::Staking</span>(..)),
 		}
 	}
 	<span class="kw">fn</span> <span class="ident">is_superset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">o</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">bool</span> {
@@ -2535,8 +2542,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_proxy::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">ProxyType</span> <span class="op">=</span> <span class="ident">ProxyType</span>;
 	<span class="kw">type</span> <span class="ident">ProxyDepositBase</span> <span class="op">=</span> <span class="ident">ProxyDepositBase</span>;
@@ -2557,10 +2564,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_scheduler::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
 	<span class="kw">type</span> <span class="ident">PalletsOrigin</span> <span class="op">=</span> <span class="ident">OriginCaller</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">MaximumWeight</span> <span class="op">=</span> <span class="ident">MaximumSchedulerWeight</span>;
 	<span class="kw">type</span> <span class="ident">ScheduleOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">MaxScheduledPerBlock</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">50</span><span class="op">&gt;</span>;
@@ -2579,7 +2586,7 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_preimage::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_preimage::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">ManagerOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">MaxSize</span> <span class="op">=</span> <span class="ident">PreimageMaxSize</span>;
@@ -2629,7 +2636,7 @@
 	<span class="kw">type</span> <span class="ident">AccountIndex</span> <span class="op">=</span> <span class="ident">AccountIndex</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">Deposit</span> <span class="op">=</span> <span class="ident">IndexDeposit</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_indices::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
 
@@ -2647,7 +2654,7 @@
 	<span class="kw">type</span> <span class="ident">ReserveIdentifier</span> <span class="op">=</span> [<span class="ident">u8</span>; <span class="number">8</span>];
 	<span class="kw">type</span> <span class="ident">Balance</span> <span class="op">=</span> <span class="ident">Balance</span>;
 	<span class="kw">type</span> <span class="ident">DustRemoval</span> <span class="op">=</span> ();
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">ExistentialDeposit</span> <span class="op">=</span> <span class="ident">ExistentialDeposit</span>;
 	<span class="kw">type</span> <span class="ident">AccountStore</span> <span class="op">=</span> <span class="ident">frame_system::Pallet</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_balances::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
@@ -2662,7 +2669,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_transaction_payment::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">OnChargeTransaction</span> <span class="op">=</span> <span class="ident">CurrencyAdapter</span><span class="op">&lt;</span><span class="ident">Balances</span>, <span class="ident">DealWithFees</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">OperationalFeeMultiplier</span> <span class="op">=</span> <span class="ident">OperationalFeeMultiplier</span>;
 	<span class="kw">type</span> <span class="ident">WeightToFee</span> <span class="op">=</span> <span class="ident">IdentityFee</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span>;
@@ -2672,7 +2679,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_asset_tx_payment::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Fungibles</span> <span class="op">=</span> <span class="ident">Assets</span>;
 	<span class="kw">type</span> <span class="ident">OnChargeAssetTransaction</span> <span class="op">=</span> <span class="ident">pallet_asset_tx_payment::FungiblesAdapter</span><span class="op">&lt;</span>
 		<span class="ident">pallet_assets::BalanceToAssetBalance</span><span class="op">&lt;</span><span class="ident">Balances</span>, <span class="ident">Runtime</span>, <span class="ident">ConvertInto</span><span class="op">&gt;</span>,
@@ -2712,7 +2719,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_session::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">ValidatorId</span> <span class="op">=</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::AccountId</span>;
 	<span class="kw">type</span> <span class="ident">ValidatorIdOf</span> <span class="op">=</span> <span class="ident">pallet_staking::StashOf</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">ShouldEndSession</span> <span class="op">=</span> <span class="ident">Babe</span>;
@@ -2762,7 +2769,7 @@
 	<span class="kw">type</span> <span class="ident">UnixTime</span> <span class="op">=</span> <span class="ident">Timestamp</span>;
 	<span class="kw">type</span> <span class="ident">CurrencyToVote</span> <span class="op">=</span> <span class="ident">U128CurrencyToVote</span>;
 	<span class="kw">type</span> <span class="ident">RewardRemainder</span> <span class="op">=</span> <span class="ident">Treasury</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Slash</span> <span class="op">=</span> <span class="ident">Treasury</span>; <span class="comment">// send the slashed funds to the treasury.</span>
 	<span class="kw">type</span> <span class="ident">Reward</span> <span class="op">=</span> (); <span class="comment">// rewards are minted from the void</span>
 	<span class="kw">type</span> <span class="ident">SessionsPerEra</span> <span class="op">=</span> <span class="ident">SessionsPerEra</span>;
@@ -2902,7 +2909,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_election_provider_multi_phase::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">EstimateCallFee</span> <span class="op">=</span> <span class="ident">TransactionPayment</span>;
 	<span class="kw">type</span> <span class="ident">SignedPhase</span> <span class="op">=</span> <span class="ident">SignedPhase</span>;
@@ -2937,7 +2944,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_bags_list::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">ScoreProvider</span> <span class="op">=</span> <span class="ident">Staking</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_bags_list::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">BagThresholds</span> <span class="op">=</span> <span class="ident">BagThresholds</span>;
@@ -2966,7 +2973,7 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_nomination_pools::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> ();
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">CurrencyBalance</span> <span class="op">=</span> <span class="ident">Balance</span>;
 	<span class="kw">type</span> <span class="ident">RewardCounter</span> <span class="op">=</span> <span class="ident">FixedU128</span>;
@@ -2986,7 +2993,7 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_conviction_voting::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_conviction_voting::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">VoteLockingPeriod</span> <span class="op">=</span> <span class="ident">VoteLockingPeriod</span>;
 	<span class="kw">type</span> <span class="ident">MaxVotes</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">512</span><span class="op">&gt;</span>;
@@ -3043,8 +3050,8 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_referenda::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_referenda::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Scheduler</span> <span class="op">=</span> <span class="ident">Scheduler</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">pallet_balances::Pallet</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">SubmitOrigin</span> <span class="op">=</span> <span class="ident">EnsureSigned</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
@@ -3062,8 +3069,8 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_referenda::Config</span><span class="op">&lt;</span><span class="ident">pallet_referenda::Instance2</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_referenda::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Scheduler</span> <span class="op">=</span> <span class="ident">Scheduler</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">pallet_balances::Pallet</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">SubmitOrigin</span> <span class="op">=</span> <span class="ident">EnsureSigned</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
@@ -3081,7 +3088,7 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_ranked_collective::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_ranked_collective::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">PromoteOrigin</span> <span class="op">=</span> <span class="ident">EnsureRootWithSuccess</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">ConstU16</span><span class="op">&lt;</span><span class="number">65535</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">DemoteOrigin</span> <span class="op">=</span> <span class="ident">EnsureRootWithSuccess</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">ConstU16</span><span class="op">&lt;</span><span class="number">65535</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">Polls</span> <span class="op">=</span> <span class="ident">RankedPolls</span>;
@@ -3091,7 +3098,7 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_remark::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_remark::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 }
 
 <span class="macro">parameter_types!</span> {
@@ -3105,8 +3112,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_democracy::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">Call</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">EnactmentPeriod</span> <span class="op">=</span> <span class="ident">EnactmentPeriod</span>;
 	<span class="kw">type</span> <span class="ident">LaunchPeriod</span> <span class="op">=</span> <span class="ident">LaunchPeriod</span>;
@@ -3164,8 +3171,8 @@
 <span class="kw">type</span> <span class="ident">CouncilCollective</span> <span class="op">=</span> <span class="ident">pallet_collective::Instance1</span>;
 <span class="kw">impl</span> <span class="ident">pallet_collective::Config</span><span class="op">&lt;</span><span class="ident">CouncilCollective</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
-	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">Call</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">MotionDuration</span> <span class="op">=</span> <span class="ident">CouncilMotionDuration</span>;
 	<span class="kw">type</span> <span class="ident">MaxProposals</span> <span class="op">=</span> <span class="ident">CouncilMaxProposals</span>;
 	<span class="kw">type</span> <span class="ident">MaxMembers</span> <span class="op">=</span> <span class="ident">CouncilMaxMembers</span>;
@@ -3191,7 +3198,7 @@
 <span class="macro">const_assert!</span>(<span class="ident">DesiredMembers::get</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">CouncilMaxMembers::get</span>());
 
 <span class="kw">impl</span> <span class="ident">pallet_elections_phragmen::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">PalletId</span> <span class="op">=</span> <span class="ident">ElectionsPhragmenPalletId</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">ChangeMembers</span> <span class="op">=</span> <span class="ident">Council</span>;
@@ -3221,8 +3228,8 @@
 <span class="kw">type</span> <span class="ident">TechnicalCollective</span> <span class="op">=</span> <span class="ident">pallet_collective::Instance2</span>;
 <span class="kw">impl</span> <span class="ident">pallet_collective::Config</span><span class="op">&lt;</span><span class="ident">TechnicalCollective</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
-	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">Call</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">MotionDuration</span> <span class="op">=</span> <span class="ident">TechnicalMotionDuration</span>;
 	<span class="kw">type</span> <span class="ident">MaxProposals</span> <span class="op">=</span> <span class="ident">TechnicalMaxProposals</span>;
 	<span class="kw">type</span> <span class="ident">MaxMembers</span> <span class="op">=</span> <span class="ident">TechnicalMaxMembers</span>;
@@ -3235,7 +3242,7 @@
 	<span class="ident">pallet_collective::EnsureProportionMoreThan</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilCollective</span>, <span class="number">1</span>, <span class="number">2</span><span class="op">&gt;</span>,
 <span class="op">&gt;</span>;
 <span class="kw">impl</span> <span class="ident">pallet_membership::Config</span><span class="op">&lt;</span><span class="ident">pallet_membership::Instance1</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">AddOrigin</span> <span class="op">=</span> <span class="ident">EnsureRootOrHalfCouncil</span>;
 	<span class="kw">type</span> <span class="ident">RemoveOrigin</span> <span class="op">=</span> <span class="ident">EnsureRootOrHalfCouncil</span>;
 	<span class="kw">type</span> <span class="ident">SwapOrigin</span> <span class="op">=</span> <span class="ident">EnsureRootOrHalfCouncil</span>;
@@ -3272,7 +3279,7 @@
 		<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 		<span class="ident">pallet_collective::EnsureProportionMoreThan</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">CouncilCollective</span>, <span class="number">1</span>, <span class="number">2</span><span class="op">&gt;</span>,
 	<span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">OnSlash</span> <span class="op">=</span> ();
 	<span class="kw">type</span> <span class="ident">ProposalBond</span> <span class="op">=</span> <span class="ident">ProposalBond</span>;
 	<span class="kw">type</span> <span class="ident">ProposalBondMinimum</span> <span class="op">=</span> <span class="ident">ProposalBondMinimum</span>;
@@ -3298,7 +3305,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_bounties::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">BountyDepositBase</span> <span class="op">=</span> <span class="ident">BountyDepositBase</span>;
 	<span class="kw">type</span> <span class="ident">BountyDepositPayoutDelay</span> <span class="op">=</span> <span class="ident">BountyDepositPayoutDelay</span>;
 	<span class="kw">type</span> <span class="ident">BountyUpdatePeriod</span> <span class="op">=</span> <span class="ident">BountyUpdatePeriod</span>;
@@ -3317,14 +3324,14 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_child_bounties::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">MaxActiveChildBountyCount</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">5</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">ChildBountyValueMinimum</span> <span class="op">=</span> <span class="ident">ChildBountyValueMinimum</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_child_bounties::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_tips::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">DataDepositPerByte</span> <span class="op">=</span> <span class="ident">DataDepositPerByte</span>;
 	<span class="kw">type</span> <span class="ident">MaximumReasonLength</span> <span class="op">=</span> <span class="ident">MaximumReasonLength</span>;
 	<span class="kw">type</span> <span class="ident">Tippers</span> <span class="op">=</span> <span class="ident">Elections</span>;
@@ -3352,8 +3359,8 @@
 	<span class="kw">type</span> <span class="ident">Time</span> <span class="op">=</span> <span class="ident">Timestamp</span>;
 	<span class="kw">type</span> <span class="ident">Randomness</span> <span class="op">=</span> <span class="ident">RandomnessCollectiveFlip</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="doccomment">/// The safest default is to allow no calls at all.</span>
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// Runtimes should whitelist dispatchables that are allowed to be called from contracts</span>
@@ -3378,8 +3385,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_sudo::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 }
 
 <span class="macro">parameter_types!</span> {
@@ -3394,14 +3401,14 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">LocalCall</span><span class="op">&gt;</span> <span class="ident">frame_system::offchain::CreateSignedTransaction</span><span class="op">&lt;</span><span class="ident">LocalCall</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span>
 <span class="kw">where</span>
-	<span class="ident">Call</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">LocalCall</span><span class="op">&gt;</span>,
+	<span class="ident">RuntimeCall</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">LocalCall</span><span class="op">&gt;</span>,
 {
 	<span class="kw">fn</span> <span class="ident">create_transaction</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">frame_system::offchain::AppCrypto</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Public</span>, <span class="ident"><span class="self">Self</span>::Signature</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-		<span class="ident">call</span>: <span class="ident">Call</span>,
+		<span class="ident">call</span>: <span class="ident">RuntimeCall</span>,
 		<span class="ident">public</span>: <span class="op">&lt;</span><span class="ident">Signature</span> <span class="kw">as</span> <span class="ident">traits::Verify</span><span class="op">&gt;</span><span class="ident">::Signer</span>,
 		<span class="ident">account</span>: <span class="ident">AccountId</span>,
 		<span class="ident">nonce</span>: <span class="ident">Index</span>,
-	) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">Call</span>, <span class="op">&lt;</span><span class="ident">UncheckedExtrinsic</span> <span class="kw">as</span> <span class="ident">traits::Extrinsic</span><span class="op">&gt;</span><span class="ident">::SignaturePayload</span>)<span class="op">&gt;</span> {
+	) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">RuntimeCall</span>, <span class="op">&lt;</span><span class="ident">UncheckedExtrinsic</span> <span class="kw">as</span> <span class="ident">traits::Extrinsic</span><span class="op">&gt;</span><span class="ident">::SignaturePayload</span>)<span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="ident">tip</span> <span class="op">=</span> <span class="number">0</span>;
 		<span class="comment">// take the biggest period possible.</span>
 		<span class="kw">let</span> <span class="ident">period</span> <span class="op">=</span>
@@ -3441,15 +3448,15 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">frame_system::offchain::SendTransactionTypes</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span>
 <span class="kw">where</span>
-	<span class="ident">Call</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
+	<span class="ident">RuntimeCall</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
 {
 	<span class="kw">type</span> <span class="ident">Extrinsic</span> <span class="op">=</span> <span class="ident">UncheckedExtrinsic</span>;
-	<span class="kw">type</span> <span class="ident">OverarchingCall</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">OverarchingCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_im_online::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">AuthorityId</span> <span class="op">=</span> <span class="ident">ImOnlineId</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">NextSessionRotation</span> <span class="op">=</span> <span class="ident">Babe</span>;
 	<span class="kw">type</span> <span class="ident">ValidatorSet</span> <span class="op">=</span> <span class="ident">Historical</span>;
 	<span class="kw">type</span> <span class="ident">ReportUnresponsiveness</span> <span class="op">=</span> <span class="ident">Offences</span>;
@@ -3461,7 +3468,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_offences::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">IdentificationTuple</span> <span class="op">=</span> <span class="ident">pallet_session::historical::IdentificationTuple</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">OnOffenceHandler</span> <span class="op">=</span> <span class="ident">Staking</span>;
 }
@@ -3471,8 +3478,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_grandpa::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 
 	<span class="kw">type</span> <span class="ident">KeyOwnerProofSystem</span> <span class="op">=</span> <span class="ident">Historical</span>;
 
@@ -3504,7 +3510,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_identity::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">BasicDeposit</span> <span class="op">=</span> <span class="ident">BasicDeposit</span>;
 	<span class="kw">type</span> <span class="ident">FieldDeposit</span> <span class="op">=</span> <span class="ident">FieldDeposit</span>;
@@ -3526,9 +3532,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_recovery::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_recovery::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">ConfigDepositBase</span> <span class="op">=</span> <span class="ident">ConfigDepositBase</span>;
 	<span class="kw">type</span> <span class="ident">FriendDepositFactor</span> <span class="op">=</span> <span class="ident">FriendDepositFactor</span>;
@@ -3549,7 +3555,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_society::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">PalletId</span> <span class="op">=</span> <span class="ident">SocietyPalletId</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">Randomness</span> <span class="op">=</span> <span class="ident">RandomnessCollectiveFlip</span>;
@@ -3572,7 +3578,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_vesting::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">BlockNumberToBalance</span> <span class="op">=</span> <span class="ident">ConvertInto</span>;
 	<span class="kw">type</span> <span class="ident">MinVestedTransfer</span> <span class="op">=</span> <span class="ident">MinVestedTransfer</span>;
@@ -3599,10 +3605,10 @@
 
 <span class="kw">impl</span> <span class="ident">pallet_lottery::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">PalletId</span> <span class="op">=</span> <span class="ident">LotteryPalletId</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">Randomness</span> <span class="op">=</span> <span class="ident">RandomnessCollectiveFlip</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">ManagerOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">MaxCalls</span> <span class="op">=</span> <span class="ident">MaxCalls</span>;
 	<span class="kw">type</span> <span class="ident">ValidateCall</span> <span class="op">=</span> <span class="ident">Lottery</span>;
@@ -3619,7 +3625,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_assets::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Balance</span> <span class="op">=</span> <span class="ident">u128</span>;
 	<span class="kw">type</span> <span class="ident">AssetId</span> <span class="op">=</span> <span class="ident">u32</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
@@ -3647,7 +3653,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_gilt::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">CurrencyBalance</span> <span class="op">=</span> <span class="ident">Balance</span>;
 	<span class="kw">type</span> <span class="ident">AdminOrigin</span> <span class="op">=</span> <span class="ident">frame_system::EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
@@ -3672,7 +3678,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_uniques::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">CollectionId</span> <span class="op">=</span> <span class="ident">u32</span>;
 	<span class="kw">type</span> <span class="ident">ItemId</span> <span class="op">=</span> <span class="ident">u32</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
@@ -3693,9 +3699,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_transaction_storage::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">FeeDestination</span> <span class="op">=</span> ();
 	<span class="kw">type</span> <span class="ident">WeightInfo</span> <span class="op">=</span> <span class="ident">pallet_transaction_storage::weights::SubstrateWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">MaxBlockTransactions</span> <span class="op">=</span>
@@ -3705,8 +3711,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_whitelist::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">WhitelistOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">DispatchWhitelistedOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">PreimageProvider</span> <span class="op">=</span> <span class="ident">Preimage</span>;
@@ -3720,7 +3726,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_state_trie_migration::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">ControlOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>;
 	<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 	<span class="kw">type</span> <span class="ident">MaxKeyLen</span> <span class="op">=</span> <span class="ident">MigrationMaxKeyLen</span>;
@@ -3745,8 +3751,8 @@
 <span class="kw">type</span> <span class="ident">AllianceCollective</span> <span class="op">=</span> <span class="ident">pallet_collective::Instance3</span>;
 <span class="kw">impl</span> <span class="ident">pallet_collective::Config</span><span class="op">&lt;</span><span class="ident">AllianceCollective</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
 	<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
-	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">Call</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">MotionDuration</span> <span class="op">=</span> <span class="ident">AllianceMotionDuration</span>;
 	<span class="kw">type</span> <span class="ident">MaxProposals</span> <span class="op">=</span> <span class="ident">AllianceMaxProposals</span>;
 	<span class="kw">type</span> <span class="ident">MaxMembers</span> <span class="op">=</span> <span class="ident">AllianceMaxMembers</span>;
@@ -3763,8 +3769,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">pallet_alliance::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
-	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
+	<span class="kw">type</span> <span class="ident">Proposal</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">AdminOrigin</span> <span class="op">=</span> <span class="ident">EitherOfDiverse</span><span class="op">&lt;</span>
 		<span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">AccountId</span><span class="op">&gt;</span>,
 		<span class="ident">pallet_collective::EnsureProportionMoreThan</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">AllianceCollective</span>, <span class="number">2</span>, <span class="number">3</span><span class="op">&gt;</span>,
@@ -3889,12 +3895,14 @@
 	<span class="ident">frame_system::CheckWeight</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>,
 	<span class="ident">pallet_asset_tx_payment::ChargeAssetTxPayment</span><span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span>,
 );
+
 <span class="doccomment">/// Unchecked extrinsic type as expected by this runtime.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span> <span class="ident">generic::UncheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">Call</span>, <span class="ident">Signature</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span>
+	<span class="ident">generic::UncheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">RuntimeCall</span>, <span class="ident">Signature</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
 <span class="doccomment">/// The payload being signed in transactions.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SignedPayload</span> <span class="op">=</span> <span class="ident">generic::SignedPayload</span><span class="op">&lt;</span><span class="ident">Call</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SignedPayload</span> <span class="op">=</span> <span class="ident">generic::SignedPayload</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
 <span class="doccomment">/// Extrinsic type that has already been checked.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">CheckedExtrinsic</span> <span class="op">=</span> <span class="ident">generic::CheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">Call</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">CheckedExtrinsic</span> <span class="op">=</span> <span class="ident">generic::CheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">RuntimeCall</span>, <span class="ident">SignedExtra</span><span class="op">&gt;</span>;
 <span class="doccomment">/// Executive: handles dispatch to the various modules.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Executive</span> <span class="op">=</span> <span class="ident">frame_executive::Executive</span><span class="op">&lt;</span>
 	<span class="ident">Runtime</span>,
@@ -4193,13 +4201,13 @@
 		}
 	}
 
-	<span class="kw">impl</span> <span class="ident">pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Balance</span>, <span class="ident">Call</span><span class="op">&gt;</span>
+	<span class="kw">impl</span> <span class="ident">pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Balance</span>, <span class="ident">RuntimeCall</span><span class="op">&gt;</span>
 		<span class="kw">for</span> <span class="ident">Runtime</span>
 	{
-		<span class="kw">fn</span> <span class="ident">query_call_info</span>(<span class="ident">call</span>: <span class="ident">Call</span>, <span class="ident">len</span>: <span class="ident">u32</span>) -&gt; <span class="ident">RuntimeDispatchInfo</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span> {
+		<span class="kw">fn</span> <span class="ident">query_call_info</span>(<span class="ident">call</span>: <span class="ident">RuntimeCall</span>, <span class="ident">len</span>: <span class="ident">u32</span>) -&gt; <span class="ident">RuntimeDispatchInfo</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span> {
 			<span class="ident">TransactionPayment::query_call_info</span>(<span class="ident">call</span>, <span class="ident">len</span>)
 		}
-		<span class="kw">fn</span> <span class="ident">query_call_fee_details</span>(<span class="ident">call</span>: <span class="ident">Call</span>, <span class="ident">len</span>: <span class="ident">u32</span>) -&gt; <span class="ident">FeeDetails</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span> {
+		<span class="kw">fn</span> <span class="ident">query_call_fee_details</span>(<span class="ident">call</span>: <span class="ident">RuntimeCall</span>, <span class="ident">len</span>: <span class="ident">u32</span>) -&gt; <span class="ident">FeeDetails</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span> {
 			<span class="ident">TransactionPayment::query_call_fee_details</span>(<span class="ident">call</span>, <span class="ident">len</span>)
 		}
 	}
@@ -4394,7 +4402,7 @@
 	<span class="kw">fn</span> <span class="ident">validate_transaction_submitter_bounds</span>() {
 		<span class="kw">fn</span> <span class="ident">is_submit_signed_transaction</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>()
 		<span class="kw">where</span>
-			<span class="ident">T</span>: <span class="ident">CreateSignedTransaction</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span>,
+			<span class="ident">T</span>: <span class="ident">CreateSignedTransaction</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span><span class="op">&gt;</span>,
 		{
 		}
 
@@ -4414,11 +4422,11 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">call_size</span>() {
-		<span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">core::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span>();
+		<span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">core::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">RuntimeCall</span><span class="op">&gt;</span>();
 		<span class="macro">assert!</span>(
 			<span class="ident">size</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">208</span>,
-			<span class="string">&quot;size of Call {} is more than 208 bytes: some calls have too big arguments, use Box to reduce the
-			size of Call.
+			<span class="string">&quot;size of RuntimeCall {} is more than 208 bytes: some calls have too big arguments, use Box to reduce the
+			size of RuntimeCall.
 			If the limit is too strong, maybe consider increase the limit to 300.&quot;</span>,
 			<span class="ident">size</span>,
 		);

@@ -821,6 +821,8 @@
 <span id="815">815</span>
 <span id="816">816</span>
 <span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.</span>
@@ -892,7 +894,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_extrinsic</span>(
 	<span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="ident">FullClient</span>,
 	<span class="ident">sender</span>: <span class="ident">sp_core::sr25519::Pair</span>,
-	<span class="ident">function</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">kitchensink_runtime::Call</span><span class="op">&gt;</span>,
+	<span class="ident">function</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">kitchensink_runtime::RuntimeCall</span><span class="op">&gt;</span>,
 	<span class="ident">nonce</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 ) -&gt; <span class="ident">kitchensink_runtime::UncheckedExtrinsic</span> {
 	<span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span> <span class="ident">function</span>.<span class="ident">into</span>();
@@ -1393,7 +1395,7 @@
 	<span class="kw">use</span> <span class="ident">codec::Encode</span>;
 	<span class="kw">use</span> <span class="ident">kitchensink_runtime</span>::{
 		<span class="ident">constants</span>::{<span class="ident">currency::CENTS</span>, <span class="ident">time::SLOT_DURATION</span>},
-		<span class="ident">Address</span>, <span class="ident">BalancesCall</span>, <span class="ident">Call</span>, <span class="ident">UncheckedExtrinsic</span>,
+		<span class="ident">Address</span>, <span class="ident">BalancesCall</span>, <span class="ident">RuntimeCall</span>, <span class="ident">UncheckedExtrinsic</span>,
 	};
 	<span class="kw">use</span> <span class="ident">node_primitives</span>::{<span class="ident">Block</span>, <span class="ident">DigestItem</span>, <span class="ident">Signature</span>};
 	<span class="kw">use</span> <span class="ident">sc_client_api::BlockBackend</span>;
@@ -1582,8 +1584,10 @@
 				};
 				<span class="kw">let</span> <span class="ident">signer</span> <span class="op">=</span> <span class="ident">charlie</span>.<span class="ident">clone</span>();
 
-				<span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span>
-					<span class="ident">Call::Balances</span>(<span class="ident">BalancesCall::transfer</span> { <span class="ident">dest</span>: <span class="ident">to</span>.<span class="ident">into</span>(), <span class="ident">value</span>: <span class="ident">amount</span> });
+				<span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span> <span class="ident">RuntimeCall::Balances</span>(<span class="ident">BalancesCall::transfer</span> {
+					<span class="ident">dest</span>: <span class="ident">to</span>.<span class="ident">into</span>(),
+					<span class="ident">value</span>: <span class="ident">amount</span>,
+				});
 
 				<span class="kw">let</span> <span class="ident">check_non_zero_sender</span> <span class="op">=</span> <span class="ident">frame_system::CheckNonZeroSender::new</span>();
 				<span class="kw">let</span> <span class="ident">check_spec_version</span> <span class="op">=</span> <span class="ident">frame_system::CheckSpecVersion::new</span>();

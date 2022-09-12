@@ -169,9 +169,9 @@
 	<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
 	<span class="kw">type</span> <span class="ident">BlockNumber</span> <span class="op">=</span> <span class="ident">BlockNumber</span>;
 	<span class="kw">type</span> <span class="ident">AccountId</span> <span class="op">=</span> <span class="ident">AccountId</span>;
-	<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 	<span class="kw">type</span> <span class="ident">PalletInfo</span> <span class="op">=</span> <span class="ident">PalletInfo</span>;
-	<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+	<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 	<span class="kw">type</span> <span class="ident">DbWeight</span> <span class="op">=</span> ();
 	<span class="kw">type</span> <span class="ident">OnNewAccount</span> <span class="op">=</span> ();
 	<span class="kw">type</span> <span class="ident">OnKilledAccount</span> <span class="op">=</span> ();
@@ -183,7 +183,7 @@
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Header</span> <span class="op">=</span> <span class="ident">generic::Header</span><span class="op">&lt;</span><span class="ident">BlockNumber</span>, <span class="ident">BlakeTwo256</span><span class="op">&gt;</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Block</span> <span class="op">=</span> <span class="ident">generic::Block</span><span class="op">&lt;</span><span class="ident">Header</span>, <span class="ident">UncheckedExtrinsic</span><span class="op">&gt;</span>;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span> <span class="ident">generic::UncheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Call</span>, <span class="ident">Signature</span>, ()<span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span> <span class="ident">generic::UncheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">RuntimeCall</span>, <span class="ident">Signature</span>, ()<span class="op">&gt;</span>;
 
 <span class="macro">construct_runtime!</span>(
 	<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Runtime</span> <span class="kw">where</span>

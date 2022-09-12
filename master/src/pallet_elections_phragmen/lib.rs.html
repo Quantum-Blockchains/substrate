@@ -3183,6 +3183,7 @@
 <span id="3177">3177</span>
 <span id="3178">3178</span>
 <span id="3179">3179</span>
+<span id="3180">3180</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -3380,7 +3381,7 @@
 
 	<span class="attribute">#[<span class="ident">pallet::config</span>]</span>
 	<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Config</span>: <span class="ident">frame_system::Config</span> {
-		<span class="kw">type</span> <span class="ident">Event</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// Identifier for the elections-phragmen pallet&#39;s lock</span>
 		<span class="attribute">#[<span class="ident">pallet::constant</span>]</span>
@@ -4370,13 +4371,13 @@
 		<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
 		<span class="kw">type</span> <span class="ident">Index</span> <span class="op">=</span> <span class="ident">u64</span>;
 		<span class="kw">type</span> <span class="ident">BlockNumber</span> <span class="op">=</span> <span class="ident">u64</span>;
-		<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 		<span class="kw">type</span> <span class="ident">Hash</span> <span class="op">=</span> <span class="ident">H256</span>;
 		<span class="kw">type</span> <span class="ident">Hashing</span> <span class="op">=</span> <span class="ident">BlakeTwo256</span>;
 		<span class="kw">type</span> <span class="ident">AccountId</span> <span class="op">=</span> <span class="ident">u64</span>;
 		<span class="kw">type</span> <span class="ident">Lookup</span> <span class="op">=</span> <span class="ident">IdentityLookup</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::AccountId</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Header</span> <span class="op">=</span> <span class="ident">Header</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">BlockHashCount</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span><span class="number">250</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Version</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">PalletInfo</span> <span class="op">=</span> <span class="ident">PalletInfo</span>;
@@ -4391,7 +4392,7 @@
 
 	<span class="kw">impl</span> <span class="ident">pallet_balances::Config</span> <span class="kw">for</span> <span class="ident">Test</span> {
 		<span class="kw">type</span> <span class="ident">Balance</span> <span class="op">=</span> <span class="ident">u64</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">DustRemoval</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">ExistentialDeposit</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span><span class="number">1</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">AccountStore</span> <span class="op">=</span> <span class="ident">frame_system::Pallet</span><span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>;
@@ -4464,7 +4465,7 @@
 
 	<span class="kw">impl</span> <span class="ident">Config</span> <span class="kw">for</span> <span class="ident">Test</span> {
 		<span class="kw">type</span> <span class="ident">PalletId</span> <span class="op">=</span> <span class="ident">ElectionsPhragmenPalletId</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 		<span class="kw">type</span> <span class="ident">CurrencyToVote</span> <span class="op">=</span> <span class="ident">frame_support::traits::SaturatingCurrencyToVote</span>;
 		<span class="kw">type</span> <span class="ident">ChangeMembers</span> <span class="op">=</span> <span class="ident">TestChangeMembers</span>;
@@ -4483,7 +4484,8 @@
 	}
 
 	<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Block</span> <span class="op">=</span> <span class="ident">sp_runtime::generic::Block</span><span class="op">&lt;</span><span class="ident">Header</span>, <span class="ident">UncheckedExtrinsic</span><span class="op">&gt;</span>;
-	<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span> <span class="ident">sp_runtime::generic::UncheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">Call</span>, ()<span class="op">&gt;</span>;
+	<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">UncheckedExtrinsic</span> <span class="op">=</span>
+		<span class="ident">sp_runtime::generic::UncheckedExtrinsic</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">RuntimeCall</span>, ()<span class="op">&gt;</span>;
 
 	<span class="macro">frame_support::construct_runtime!</span>(
 		<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Test</span> <span class="kw">where</span>
@@ -5386,7 +5388,7 @@
 			<span class="ident">System::set_block_number</span>(<span class="number">5</span>);
 			<span class="ident">Elections::on_initialize</span>(<span class="ident">System::block_number</span>());
 
-			<span class="ident">System::assert_last_event</span>(<span class="ident">Event::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::EmptyTerm</span>));
+			<span class="ident">System::assert_last_event</span>(<span class="ident">RuntimeEvent::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::EmptyTerm</span>));
 		})
 	}
 
@@ -5402,7 +5404,7 @@
 			<span class="ident">System::set_block_number</span>(<span class="number">5</span>);
 			<span class="ident">Elections::on_initialize</span>(<span class="ident">System::block_number</span>());
 
-			<span class="ident">System::assert_last_event</span>(<span class="ident">Event::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
+			<span class="ident">System::assert_last_event</span>(<span class="ident">RuntimeEvent::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
 				<span class="ident">new_members</span>: <span class="macro">vec!</span>[(<span class="number">4</span>, <span class="number">35</span>), (<span class="number">5</span>, <span class="number">45</span>)],
 			}));
 
@@ -5415,7 +5417,7 @@
 			<span class="ident">System::set_block_number</span>(<span class="number">10</span>);
 			<span class="ident">Elections::on_initialize</span>(<span class="ident">System::block_number</span>());
 
-			<span class="ident">System::assert_last_event</span>(<span class="ident">Event::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
+			<span class="ident">System::assert_last_event</span>(<span class="ident">RuntimeEvent::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
 				<span class="ident">new_members</span>: <span class="macro">vec!</span>[],
 			}));
 
@@ -5487,7 +5489,7 @@
 			<span class="macro">assert_eq!</span>(<span class="ident">Elections::election_rounds</span>(), <span class="number">1</span>);
 			<span class="macro">assert!</span>(<span class="ident">members_ids</span>().<span class="ident">is_empty</span>());
 
-			<span class="ident">System::assert_last_event</span>(<span class="ident">Event::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
+			<span class="ident">System::assert_last_event</span>(<span class="ident">RuntimeEvent::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
 				<span class="ident">new_members</span>: <span class="macro">vec!</span>[],
 			}));
 		});
@@ -5795,7 +5797,7 @@
 			<span class="comment">// 5 is an outgoing loser. will also get slashed.</span>
 			<span class="macro">assert_eq!</span>(<span class="ident">balances</span>(<span class="kw-2">&amp;</span><span class="number">5</span>), (<span class="number">45</span>, <span class="number">2</span>));
 
-			<span class="ident">System::assert_has_event</span>(<span class="ident">Event::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
+			<span class="ident">System::assert_has_event</span>(<span class="ident">RuntimeEvent::Elections</span>(<span class="ident"><span class="kw">super</span>::Event::NewTerm</span> {
 				<span class="ident">new_members</span>: <span class="macro">vec!</span>[(<span class="number">4</span>, <span class="number">35</span>), (<span class="number">5</span>, <span class="number">45</span>)],
 			}));
 		})

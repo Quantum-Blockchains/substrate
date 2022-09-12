@@ -2956,6 +2956,10 @@
 <span id="2950">2950</span>
 <span id="2951">2951</span>
 <span id="2952">2952</span>
+<span id="2953">2953</span>
+<span id="2954">2954</span>
+<span id="2955">2955</span>
+<span id="2956">2956</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.</span>
@@ -3238,7 +3242,7 @@
 		},
 		<span class="ident">gas::GasMeter</span>,
 		<span class="ident">storage::WriteOutcome</span>,
-		<span class="ident">tests</span>::{<span class="ident">Call</span>, <span class="ident">Test</span>, <span class="ident">ALICE</span>, <span class="ident">BOB</span>},
+		<span class="ident">tests</span>::{<span class="ident">RuntimeCall</span>, <span class="ident">Test</span>, <span class="ident">ALICE</span>, <span class="ident">BOB</span>},
 		<span class="ident">BalanceOf</span>, <span class="ident">CodeHash</span>, <span class="ident">Error</span>, <span class="ident">Pallet</span> <span class="kw">as</span> <span class="ident">Contracts</span>,
 	};
 	<span class="kw">use</span> <span class="ident">assert_matches::assert_matches</span>;
@@ -3297,7 +3301,7 @@
 		<span class="ident">transfers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransferEntry</span><span class="op">&gt;</span>,
 		<span class="comment">// (topics, data)</span>
 		<span class="ident">events</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
-		<span class="ident">runtime_calls</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+		<span class="ident">runtime_calls</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 		<span class="ident">schedule</span>: <span class="ident">Schedule</span><span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>,
 		<span class="ident">gas_meter</span>: <span class="ident">GasMeter</span><span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>,
 		<span class="ident">debug_buffer</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
@@ -3490,7 +3494,10 @@
 			<span class="self">self</span>.<span class="ident">debug_buffer</span>.<span class="ident">extend</span>(<span class="ident">msg</span>.<span class="ident">as_bytes</span>());
 			<span class="bool-val">true</span>
 		}
-		<span class="kw">fn</span> <span class="ident">call_runtime</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">call</span>: <span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span>) -&gt; <span class="ident">DispatchResultWithPostInfo</span> {
+		<span class="kw">fn</span> <span class="ident">call_runtime</span>(
+			<span class="kw-2">&amp;</span><span class="self">self</span>,
+			<span class="ident">call</span>: <span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span>,
+		) -&gt; <span class="ident">DispatchResultWithPostInfo</span> {
 			<span class="self">self</span>.<span class="ident">runtime_calls</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">call</span>);
 			<span class="prelude-val">Ok</span>(<span class="ident">Default::default</span>())
 		}
@@ -5257,7 +5264,8 @@
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;unstable-interface&quot;</span>)]</span>
 	<span class="kw">fn</span> <span class="ident">call_runtime_works</span>() {
-		<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">Call::System</span>(<span class="ident">frame_system::Call::remark</span> { <span class="ident">remark</span>: <span class="string">b&quot;Hello World&quot;</span>.<span class="ident">to_vec</span>() });
+		<span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span>
+			<span class="ident">RuntimeCall::System</span>(<span class="ident">frame_system::Call::remark</span> { <span class="ident">remark</span>: <span class="string">b&quot;Hello World&quot;</span>.<span class="ident">to_vec</span>() });
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ext</span> <span class="op">=</span> <span class="ident">MockExt::default</span>();
 		<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">execute</span>(<span class="ident">CODE_CALL_RUNTIME</span>, <span class="ident">call</span>.<span class="ident">encode</span>(), <span class="kw-2">&amp;mut</span> <span class="ident">ext</span>).<span class="ident">unwrap</span>();
 		<span class="macro">assert_eq!</span>(<span class="kw-2">*</span><span class="ident">ext</span>.<span class="ident">runtime_calls</span>.<span class="ident">borrow</span>(), <span class="macro">vec!</span>[<span class="ident">call</span>]);

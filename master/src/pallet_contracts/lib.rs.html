@@ -1374,13 +1374,13 @@
 		<span class="kw">type</span> <span class="ident">Currency</span>: <span class="ident">ReservableCurrency</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::AccountId</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// The overarching event type.</span>
-		<span class="kw">type</span> <span class="ident">Event</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// The overarching call type.</span>
-		<span class="kw">type</span> <span class="ident">Call</span>: <span class="ident">Dispatchable</span><span class="op">&lt;</span><span class="ident">Origin</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::Origin</span>, <span class="ident">PostInfo</span> <span class="op">=</span> <span class="ident">PostDispatchInfo</span><span class="op">&gt;</span>
+		<span class="kw">type</span> <span class="ident">RuntimeCall</span>: <span class="ident">Dispatchable</span><span class="op">&lt;</span><span class="ident">Origin</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::Origin</span>, <span class="ident">PostInfo</span> <span class="op">=</span> <span class="ident">PostDispatchInfo</span><span class="op">&gt;</span>
 			<span class="op">+</span> <span class="ident">GetDispatchInfo</span>
 			<span class="op">+</span> <span class="ident">codec::Decode</span>
-			<span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>;
+			<span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// Filter that is applied to calls dispatched by contracts.</span>
 		<span class="doccomment">///</span>
@@ -1391,7 +1391,7 @@
 		<span class="doccomment">/// # Stability</span>
 		<span class="doccomment">///</span>
 		<span class="doccomment">/// The runtime **must** make sure that all dispatchables that are callable by</span>
-		<span class="doccomment">/// contracts remain stable. In addition [`Self::Call`] itself must remain stable.</span>
+		<span class="doccomment">/// contracts remain stable. In addition [`Self::RuntimeCall`] itself must remain stable.</span>
 		<span class="doccomment">/// This means that no existing variants are allowed to switch their positions.</span>
 		<span class="doccomment">///</span>
 		<span class="doccomment">/// # Note</span>
@@ -1401,7 +1401,7 @@
 		<span class="doccomment">/// Therefore please make sure to be restrictive about which dispatchables are allowed</span>
 		<span class="doccomment">/// in order to not introduce a new DoS vector like memory allocation patterns that can</span>
 		<span class="doccomment">/// be exploited to drive the runtime into a panic.</span>
-		<span class="kw">type</span> <span class="ident">CallFilter</span>: <span class="ident">Contains</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">CallFilter</span>: <span class="ident">Contains</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// Used to answer contracts&#39; queries regarding the current weight price. This is **not**</span>
 		<span class="doccomment">/// used to calculate the actual fee and is only for informational purposes.</span>
@@ -2250,7 +2250,7 @@
 	<span class="kw">fn</span> <span class="ident">deposit_event</span>(<span class="ident">topics</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T::Hash</span><span class="op">&gt;</span>, <span class="ident">event</span>: <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) {
 		<span class="op">&lt;</span><span class="ident">frame_system::Pallet</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::deposit_event_indexed</span>(
 			<span class="kw-2">&amp;</span><span class="ident">topics</span>,
-			<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Event::from</span>(<span class="ident">event</span>).<span class="ident">into</span>(),
+			<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent::from</span>(<span class="ident">event</span>).<span class="ident">into</span>(),
 		)
 	}
 }

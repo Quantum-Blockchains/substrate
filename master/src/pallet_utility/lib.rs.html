@@ -482,6 +482,9 @@
 <span id="476">476</span>
 <span id="477">477</span>
 <span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -568,16 +571,16 @@
 	<span class="attribute">#[<span class="ident">pallet::config</span>]</span>
 	<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Config</span>: <span class="ident">frame_system::Config</span> {
 		<span class="doccomment">/// The overarching event type.</span>
-		<span class="kw">type</span> <span class="ident">Event</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// The overarching call type.</span>
-		<span class="kw">type</span> <span class="ident">Call</span>: <span class="ident">Parameter</span>
+		<span class="kw">type</span> <span class="ident">RuntimeCall</span>: <span class="ident">Parameter</span>
 			<span class="op">+</span> <span class="ident">Dispatchable</span><span class="op">&lt;</span><span class="ident">Origin</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::Origin</span>, <span class="ident">PostInfo</span> <span class="op">=</span> <span class="ident">PostDispatchInfo</span><span class="op">&gt;</span>
 			<span class="op">+</span> <span class="ident">GetDispatchInfo</span>
 			<span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">frame_system::Call</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span>
 			<span class="op">+</span> <span class="ident">UnfilteredDispatchable</span><span class="op">&lt;</span><span class="ident">Origin</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::Origin</span><span class="op">&gt;</span>
 			<span class="op">+</span> <span class="ident">IsSubType</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span>
-			<span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>;
+			<span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// The caller origin, overarching type of all pallets origins.</span>
 		<span class="kw">type</span> <span class="ident">PalletsOrigin</span>: <span class="ident">Parameter</span> <span class="op">+</span>
@@ -617,8 +620,9 @@
 		<span class="doccomment">/// The limit on the number of batched calls.</span>
 		<span class="kw">fn</span> <span class="ident">batched_calls_limit</span>() -&gt; <span class="ident">u32</span> {
 			<span class="kw">let</span> <span class="ident">allocator_limit</span> <span class="op">=</span> <span class="ident">sp_core::MAX_POSSIBLE_ALLOCATION</span>;
-			<span class="kw">let</span> <span class="ident">call_size</span> <span class="op">=</span> ((<span class="ident">sp_std::mem::size_of</span>::<span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span> <span class="op">+</span> <span class="ident">CALL_ALIGN</span> <span class="op">-</span>
-				<span class="number">1</span>) <span class="op">/</span> <span class="ident">CALL_ALIGN</span>) <span class="op">*</span> <span class="ident">CALL_ALIGN</span>;
+			<span class="kw">let</span> <span class="ident">call_size</span> <span class="op">=</span> ((<span class="ident">sp_std::mem::size_of</span>::<span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span> <span class="op">+</span>
+				<span class="ident">CALL_ALIGN</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">/</span> <span class="ident">CALL_ALIGN</span>) <span class="op">*</span>
+				<span class="ident">CALL_ALIGN</span>;
 			<span class="comment">// The margin to take into account vec doubling capacity.</span>
 			<span class="kw">let</span> <span class="ident">margin_factor</span> <span class="op">=</span> <span class="number">3</span>;
 
@@ -631,7 +635,7 @@
 		<span class="kw">fn</span> <span class="ident">integrity_test</span>() {
 			<span class="comment">// If you hit this error, you need to try to `Box` big dispatchable parameters.</span>
 			<span class="macro">assert!</span>(
-				<span class="ident">sp_std::mem::size_of</span>::<span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">CALL_ALIGN</span>,
+				<span class="ident">sp_std::mem::size_of</span>::<span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">CALL_ALIGN</span>,
 				<span class="string">&quot;Call enum size should be smaller than {} bytes.&quot;</span>,
 				<span class="ident">CALL_ALIGN</span>,
 			);
@@ -685,7 +689,7 @@
 		})]</span>
 		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">batch</span>(
 			<span class="ident">origin</span>: <span class="ident">OriginFor</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-			<span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>,
+			<span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>,
 		) -&gt; <span class="ident">DispatchResultWithPostInfo</span> {
 			<span class="kw">let</span> <span class="ident">is_root</span> <span class="op">=</span> <span class="ident">ensure_root</span>(<span class="ident">origin</span>.<span class="ident">clone</span>()).<span class="ident">is_ok</span>();
 			<span class="kw">let</span> <span class="ident">calls_len</span> <span class="op">=</span> <span class="ident">calls</span>.<span class="ident">len</span>();
@@ -746,7 +750,7 @@
 		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_derivative</span>(
 			<span class="ident">origin</span>: <span class="ident">OriginFor</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 			<span class="ident">index</span>: <span class="ident">u16</span>,
-			<span class="ident">call</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>,
+			<span class="ident">call</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>,
 		) -&gt; <span class="ident">DispatchResultWithPostInfo</span> {
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">origin</span> <span class="op">=</span> <span class="ident">origin</span>;
 			<span class="kw">let</span> <span class="ident">who</span> <span class="op">=</span> <span class="ident">ensure_signed</span>(<span class="ident">origin</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
@@ -801,7 +805,7 @@
 		})]</span>
 		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">batch_all</span>(
 			<span class="ident">origin</span>: <span class="ident">OriginFor</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-			<span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>,
+			<span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>,
 		) -&gt; <span class="ident">DispatchResultWithPostInfo</span> {
 			<span class="kw">let</span> <span class="ident">is_root</span> <span class="op">=</span> <span class="ident">ensure_root</span>(<span class="ident">origin</span>.<span class="ident">clone</span>()).<span class="ident">is_ok</span>();
 			<span class="kw">let</span> <span class="ident">calls_len</span> <span class="op">=</span> <span class="ident">calls</span>.<span class="ident">len</span>();
@@ -817,10 +821,12 @@
 				} <span class="kw">else</span> {
 					<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filtered_origin</span> <span class="op">=</span> <span class="ident">origin</span>.<span class="ident">clone</span>();
 					<span class="comment">// Don&#39;t allow users to nest `batch_all` calls.</span>
-					<span class="ident">filtered_origin</span>.<span class="ident">add_filter</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">|</span> {
-						<span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call::from_ref</span>(<span class="ident">c</span>);
-						<span class="op">!</span><span class="macro">matches!</span>(<span class="ident">c</span>.<span class="ident">is_sub_type</span>(), <span class="prelude-val">Some</span>(<span class="ident">Call::batch_all</span> { .. }))
-					});
+					<span class="ident">filtered_origin</span>.<span class="ident">add_filter</span>(
+						<span class="kw">move</span> <span class="op">|</span><span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">|</span> {
+							<span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall::from_ref</span>(<span class="ident">c</span>);
+							<span class="op">!</span><span class="macro">matches!</span>(<span class="ident">c</span>.<span class="ident">is_sub_type</span>(), <span class="prelude-val">Some</span>(<span class="ident">Call::batch_all</span> { .. }))
+						},
+					);
 					<span class="ident">call</span>.<span class="ident">dispatch</span>(<span class="ident">filtered_origin</span>)
 				};
 				<span class="comment">// Add the weight of this call.</span>
@@ -860,7 +866,7 @@
 		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dispatch_as</span>(
 			<span class="ident">origin</span>: <span class="ident">OriginFor</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 			<span class="ident">as_origin</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">T::PalletsOrigin</span><span class="op">&gt;</span>,
-			<span class="ident">call</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>,
+			<span class="ident">call</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>,
 		) -&gt; <span class="ident">DispatchResult</span> {
 			<span class="ident">ensure_root</span>(<span class="ident">origin</span>)<span class="question-mark">?</span>;
 
@@ -906,7 +912,7 @@
 		})]</span>
 		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">force_batch</span>(
 			<span class="ident">origin</span>: <span class="ident">OriginFor</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-			<span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Call</span><span class="op">&gt;</span>,
+			<span class="ident">calls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span><span class="op">&gt;</span>,
 		) -&gt; <span class="ident">DispatchResultWithPostInfo</span> {
 			<span class="kw">let</span> <span class="ident">is_root</span> <span class="op">=</span> <span class="ident">ensure_root</span>(<span class="ident">origin</span>.<span class="ident">clone</span>()).<span class="ident">is_ok</span>();
 			<span class="kw">let</span> <span class="ident">calls_len</span> <span class="op">=</span> <span class="ident">calls</span>.<span class="ident">len</span>();

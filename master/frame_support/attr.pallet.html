@@ -37,9 +37,9 @@ frame_system:</p>
 }</code></pre></div>
 <p>I.e. a regular trait definition named <code>Config</code>, with supertrait <code>frame_system::Config</code>,
 optionally other supertrait and where clause.</p>
-<p>The associated type <code>Event</code> is reserved, if defined it must bounds <code>From&lt;Event&gt;</code> and
-<code>IsType&lt;&lt;Self as frame_system::Config&gt;::Event&gt;</code>, see <code>#[pallet::event]</code> for more
-information.</p>
+<p>The associated type <code>RuntimeEvent</code> is reserved, if defined it must bounds
+<code>From&lt;Event&gt;</code> and <code>IsType&lt;&lt;Self as frame_system::Config&gt;::RuntimeEvent&gt;</code>, see
+<code>#[pallet::event]</code> for more information.</p>
 <p>To put <code>Get</code> associated type into metadatas, use the attribute <code>#[pallet::constant]</code>, e.g.:</p>
 
 <div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="attribute">#[<span class="ident">pallet::config</span>]</span>
@@ -518,7 +518,7 @@ important to bound <code>= ()</code> on every types.</p>
 		<span class="attribute">#[<span class="ident">pallet::constant</span>]</span> <span class="comment">// put the constant in metadata</span>
 		<span class="kw">type</span> <span class="ident">MyGetParam</span>: <span class="ident">Get</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Balance</span>: <span class="ident">Parameter</span> <span class="op">+</span> <span class="ident">MaxEncodedLen</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
-		<span class="kw">type</span> <span class="ident">Event</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>;
 	}
 
 	<span class="comment">// Define some additional constant to put into the constant metadata.</span>
@@ -703,7 +703,7 @@ important to bound <code>= ()</code> on every types.</p>
 		<span class="attribute">#[<span class="ident">pallet::constant</span>]</span>
 		<span class="kw">type</span> <span class="ident">MyGetParam</span>: <span class="ident">Get</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Balance</span>: <span class="ident">Parameter</span> <span class="op">+</span> <span class="ident">MaxEncodedLen</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
-		<span class="kw">type</span> <span class="ident">Event</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">I</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">I</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>;
 	}
 
 	<span class="attribute">#[<span class="ident">pallet::extra_constants</span>]</span>
@@ -869,7 +869,7 @@ so far it should compile and all be correct.</li>
 <p><strong>migrate Config</strong>: move trait into the module with</p>
 <ul>
 <li>all const in decl_module to <code>#[pallet::constant]</code></li>
-<li>add bound <code>IsType&lt;&lt;Self as frame_system::Config&gt;::Event&gt;</code> to <code>type Event</code></li>
+<li>add bound <code>IsType&lt;&lt;Self as frame_system::Config&gt;::RuntimeEvent&gt;</code> to <code>type RuntimeEvent</code></li>
 </ul>
 </li>
 <li>

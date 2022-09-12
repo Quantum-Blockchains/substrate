@@ -456,6 +456,7 @@
 <span id="450">450</span>
 <span id="451">451</span>
 <span id="452">452</span>
+<span id="453">453</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -476,7 +477,8 @@
 <span class="doccomment">//! Some configurable implementations as associated type for the substrate runtime.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
-	<span class="ident">AccountId</span>, <span class="ident">AllianceMotion</span>, <span class="ident">Assets</span>, <span class="ident">Authorship</span>, <span class="ident">Balances</span>, <span class="ident">Call</span>, <span class="ident">Hash</span>, <span class="ident">NegativeImbalance</span>, <span class="ident">Runtime</span>,
+	<span class="ident">AccountId</span>, <span class="ident">AllianceMotion</span>, <span class="ident">Assets</span>, <span class="ident">Authorship</span>, <span class="ident">Balances</span>, <span class="ident">Hash</span>, <span class="ident">NegativeImbalance</span>, <span class="ident">Runtime</span>,
+	<span class="ident">RuntimeCall</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
 	<span class="ident">pallet_prelude</span>::<span class="kw-2">*</span>,
@@ -535,11 +537,11 @@
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AllianceProposalProvider</span>;
-<span class="kw">impl</span> <span class="ident">ProposalProvider</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">Hash</span>, <span class="ident">Call</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AllianceProposalProvider</span> {
+<span class="kw">impl</span> <span class="ident">ProposalProvider</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">Hash</span>, <span class="ident">RuntimeCall</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AllianceProposalProvider</span> {
 	<span class="kw">fn</span> <span class="ident">propose_proposal</span>(
 		<span class="ident">who</span>: <span class="ident">AccountId</span>,
 		<span class="ident">threshold</span>: <span class="ident">u32</span>,
-		<span class="ident">proposal</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span>,
+		<span class="ident">proposal</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span><span class="op">&gt;</span>,
 		<span class="ident">length_bound</span>: <span class="ident">u32</span>,
 	) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">u32</span>), <span class="ident">DispatchError</span><span class="op">&gt;</span> {
 		<span class="ident">AllianceMotion::do_propose_proposed</span>(<span class="ident">who</span>, <span class="ident">threshold</span>, <span class="ident">proposal</span>, <span class="ident">length_bound</span>)
@@ -567,7 +569,7 @@
 		<span class="ident">AllianceMotion::do_close</span>(<span class="ident">proposal_hash</span>, <span class="ident">proposal_index</span>, <span class="ident">proposal_weight_bound</span>, <span class="ident">length_bound</span>)
 	}
 
-	<span class="kw">fn</span> <span class="ident">proposal_of</span>(<span class="ident">proposal_hash</span>: <span class="ident">Hash</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">proposal_of</span>(<span class="ident">proposal_hash</span>: <span class="ident">Hash</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RuntimeCall</span><span class="op">&gt;</span> {
 		<span class="ident">AllianceMotion::proposal_of</span>(<span class="ident">proposal_hash</span>)
 	}
 }

@@ -2230,7 +2230,7 @@
 		<span class="kw">type</span> <span class="ident">SignedFilter</span>: <span class="ident">EnsureOrigin</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Origin</span>, <span class="ident">Success</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::AccountId</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// The overarching event type.</span>
-		<span class="kw">type</span> <span class="ident">Event</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::Event</span><span class="op">&gt;</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">IsType</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">frame_system::Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent</span><span class="op">&gt;</span>;
 
 		<span class="doccomment">/// The currency provider type.</span>
 		<span class="kw">type</span> <span class="ident">Currency</span>: <span class="ident">Currency</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::AccountId</span><span class="op">&gt;</span>;
@@ -2742,7 +2742,7 @@
 			);
 
 			<span class="ident">frame_system::Pallet</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::assert_last_event</span>(
-				<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::Event::from</span>(<span class="ident"><span class="kw">crate</span>::Event::Slashed</span> {
+				<span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeEvent::from</span>(<span class="ident"><span class="kw">crate</span>::Event::Slashed</span> {
 					<span class="ident">who</span>: <span class="ident">caller</span>.<span class="ident">clone</span>(),
 					<span class="ident">amount</span>: <span class="ident">T::SignedDepositBase::get</span>()
 						.<span class="ident">saturating_add</span>(<span class="ident">T::SignedDepositPerItem::get</span>().<span class="ident">saturating_mul</span>(<span class="number">1u32</span>.<span class="ident">into</span>())),
@@ -2863,7 +2863,7 @@
 		<span class="kw">type</span> <span class="ident">BlockWeights</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">BlockLength</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">Origin</span> <span class="op">=</span> <span class="ident">Origin</span>;
-		<span class="kw">type</span> <span class="ident">Call</span> <span class="op">=</span> <span class="ident">Call</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeCall</span> <span class="op">=</span> <span class="ident">RuntimeCall</span>;
 		<span class="kw">type</span> <span class="ident">Index</span> <span class="op">=</span> <span class="ident">u64</span>;
 		<span class="kw">type</span> <span class="ident">BlockNumber</span> <span class="op">=</span> <span class="ident">u32</span>;
 		<span class="kw">type</span> <span class="ident">Hash</span> <span class="op">=</span> <span class="ident">H256</span>;
@@ -2871,7 +2871,7 @@
 		<span class="kw">type</span> <span class="ident">AccountId</span> <span class="op">=</span> <span class="ident">u64</span>;
 		<span class="kw">type</span> <span class="ident">Lookup</span> <span class="op">=</span> <span class="ident">IdentityLookup</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::AccountId</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Header</span> <span class="op">=</span> <span class="ident">sp_runtime::generic::Header</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::BlockNumber</span>, <span class="ident">BlakeTwo256</span><span class="op">&gt;</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">BlockHashCount</span> <span class="op">=</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="number">250</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">DbWeight</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">Version</span> <span class="op">=</span> ();
@@ -2893,7 +2893,7 @@
 
 	<span class="kw">impl</span> <span class="ident">pallet_balances::Config</span> <span class="kw">for</span> <span class="ident">Test</span> {
 		<span class="kw">type</span> <span class="ident">Balance</span> <span class="op">=</span> <span class="ident">u64</span>;
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">DustRemoval</span> <span class="op">=</span> ();
 		<span class="kw">type</span> <span class="ident">ExistentialDeposit</span> <span class="op">=</span> <span class="ident">ConstU64</span><span class="op">&lt;</span><span class="number">1</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">AccountStore</span> <span class="op">=</span> <span class="ident">System</span>;
@@ -2931,7 +2931,7 @@
 	}
 
 	<span class="kw">impl</span> <span class="ident">pallet_state_trie_migration::Config</span> <span class="kw">for</span> <span class="ident">Test</span> {
-		<span class="kw">type</span> <span class="ident">Event</span> <span class="op">=</span> <span class="ident">Event</span>;
+		<span class="kw">type</span> <span class="ident">RuntimeEvent</span> <span class="op">=</span> <span class="ident">RuntimeEvent</span>;
 		<span class="kw">type</span> <span class="ident">ControlOrigin</span> <span class="op">=</span> <span class="ident">EnsureRoot</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>;
 		<span class="kw">type</span> <span class="ident">Currency</span> <span class="op">=</span> <span class="ident">Balances</span>;
 		<span class="kw">type</span> <span class="ident">MaxKeyLen</span> <span class="op">=</span> <span class="ident">MigrationMaxKeyLen</span>;

@@ -402,6 +402,8 @@
 <span id="396">396</span>
 <span id="397">397</span>
 <span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2020-2022 Parity Technologies (UK) Ltd.</span>
@@ -432,6 +434,7 @@
 	<span class="macro">syn::custom_keyword!</span>(<span class="ident">I</span>);
 	<span class="macro">syn::custom_keyword!</span>(<span class="ident">config</span>);
 	<span class="macro">syn::custom_keyword!</span>(<span class="ident">IsType</span>);
+	<span class="macro">syn::custom_keyword!</span>(<span class="ident">RuntimeEvent</span>);
 	<span class="macro">syn::custom_keyword!</span>(<span class="ident">Event</span>);
 	<span class="macro">syn::custom_keyword!</span>(<span class="ident">constant</span>);
 	<span class="macro">syn::custom_keyword!</span>(<span class="ident">frame_system</span>);
@@ -446,8 +449,9 @@
 	<span class="kw">pub</span> <span class="ident">has_instance</span>: <span class="ident">bool</span>,
 	<span class="doccomment">/// Const associated type.</span>
 	<span class="kw">pub</span> <span class="ident">consts_metadata</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ConstMetadataDef</span><span class="op">&gt;</span>,
-	<span class="doccomment">/// Whether the trait has the associated type `Event`, note that those bounds are checked:</span>
-	<span class="doccomment">/// * `IsType&lt;Self as frame_system::Config&gt;::Event`</span>
+	<span class="doccomment">/// Whether the trait has the associated type `Event`, note that those bounds are</span>
+	<span class="doccomment">/// checked:</span>
+	<span class="doccomment">/// * `IsType&lt;Self as frame_system::Config&gt;::RuntimeEvent`</span>
 	<span class="doccomment">/// * `From&lt;Event&gt;` or `From&lt;Event&lt;T&gt;&gt;` or `From&lt;Event&lt;T, I&gt;&gt;`</span>
 	<span class="kw">pub</span> <span class="ident">has_event_type</span>: <span class="ident">bool</span>,
 	<span class="doccomment">/// The where clause on trait definition but modified so `Self` is `T`.</span>
@@ -563,7 +567,7 @@
 	}
 }
 
-<span class="doccomment">/// Parse for `IsType&lt;&lt;Sef as $ident::Config&gt;::Event&gt;` and retrieve `$ident`</span>
+<span class="doccomment">/// Parse for `IsType&lt;&lt;Sef as $ident::Config&gt;::RuntimeEvent&gt;` and retrieve `$ident`</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IsTypeBoundEventParse</span>(<span class="ident">syn::Ident</span>);
 
 <span class="kw">impl</span> <span class="ident">syn::parse::Parse</span> <span class="kw">for</span> <span class="ident">IsTypeBoundEventParse</span> {
@@ -578,7 +582,7 @@
 		<span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">keyword::Config</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 		<span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">syn::Token!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
 		<span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">syn::Token!</span>[::]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
-		<span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">keyword::Event</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+		<span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">keyword::RuntimeEvent</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 		<span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">syn::Token!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
 		<span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">ident</span>))
@@ -616,7 +620,7 @@
 	}
 }
 
-<span class="doccomment">/// Check if trait_item is `type Event`, if so checks its bounds are those expected.</span>
+<span class="doccomment">/// Check if trait_item is `type RuntimeEvent`, if so checks its bounds are those expected.</span>
 <span class="doccomment">/// (Event type is reserved type)</span>
 <span class="kw">fn</span> <span class="ident">check_event_type</span>(
 	<span class="ident">frame_system</span>: <span class="kw-2">&amp;</span><span class="ident">syn::Ident</span>,
@@ -624,10 +628,10 @@
 	<span class="ident">trait_has_instance</span>: <span class="ident">bool</span>,
 ) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
 	<span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn::TraitItem::Type</span>(<span class="ident">type_</span>) <span class="op">=</span> <span class="ident">trait_item</span> {
-		<span class="kw">if</span> <span class="ident">type_</span>.<span class="ident">ident</span> <span class="op">==</span> <span class="string">&quot;Event&quot;</span> {
+		<span class="kw">if</span> <span class="ident">type_</span>.<span class="ident">ident</span> <span class="op">==</span> <span class="string">&quot;RuntimeEvent&quot;</span> {
 			<span class="comment">// Check event has no generics</span>
 			<span class="kw">if</span> <span class="op">!</span><span class="ident">type_</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">type_</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
-				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;Invalid `type Event`, associated type `Event` is reserved and must have\
+				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;Invalid `type RuntimeEvent`, associated type `RuntimeEvent` is reserved and must have\
 					no generics nor where_clause&quot;</span>;
 				<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(<span class="ident">trait_item</span>.<span class="ident">span</span>(), <span class="ident">msg</span>))
 			}
@@ -640,8 +644,8 @@
 
 			<span class="kw">if</span> <span class="op">!</span><span class="ident">has_is_type_bound</span> {
 				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(
-					<span class="string">&quot;Invalid `type Event`, associated type `Event` is reserved and must \
-					bound: `IsType&lt;&lt;Self as {}::Config&gt;::Event&gt;`&quot;</span>,
+					<span class="string">&quot;Invalid `type RuntimeEvent`, associated type `RuntimeEvent` is reserved and must \
+					bound: `IsType&lt;&lt;Self as {}::Config&gt;::RuntimeEvent&gt;`&quot;</span>,
 					<span class="ident">frame_system</span>,
 				);
 				<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(<span class="ident">type_</span>.<span class="ident">span</span>(), <span class="ident">msg</span>))
@@ -655,14 +659,14 @@
 			<span class="kw">let</span> <span class="ident">from_event_bound</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">from_event_bound</span> {
 				<span class="ident">b</span>
 			} <span class="kw">else</span> {
-				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;Invalid `type Event`, associated type `Event` is reserved and must \
+				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;Invalid `type RuntimeEvent`, associated type `RuntimeEvent` is reserved and must \
 					bound: `From&lt;Event&gt;` or `From&lt;Event&lt;Self&gt;&gt;` or `From&lt;Event&lt;Self, I&gt;&gt;`&quot;</span>;
 				<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(<span class="ident">type_</span>.<span class="ident">span</span>(), <span class="ident">msg</span>))
 			};
 
 			<span class="kw">if</span> <span class="ident">from_event_bound</span>.<span class="ident">is_generic</span> <span class="op">&amp;&amp;</span> (<span class="ident">from_event_bound</span>.<span class="ident">has_instance</span> <span class="op">!</span><span class="op">=</span> <span class="ident">trait_has_instance</span>)
 			{
-				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;Invalid `type Event`, associated type `Event` bounds inconsistent \
+				<span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;Invalid `type RuntimeEvent`, associated type `RuntimeEvent` bounds inconsistent \
 					`From&lt;Event..&gt;`. Config and generic Event must be both with instance or \
 					without instance&quot;</span>;
 				<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">syn::Error::new</span>(<span class="ident">type_</span>.<span class="ident">span</span>(), <span class="ident">msg</span>))

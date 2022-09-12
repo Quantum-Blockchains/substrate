@@ -4022,9 +4022,9 @@
 <span class="doccomment">/// I.e. a regular trait definition named `Config`, with supertrait `frame_system::Config`,</span>
 <span class="doccomment">/// optionally other supertrait and where clause.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The associated type `Event` is reserved, if defined it must bounds `From&lt;Event&gt;` and</span>
-<span class="doccomment">/// `IsType&lt;&lt;Self as frame_system::Config&gt;::Event&gt;`, see `#[pallet::event]` for more</span>
-<span class="doccomment">/// information.</span>
+<span class="doccomment">/// The associated type `RuntimeEvent` is reserved, if defined it must bounds</span>
+<span class="doccomment">/// `From&lt;Event&gt;` and `IsType&lt;&lt;Self as frame_system::Config&gt;::RuntimeEvent&gt;`, see</span>
+<span class="doccomment">/// `#[pallet::event]` for more information.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// To put `Get` associated type into metadatas, use the attribute `#[pallet::constant]`, e.g.:</span>
 <span class="doccomment">/// ```ignore</span>
@@ -4648,7 +4648,7 @@
 <span class="doccomment">/// 		#[pallet::constant] // put the constant in metadata</span>
 <span class="doccomment">/// 		type MyGetParam: Get&lt;u32&gt;;</span>
 <span class="doccomment">/// 		type Balance: Parameter + MaxEncodedLen + From&lt;u8&gt;;</span>
-<span class="doccomment">/// 		type Event: From&lt;Event&lt;Self&gt;&gt; + IsType&lt;&lt;Self as frame_system::Config&gt;::Event&gt;;</span>
+<span class="doccomment">/// 		type RuntimeEvent: From&lt;Event&lt;Self&gt;&gt; + IsType&lt;&lt;Self as frame_system::Config&gt;::RuntimeEvent&gt;;</span>
 <span class="doccomment">/// 	}</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// 	// Define some additional constant to put into the constant metadata.</span>
@@ -4837,7 +4837,7 @@
 <span class="doccomment">/// 		#[pallet::constant]</span>
 <span class="doccomment">/// 		type MyGetParam: Get&lt;u32&gt;;</span>
 <span class="doccomment">/// 		type Balance: Parameter + MaxEncodedLen + From&lt;u8&gt;;</span>
-<span class="doccomment">/// 		type Event: From&lt;Event&lt;Self, I&gt;&gt; + IsType&lt;&lt;Self as frame_system::Config&gt;::Event&gt;;</span>
+<span class="doccomment">/// 		type RuntimeEvent: From&lt;Event&lt;Self, I&gt;&gt; + IsType&lt;&lt;Self as frame_system::Config&gt;::RuntimeEvent&gt;;</span>
 <span class="doccomment">/// 	}</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// 	#[pallet::extra_constants]</span>
@@ -4993,7 +4993,7 @@
 <span class="doccomment">/// 	```</span>
 <span class="doccomment">/// 5. **migrate Config**: move trait into the module with</span>
 <span class="doccomment">/// 	* all const in decl_module to `#[pallet::constant]`</span>
-<span class="doccomment">/// 	* add bound `IsType&lt;&lt;Self as frame_system::Config&gt;::Event&gt;` to `type Event`</span>
+<span class="doccomment">/// 	* add bound `IsType&lt;&lt;Self as frame_system::Config&gt;::RuntimeEvent&gt;` to `type RuntimeEvent`</span>
 <span class="doccomment">/// 7. **migrate decl_module**: write:</span>
 <span class="doccomment">/// 	```ignore</span>
 <span class="doccomment">/// 	#[pallet::hooks]</span>
