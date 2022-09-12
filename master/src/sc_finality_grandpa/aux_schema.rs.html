@@ -983,7 +983,7 @@
 			<span class="string">&quot;state is for completed round; completed rounds must have a prevote ghost; qed.&quot;</span>,
 		);
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="ident">::new</span>();
 		<span class="ident">current_rounds</span>.<span class="ident">insert</span>(<span class="ident">last_round_number</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">HasVoted::No</span>);
 
 		<span class="kw">let</span> <span class="ident">set_state</span> <span class="op">=</span> <span class="ident">VoterSetState::Live</span> {
@@ -1047,7 +1047,7 @@
 				<span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">set_state</span>.<span class="ident">prevote_ghost</span>
 					.<span class="ident">expect</span>(<span class="string">&quot;state is for completed round; completed rounds must have a prevote ghost; qed.&quot;</span>);
 
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds::new</span>();
+				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="ident">::new</span>();
 				<span class="ident">current_rounds</span>.<span class="ident">insert</span>(<span class="ident">last_round_number</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">HasVoted::No</span>);
 
 				<span class="ident">VoterSetState::Live</span> {
@@ -1292,7 +1292,7 @@
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 	<span class="kw">use</span> <span class="ident">sp_core</span>::{<span class="ident">crypto::UncheckedFrom</span>, <span class="ident">H256</span>};
 	<span class="kw">use</span> <span class="ident">sp_finality_grandpa::AuthorityId</span>;
-	<span class="kw">use</span> <span class="ident">substrate_test_runtime_client</span>;
+	<span class="kw">use</span> <span class="ident">substrate_test_runtime_client</span>::{<span class="self">self</span>, <span class="ident">runtime::Block</span>};
 
 	<span class="kw">fn</span> <span class="ident">dummy_id</span>() -&gt; <span class="ident">AuthorityId</span> {
 		<span class="ident">AuthorityId::unchecked_from</span>([<span class="number">1</span>; <span class="number">32</span>])
@@ -1366,7 +1366,7 @@
 			.<span class="ident">unwrap</span>(),
 		);
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="ident">::new</span>();
 		<span class="ident">current_rounds</span>.<span class="ident">insert</span>(<span class="ident">round_number</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">HasVoted::No</span>);
 
 		<span class="macro">assert_eq!</span>(
@@ -1459,7 +1459,7 @@
 			.<span class="ident">unwrap</span>(),
 		);
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">CurrentRounds</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="ident">::new</span>();
 		<span class="ident">current_rounds</span>.<span class="ident">insert</span>(<span class="ident">round_number</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">HasVoted::No</span>);
 
 		<span class="macro">assert_eq!</span>(

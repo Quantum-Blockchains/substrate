@@ -172,7 +172,6 @@
 <span id="166">166</span>
 <span id="167">167</span>
 <span id="168">168</span>
-<span id="169">169</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -196,7 +195,7 @@
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Codec</span>, <span class="ident">Decode</span>};
 <span class="kw">use</span> <span class="ident">jsonrpsee</span>::{
-	<span class="ident">core</span>::{<span class="ident">async_trait</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonRpseeError</span>, <span class="ident">RpcResult</span>},
+	<span class="ident">core</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonRpseeError</span>, <span class="ident">RpcResult</span>},
 	<span class="ident">proc_macros::rpc</span>,
 	<span class="ident">types::error</span>::{<span class="ident">CallError</span>, <span class="ident">ErrorCode</span>, <span class="ident">ErrorObject</span>},
 };
@@ -256,7 +255,6 @@
 	}
 }
 
-<span class="attribute">#[<span class="ident">async_trait</span>]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">Block</span>, <span class="ident">Balance</span><span class="op">&gt;</span>
 	<span class="ident">TransactionPaymentApiServer</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">Block</span> <span class="kw">as</span> <span class="ident">BlockT</span><span class="op">&gt;</span><span class="ident">::Hash</span>, <span class="ident">RuntimeDispatchInfo</span><span class="op">&lt;</span><span class="ident">Balance</span><span class="op">&gt;</span><span class="op">&gt;</span>
 	<span class="kw">for</span> <span class="ident">TransactionPayment</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">Block</span><span class="op">&gt;</span>

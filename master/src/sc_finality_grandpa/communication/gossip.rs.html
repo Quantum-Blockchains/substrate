@@ -2895,7 +2895,7 @@
 	<span class="doccomment">/// The voter set ID this message is from.</span>
 	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">set_id</span>: <span class="ident">SetId</span>,
 	<span class="doccomment">/// The message itself.</span>
-	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">message</span>: <span class="ident">SignedMessage</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
+	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">message</span>: <span class="ident">SignedMessage</span><span class="op">&lt;</span><span class="ident">Block::Header</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Network level commit message with topic information.</span>
@@ -2906,7 +2906,7 @@
 	<span class="doccomment">/// The voter set ID this message is from.</span>
 	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">set_id</span>: <span class="ident">SetId</span>,
 	<span class="doccomment">/// The compact commit message.</span>
-	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">message</span>: <span class="ident">CompactCommit</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
+	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">message</span>: <span class="ident">CompactCommit</span><span class="op">&lt;</span><span class="ident">Block::Header</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// V1 neighbor packet. Neighbor packets are sent from nodes to their peers</span>
@@ -2951,7 +2951,7 @@
 	<span class="doccomment">/// The voter set ID this message is from.</span>
 	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">set_id</span>: <span class="ident">SetId</span>,
 	<span class="doccomment">/// The compact commit message.</span>
-	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">message</span>: <span class="ident">CatchUp</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
+	<span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">message</span>: <span class="ident">CatchUp</span><span class="op">&lt;</span><span class="ident">Block::Header</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Misbehavior that peers can perform.</span>
@@ -3616,7 +3616,7 @@
 
 		<span class="kw">let</span> (<span class="ident">base_hash</span>, <span class="ident">base_number</span>) <span class="op">=</span> <span class="ident">last_completed_round</span>.<span class="ident">base</span>;
 
-		<span class="kw">let</span> <span class="ident">catch_up</span> <span class="op">=</span> <span class="ident">CatchUp</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
+		<span class="kw">let</span> <span class="ident">catch_up</span> <span class="op">=</span> <span class="ident">CatchUp</span>::<span class="op">&lt;</span><span class="ident">Block::Header</span><span class="op">&gt;</span> {
 			<span class="ident">round_number</span>: <span class="ident">last_completed_round</span>.<span class="ident">number</span>,
 			<span class="ident">prevotes</span>,
 			<span class="ident">precommits</span>,
@@ -4196,8 +4196,8 @@
 	<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::communication</span>;
 	<span class="kw">use</span> <span class="ident">sc_network::config::Role</span>;
 	<span class="kw">use</span> <span class="ident">sc_network_gossip::Validator</span> <span class="kw">as</span> <span class="ident">GossipValidatorT</span>;
-	<span class="kw">use</span> <span class="ident">sc_network_test::Block</span>;
 	<span class="kw">use</span> <span class="ident">sp_core</span>::{<span class="ident">crypto::UncheckedFrom</span>, <span class="ident">H256</span>};
+	<span class="kw">use</span> <span class="ident">substrate_test_runtime_client::runtime</span>::{<span class="ident">Block</span>, <span class="ident">Header</span>};
 
 	<span class="comment">// some random config (not really needed)</span>
 	<span class="kw">fn</span> <span class="ident">config</span>() -&gt; <span class="ident"><span class="kw">crate</span>::Config</span> {
@@ -4401,7 +4401,7 @@
 			<span class="kw-2">&amp;</span><span class="ident">VoteMessage</span> {
 				<span class="ident">round</span>: <span class="ident">Round</span>(<span class="number">1</span>),
 				<span class="ident">set_id</span>: <span class="ident">SetId</span>(<span class="ident">set_id</span>),
-				<span class="ident">message</span>: <span class="ident">SignedMessage</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
+				<span class="ident">message</span>: <span class="ident">SignedMessage</span>::<span class="op">&lt;</span><span class="ident">Header</span><span class="op">&gt;</span> {
 					<span class="ident">message</span>: <span class="ident">finality_grandpa::Message::Prevote</span>(<span class="ident">finality_grandpa::Prevote</span> {
 						<span class="ident">target_hash</span>: <span class="ident">Default::default</span>(),
 						<span class="ident">target_number</span>: <span class="number">10</span>,
@@ -4417,7 +4417,7 @@
 			<span class="kw-2">&amp;</span><span class="ident">VoteMessage</span> {
 				<span class="ident">round</span>: <span class="ident">Round</span>(<span class="number">1</span>),
 				<span class="ident">set_id</span>: <span class="ident">SetId</span>(<span class="ident">set_id</span>),
-				<span class="ident">message</span>: <span class="ident">SignedMessage</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> {
+				<span class="ident">message</span>: <span class="ident">SignedMessage</span>::<span class="op">&lt;</span><span class="ident">Header</span><span class="op">&gt;</span> {
 					<span class="ident">message</span>: <span class="ident">finality_grandpa::Message::Prevote</span>(<span class="ident">finality_grandpa::Prevote</span> {
 						<span class="ident">target_hash</span>: <span class="ident">Default::default</span>(),
 						<span class="ident">target_number</span>: <span class="number">10</span>,
@@ -4488,7 +4488,7 @@
 				<span class="ident">votes</span>: <span class="ident">Default::default</span>(),
 			});
 
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">environment::CurrentRounds::new</span>();
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_rounds</span> <span class="op">=</span> <span class="ident">environment::CurrentRounds</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="ident">::new</span>();
 			<span class="ident">current_rounds</span>.<span class="ident">insert</span>(<span class="number">3</span>, <span class="ident">environment::HasVoted::No</span>);
 
 			<span class="kw">let</span> <span class="ident">set_state</span> <span class="op">=</span>

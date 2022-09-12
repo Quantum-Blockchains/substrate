@@ -555,6 +555,11 @@
 <span id="549">549</span>
 <span id="550">550</span>
 <span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.</span>
@@ -937,8 +942,13 @@
 			<span class="ident">precommits</span>: <span class="ident">Vec::new</span>(),
 		};
 
-		<span class="kw">let</span> <span class="ident">grandpa_just</span> <span class="op">=</span>
-			<span class="ident">GrandpaJustification</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> { <span class="ident">round</span>: <span class="number">8</span>, <span class="ident">votes_ancestries</span>: <span class="ident">Vec::new</span>(), <span class="ident">commit</span> };
+		<span class="kw">let</span> <span class="ident">grandpa_just</span>: <span class="ident">GrandpaJustification</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">=</span>
+			<span class="ident">sp_finality_grandpa::GrandpaJustification</span>::<span class="op">&lt;</span><span class="ident">Header</span><span class="op">&gt;</span> {
+				<span class="ident">round</span>: <span class="number">8</span>,
+				<span class="ident">votes_ancestries</span>: <span class="ident">Vec::new</span>(),
+				<span class="ident">commit</span>,
+			}
+			.<span class="ident">into</span>();
 
 		<span class="kw">let</span> <span class="ident">finality_proof</span> <span class="op">=</span> <span class="ident">FinalityProof</span> {
 			<span class="ident">block</span>: <span class="ident">header</span>(<span class="number">2</span>).<span class="ident">hash</span>(),
