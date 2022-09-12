@@ -174,6 +174,7 @@ impl pallet_staking::Config for Test {
 	type ElectionProvider = onchain::UnboundedExecution<OnChainSeqPhragmen>;
 	type GenesisElectionProvider = Self::ElectionProvider;
 	type MaxUnlockingChunks = ConstU32<32>;
+	type HistoryDepth = ConstU32<84>;
 	type VoterList = pallet_staking::UseNominatorsAndValidatorsMap<Self>;
 	type OnStakerSlash = ();
 	type BenchmarkingConfig = pallet_staking::TestBenchmarkingConfig;

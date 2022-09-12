@@ -128,6 +128,7 @@ impl pallet_staking::Config for Runtime {
 	type GenesisElectionProvider = Self::ElectionProvider;
 	type VoterList = pallet_bags_list::Pallet<Self>;
 	type MaxUnlockingChunks = ConstU32<32>;
+	type HistoryDepth = ConstU32<84>;
 	type OnStakerSlash = Pools;
 	type BenchmarkingConfig = pallet_staking::TestBenchmarkingConfig;
 	type WeightInfo = ();
