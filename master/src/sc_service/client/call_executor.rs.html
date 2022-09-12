@@ -410,22 +410,6 @@
 <span id="404">404</span>
 <span id="405">405</span>
 <span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
-<span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
-<span id="419">419</span>
-<span id="420">420</span>
-<span id="421">421</span>
-<span id="422">422</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -445,21 +429,17 @@
 <span class="comment">// along with this program. If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">client::ClientConfig</span>, <span class="ident">wasm_override::WasmOverride</span>, <span class="ident">wasm_substitutes::WasmSubstitutes</span>};
-<span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>};
 <span class="kw">use</span> <span class="ident">sc_client_api</span>::{<span class="ident">backend</span>, <span class="ident">call_executor::CallExecutor</span>, <span class="ident">HeaderBackend</span>};
 <span class="kw">use</span> <span class="ident">sc_executor</span>::{<span class="ident">RuntimeVersion</span>, <span class="ident">RuntimeVersionOf</span>};
 <span class="kw">use</span> <span class="ident">sp_api</span>::{<span class="ident">ProofRecorder</span>, <span class="ident">StorageTransactionCache</span>};
-<span class="kw">use</span> <span class="ident">sp_core</span>::{
-	<span class="ident">traits</span>::{<span class="ident">CodeExecutor</span>, <span class="ident">RuntimeCode</span>, <span class="ident">SpawnNamed</span>},
-	<span class="ident">NativeOrEncoded</span>, <span class="ident">NeverNativeValue</span>,
-};
+<span class="kw">use</span> <span class="ident">sp_core::traits</span>::{<span class="ident">CodeExecutor</span>, <span class="ident">RuntimeCode</span>, <span class="ident">SpawnNamed</span>};
 <span class="kw">use</span> <span class="ident">sp_externalities::Extensions</span>;
 <span class="kw">use</span> <span class="ident">sp_runtime</span>::{<span class="ident">generic::BlockId</span>, <span class="ident">traits::Block</span> <span class="kw">as</span> <span class="ident">BlockT</span>};
 <span class="kw">use</span> <span class="ident">sp_state_machine</span>::{
 	<span class="ident">backend::AsTrieBackend</span>, <span class="ident">ExecutionManager</span>, <span class="ident">ExecutionStrategy</span>, <span class="ident">Ext</span>, <span class="ident">OverlayedChanges</span>,
 	<span class="ident">StateMachine</span>, <span class="ident">StorageProof</span>,
 };
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::RefCell</span>, <span class="ident">panic::UnwindSafe</span>, <span class="ident">result</span>, <span class="ident">sync::Arc</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::RefCell</span>, <span class="ident">sync::Arc</span>};
 
 <span class="doccomment">/// Call executor that executes methods locally, querying all required</span>
 <span class="doccomment">/// data from local backend.</span>
@@ -590,7 +570,7 @@
 			<span class="ident">sp_blockchain::Error::UnknownBlock</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find block hash for {:?}&quot;</span>, <span class="ident">at</span>))
 		})<span class="question-mark">?</span>;
 
-		<span class="kw">let</span> <span class="ident">return_data</span> <span class="op">=</span> <span class="ident">StateMachine::new</span>(
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sm</span> <span class="op">=</span> <span class="ident">StateMachine::new</span>(
 			<span class="kw-2">&amp;</span><span class="ident">state</span>,
 			<span class="kw-2">&amp;mut</span> <span class="ident">changes</span>,
 			<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">executor</span>,
@@ -600,22 +580,17 @@
 			<span class="kw-2">&amp;</span><span class="ident">runtime_code</span>,
 			<span class="self">self</span>.<span class="ident">spawn_handle</span>.<span class="ident">clone</span>(),
 		)
-		.<span class="ident">set_parent_hash</span>(<span class="ident">at_hash</span>)
-		.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">NeverNativeValue</span>, <span class="kw">fn</span>() -&gt; <span class="kw">_</span><span class="op">&gt;</span>(
-			<span class="ident">strategy</span>.<span class="ident">get_manager</span>(),
-			<span class="prelude-val">None</span>,
-		)<span class="question-mark">?</span>;
+		.<span class="ident">set_parent_hash</span>(<span class="ident">at_hash</span>);
 
-		<span class="prelude-val">Ok</span>(<span class="ident">return_data</span>.<span class="ident">into_encoded</span>())
+		<span class="ident">sm</span>.<span class="ident">execute_using_consensus_failure_handler</span>(<span class="ident">strategy</span>.<span class="ident">get_manager</span>())
+			.<span class="ident">map_err</span>(<span class="ident">Into::into</span>)
 	}
 
 	<span class="kw">fn</span> <span class="ident">contextual_call</span><span class="op">&lt;</span>
 		<span class="ident">EM</span>: <span class="ident">Fn</span>(
-			<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NativeOrEncoded</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
-			<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NativeOrEncoded</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
-		) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NativeOrEncoded</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
-		<span class="ident">R</span>: <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">PartialEq</span>,
-		<span class="ident">NC</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">sp_api::ApiError</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">UnwindSafe</span>,
+			<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
+			<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
+		) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
 	<span class="op">&gt;</span>(
 		<span class="kw-2">&amp;</span><span class="self">self</span>,
 		<span class="ident">at</span>: <span class="kw-2">&amp;</span><span class="ident">BlockId</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
@@ -624,10 +599,9 @@
 		<span class="ident">changes</span>: <span class="kw-2">&amp;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">OverlayedChanges</span><span class="op">&gt;</span>,
 		<span class="ident">storage_transaction_cache</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">StorageTransactionCache</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">B::State</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 		<span class="ident">execution_manager</span>: <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">EM</span><span class="op">&gt;</span>,
-		<span class="ident">native_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NC</span><span class="op">&gt;</span>,
 		<span class="ident">recorder</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ProofRecorder</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 		<span class="ident">extensions</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Extensions</span><span class="op">&gt;</span>,
-	) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NativeOrEncoded</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">sp_blockchain::Error</span><span class="op">&gt;</span>
+	) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">sp_blockchain::Error</span><span class="op">&gt;</span>
 	<span class="kw">where</span>
 		<span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">EM</span><span class="op">&gt;</span>: <span class="ident">Clone</span>,
 	{
@@ -670,10 +644,7 @@
 				)
 				.<span class="ident">with_storage_transaction_cache</span>(<span class="ident">storage_transaction_cache</span>.<span class="ident">as_deref_mut</span>())
 				.<span class="ident">set_parent_hash</span>(<span class="ident">at_hash</span>);
-				<span class="ident">state_machine</span>.<span class="ident">execute_using_consensus_failure_handler</span>(
-					<span class="ident">execution_manager</span>,
-					<span class="ident">native_call</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">n</span>)().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">Box::new</span>(<span class="ident">e</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>)),
-				)
+				<span class="ident">state_machine</span>.<span class="ident">execute_using_consensus_failure_handler</span>(<span class="ident">execution_manager</span>)
 			},
 			<span class="prelude-val">None</span> =&gt; {
 				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_machine</span> <span class="op">=</span> <span class="ident">StateMachine::new</span>(
@@ -688,10 +659,7 @@
 				)
 				.<span class="ident">with_storage_transaction_cache</span>(<span class="ident">storage_transaction_cache</span>.<span class="ident">as_deref_mut</span>())
 				.<span class="ident">set_parent_hash</span>(<span class="ident">at_hash</span>);
-				<span class="ident">state_machine</span>.<span class="ident">execute_using_consensus_failure_handler</span>(
-					<span class="ident">execution_manager</span>,
-					<span class="ident">native_call</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">n</span>)().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">Box::new</span>(<span class="ident">e</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>)),
-				)
+				<span class="ident">state_machine</span>.<span class="ident">execute_using_consensus_failure_handler</span>(<span class="ident">execution_manager</span>)
 			},
 		}
 		.<span class="ident">map_err</span>(<span class="ident">Into::into</span>)

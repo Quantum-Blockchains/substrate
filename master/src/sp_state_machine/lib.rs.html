@@ -2200,120 +2200,6 @@
 <span id="2194">2194</span>
 <span id="2195">2195</span>
 <span id="2196">2196</span>
-<span id="2197">2197</span>
-<span id="2198">2198</span>
-<span id="2199">2199</span>
-<span id="2200">2200</span>
-<span id="2201">2201</span>
-<span id="2202">2202</span>
-<span id="2203">2203</span>
-<span id="2204">2204</span>
-<span id="2205">2205</span>
-<span id="2206">2206</span>
-<span id="2207">2207</span>
-<span id="2208">2208</span>
-<span id="2209">2209</span>
-<span id="2210">2210</span>
-<span id="2211">2211</span>
-<span id="2212">2212</span>
-<span id="2213">2213</span>
-<span id="2214">2214</span>
-<span id="2215">2215</span>
-<span id="2216">2216</span>
-<span id="2217">2217</span>
-<span id="2218">2218</span>
-<span id="2219">2219</span>
-<span id="2220">2220</span>
-<span id="2221">2221</span>
-<span id="2222">2222</span>
-<span id="2223">2223</span>
-<span id="2224">2224</span>
-<span id="2225">2225</span>
-<span id="2226">2226</span>
-<span id="2227">2227</span>
-<span id="2228">2228</span>
-<span id="2229">2229</span>
-<span id="2230">2230</span>
-<span id="2231">2231</span>
-<span id="2232">2232</span>
-<span id="2233">2233</span>
-<span id="2234">2234</span>
-<span id="2235">2235</span>
-<span id="2236">2236</span>
-<span id="2237">2237</span>
-<span id="2238">2238</span>
-<span id="2239">2239</span>
-<span id="2240">2240</span>
-<span id="2241">2241</span>
-<span id="2242">2242</span>
-<span id="2243">2243</span>
-<span id="2244">2244</span>
-<span id="2245">2245</span>
-<span id="2246">2246</span>
-<span id="2247">2247</span>
-<span id="2248">2248</span>
-<span id="2249">2249</span>
-<span id="2250">2250</span>
-<span id="2251">2251</span>
-<span id="2252">2252</span>
-<span id="2253">2253</span>
-<span id="2254">2254</span>
-<span id="2255">2255</span>
-<span id="2256">2256</span>
-<span id="2257">2257</span>
-<span id="2258">2258</span>
-<span id="2259">2259</span>
-<span id="2260">2260</span>
-<span id="2261">2261</span>
-<span id="2262">2262</span>
-<span id="2263">2263</span>
-<span id="2264">2264</span>
-<span id="2265">2265</span>
-<span id="2266">2266</span>
-<span id="2267">2267</span>
-<span id="2268">2268</span>
-<span id="2269">2269</span>
-<span id="2270">2270</span>
-<span id="2271">2271</span>
-<span id="2272">2272</span>
-<span id="2273">2273</span>
-<span id="2274">2274</span>
-<span id="2275">2275</span>
-<span id="2276">2276</span>
-<span id="2277">2277</span>
-<span id="2278">2278</span>
-<span id="2279">2279</span>
-<span id="2280">2280</span>
-<span id="2281">2281</span>
-<span id="2282">2282</span>
-<span id="2283">2283</span>
-<span id="2284">2284</span>
-<span id="2285">2285</span>
-<span id="2286">2286</span>
-<span id="2287">2287</span>
-<span id="2288">2288</span>
-<span id="2289">2289</span>
-<span id="2290">2290</span>
-<span id="2291">2291</span>
-<span id="2292">2292</span>
-<span id="2293">2293</span>
-<span id="2294">2294</span>
-<span id="2295">2295</span>
-<span id="2296">2296</span>
-<span id="2297">2297</span>
-<span id="2298">2298</span>
-<span id="2299">2299</span>
-<span id="2300">2300</span>
-<span id="2301">2301</span>
-<span id="2302">2302</span>
-<span id="2303">2303</span>
-<span id="2304">2304</span>
-<span id="2305">2305</span>
-<span id="2306">2306</span>
-<span id="2307">2307</span>
-<span id="2308">2308</span>
-<span id="2309">2309</span>
-<span id="2310">2310</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -2473,31 +2359,28 @@
 	<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend::AsTrieBackend</span>;
 
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-	<span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Codec</span>, <span class="ident">Decode</span>, <span class="ident">Encode</span>};
+	<span class="kw">use</span> <span class="ident">codec::Codec</span>;
 	<span class="kw">use</span> <span class="ident">hash_db::Hasher</span>;
 	<span class="kw">use</span> <span class="ident">smallvec::SmallVec</span>;
 	<span class="kw">use</span> <span class="ident">sp_core</span>::{
 		<span class="ident">hexdisplay::HexDisplay</span>,
 		<span class="ident">storage</span>::{<span class="ident">ChildInfo</span>, <span class="ident">ChildType</span>, <span class="ident">PrefixedStorageKey</span>},
 		<span class="ident">traits</span>::{<span class="ident">CodeExecutor</span>, <span class="ident">ReadRuntimeVersionExt</span>, <span class="ident">RuntimeCode</span>, <span class="ident">SpawnNamed</span>},
-		<span class="ident">NativeOrEncoded</span>, <span class="ident">NeverNativeValue</span>,
 	};
 	<span class="kw">use</span> <span class="ident">sp_externalities::Extensions</span>;
 	<span class="kw">use</span> <span class="ident">std</span>::{
 		<span class="ident">collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>},
 		<span class="ident">fmt</span>,
-		<span class="ident">panic::UnwindSafe</span>,
-		<span class="ident">result</span>,
 	};
 
 	<span class="kw">const</span> <span class="ident">PROOF_CLOSE_TRANSACTION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\
 		Closing a transaction that was started in this function. Client initiated transactions
 		are protected from being closed by the runtime. qed&quot;</span>;
 
-	<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type</span> <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NativeOrEncoded</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">E</span><span class="op">&gt;</span>;
+	<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type</span> <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">E</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Default handler of the execution manager.</span>
-	<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">fn</span>(<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>;
+	<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">fn</span>(<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Trie backend with in-memory storage.</span>
 	<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">InMemoryBackend</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">TrieBackend</span><span class="op">&lt;</span><span class="ident">MemoryDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">H</span><span class="op">&gt;</span>;
@@ -2559,9 +2442,7 @@
 
 	<span class="kw">impl</span> <span class="ident">ExecutionStrategy</span> {
 		<span class="doccomment">/// Gets the corresponding manager for the execution strategy.</span>
-		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_manager</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">fmt::Debug</span>, <span class="ident">R</span>: <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">Encode</span><span class="op">&gt;</span>(
-			<span class="self">self</span>,
-		) -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_manager</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">fmt::Debug</span><span class="op">&gt;</span>(<span class="self">self</span>) -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 			<span class="kw">match</span> <span class="self">self</span> {
 				<span class="ident">ExecutionStrategy::AlwaysWasm</span> =&gt;
 					<span class="ident">ExecutionManager::AlwaysWasm</span>(<span class="ident">BackendTrustLevel::Trusted</span>),
@@ -2581,19 +2462,19 @@
 	}
 
 	<span class="doccomment">/// Evaluate to ExecutionManager::NativeElseWasm, without having to figure out the type.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">native_else_wasm</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">R</span>: <span class="ident">Decode</span><span class="op">&gt;</span>() -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">native_else_wasm</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>() -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 		<span class="ident">ExecutionManager::NativeElseWasm</span>
 	}
 
 	<span class="doccomment">/// Evaluate to ExecutionManager::AlwaysWasm with trusted backend, without having to figure out</span>
 	<span class="doccomment">/// the type.</span>
-	<span class="kw">fn</span> <span class="ident">always_wasm</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">R</span>: <span class="ident">Decode</span><span class="op">&gt;</span>() -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">always_wasm</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>() -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 		<span class="ident">ExecutionManager::AlwaysWasm</span>(<span class="ident">BackendTrustLevel::Trusted</span>)
 	}
 
 	<span class="doccomment">/// Evaluate ExecutionManager::AlwaysWasm with untrusted backend, without having to figure out</span>
 	<span class="doccomment">/// the type.</span>
-	<span class="kw">fn</span> <span class="ident">always_untrusted_wasm</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">R</span>: <span class="ident">Decode</span><span class="op">&gt;</span>() -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">always_untrusted_wasm</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>() -&gt; <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">DefaultHandler</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 		<span class="ident">ExecutionManager::AlwaysWasm</span>(<span class="ident">BackendTrustLevel::Untrusted</span>)
 	}
 
@@ -2695,23 +2576,10 @@
 		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">strategy</span>: <span class="ident">ExecutionStrategy</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 			<span class="comment">// We are not giving a native call and thus we are sure that the result can never be a</span>
 			<span class="comment">// native value.</span>
-			<span class="self">self</span>.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">NeverNativeValue</span>, <span class="kw">fn</span>() -&gt; <span class="kw">_</span><span class="op">&gt;</span>(
-				<span class="ident">strategy</span>.<span class="ident">get_manager</span>(),
-				<span class="prelude-val">None</span>,
-			)
-			.<span class="ident">map</span>(<span class="ident">NativeOrEncoded::into_encoded</span>)
+			<span class="self">self</span>.<span class="ident">execute_using_consensus_failure_handler</span>(<span class="ident">strategy</span>.<span class="ident">get_manager</span>())
 		}
 
-		<span class="kw">fn</span> <span class="ident">execute_aux</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">NC</span><span class="op">&gt;</span>(
-			<span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-			<span class="ident">use_native</span>: <span class="ident">bool</span>,
-			<span class="ident">native_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NC</span><span class="op">&gt;</span>,
-		) -&gt; (<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>, <span class="ident">bool</span>)
-		<span class="kw">where</span>
-			<span class="ident">R</span>: <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">PartialEq</span>,
-			<span class="ident">NC</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>
-				<span class="op">+</span> <span class="ident">UnwindSafe</span>,
-		{
+		<span class="kw">fn</span> <span class="ident">execute_aux</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">use_native</span>: <span class="ident">bool</span>) -&gt; (<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>, <span class="ident">bool</span>) {
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="ident">StorageTransactionCache::default</span>();
 
 			<span class="kw">let</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">storage_transaction_cache</span>.<span class="ident">as_mut</span>() {
@@ -2742,7 +2610,6 @@
 				<span class="self">self</span>.<span class="ident">method</span>,
 				<span class="self">self</span>.<span class="ident">call_data</span>,
 				<span class="ident">use_native</span>,
-				<span class="ident">native_call</span>,
 			);
 
 			<span class="self">self</span>.<span class="ident">overlay</span>
@@ -2760,26 +2627,20 @@
 			(<span class="ident">result</span>, <span class="ident">was_native</span>)
 		}
 
-		<span class="kw">fn</span> <span class="ident">execute_call_with_both_strategy</span><span class="op">&lt;</span><span class="ident">Handler</span>, <span class="ident">R</span>, <span class="ident">NC</span><span class="op">&gt;</span>(
+		<span class="kw">fn</span> <span class="ident">execute_call_with_both_strategy</span><span class="op">&lt;</span><span class="ident">Handler</span><span class="op">&gt;</span>(
 			<span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-			<span class="kw-2">mut</span> <span class="ident">native_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NC</span><span class="op">&gt;</span>,
 			<span class="ident">on_consensus_failure</span>: <span class="ident">Handler</span>,
-		) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>
+		) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>
 		<span class="kw">where</span>
-			<span class="ident">R</span>: <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">PartialEq</span>,
-			<span class="ident">NC</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>
-				<span class="op">+</span> <span class="ident">UnwindSafe</span>,
-			<span class="ident">Handler</span>: <span class="ident">FnOnce</span>(
-				<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>,
-				<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>,
-			) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>,
+			<span class="ident">Handler</span>:
+				<span class="ident">FnOnce</span>(<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>, <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>,
 		{
 			<span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">start_transaction</span>();
-			<span class="kw">let</span> (<span class="ident">result</span>, <span class="ident">was_native</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">true</span>, <span class="ident">native_call</span>.<span class="ident">take</span>());
+			<span class="kw">let</span> (<span class="ident">result</span>, <span class="ident">was_native</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">true</span>);
 
 			<span class="kw">if</span> <span class="ident">was_native</span> {
 				<span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">rollback_transaction</span>().<span class="ident">expect</span>(<span class="ident">PROOF_CLOSE_TRANSACTION</span>);
-				<span class="kw">let</span> (<span class="ident">wasm_result</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">false</span>, <span class="ident">native_call</span>);
+				<span class="kw">let</span> (<span class="ident">wasm_result</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">false</span>);
 
 				<span class="kw">if</span> (<span class="ident">result</span>.<span class="ident">is_ok</span>() <span class="op">&amp;&amp;</span>
 					<span class="ident">wasm_result</span>.<span class="ident">is_ok</span>() <span class="op">&amp;&amp;</span> <span class="ident">result</span>.<span class="ident">as_ref</span>().<span class="ident">ok</span>() <span class="op">==</span> <span class="ident">wasm_result</span>.<span class="ident">as_ref</span>().<span class="ident">ok</span>()) <span class="op">|</span><span class="op">|</span>
@@ -2795,25 +2656,16 @@
 			}
 		}
 
-		<span class="kw">fn</span> <span class="ident">execute_call_with_native_else_wasm_strategy</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">NC</span><span class="op">&gt;</span>(
-			<span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-			<span class="kw-2">mut</span> <span class="ident">native_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NC</span><span class="op">&gt;</span>,
-		) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>
-		<span class="kw">where</span>
-			<span class="ident">R</span>: <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">PartialEq</span>,
-			<span class="ident">NC</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>
-				<span class="op">+</span> <span class="ident">UnwindSafe</span>,
-		{
+		<span class="kw">fn</span> <span class="ident">execute_call_with_native_else_wasm_strategy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span> {
 			<span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">start_transaction</span>();
-			<span class="kw">let</span> (<span class="ident">result</span>, <span class="ident">was_native</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">true</span>, <span class="ident">native_call</span>.<span class="ident">take</span>());
+			<span class="kw">let</span> (<span class="ident">result</span>, <span class="ident">was_native</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">true</span>);
 
 			<span class="kw">if</span> <span class="op">!</span><span class="ident">was_native</span> <span class="op">|</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">is_ok</span>() {
 				<span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">commit_transaction</span>().<span class="ident">expect</span>(<span class="ident">PROOF_CLOSE_TRANSACTION</span>);
 				<span class="ident">result</span>
 			} <span class="kw">else</span> {
 				<span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">rollback_transaction</span>().<span class="ident">expect</span>(<span class="ident">PROOF_CLOSE_TRANSACTION</span>);
-				<span class="kw">let</span> (<span class="ident">wasm_result</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">false</span>, <span class="ident">native_call</span>);
-				<span class="ident">wasm_result</span>
+				<span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">false</span>).<span class="number">0</span>
 			}
 		}
 
@@ -2826,35 +2678,29 @@
 		<span class="doccomment">///</span>
 		<span class="doccomment">/// Returns the result of the executed function either in native representation `R` or</span>
 		<span class="doccomment">/// in SCALE encoded representation.</span>
-		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute_using_consensus_failure_handler</span><span class="op">&lt;</span><span class="ident">Handler</span>, <span class="ident">R</span>, <span class="ident">NC</span><span class="op">&gt;</span>(
+		<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute_using_consensus_failure_handler</span><span class="op">&lt;</span><span class="ident">Handler</span><span class="op">&gt;</span>(
 			<span class="kw-2">&amp;mut</span> <span class="self">self</span>,
 			<span class="ident">manager</span>: <span class="ident">ExecutionManager</span><span class="op">&lt;</span><span class="ident">Handler</span><span class="op">&gt;</span>,
-			<span class="kw-2">mut</span> <span class="ident">native_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NC</span><span class="op">&gt;</span>,
-		) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NativeOrEncoded</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>
+		) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>
 		<span class="kw">where</span>
-			<span class="ident">R</span>: <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">PartialEq</span>,
-			<span class="ident">NC</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>
-				<span class="op">+</span> <span class="ident">UnwindSafe</span>,
-			<span class="ident">Handler</span>: <span class="ident">FnOnce</span>(
-				<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>,
-				<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>,
-			) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Exec::Error</span><span class="op">&gt;</span>,
+			<span class="ident">Handler</span>:
+				<span class="ident">FnOnce</span>(<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>, <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>) -&gt; <span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">Exec::Error</span><span class="op">&gt;</span>,
 		{
 			<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> {
 				<span class="kw">match</span> <span class="ident">manager</span> {
-					<span class="ident">ExecutionManager::Both</span>(<span class="ident">on_consensus_failure</span>) =&gt; <span class="self">self</span>
-						.<span class="ident">execute_call_with_both_strategy</span>(<span class="ident">native_call</span>.<span class="ident">take</span>(), <span class="ident">on_consensus_failure</span>),
+					<span class="ident">ExecutionManager::Both</span>(<span class="ident">on_consensus_failure</span>) =&gt;
+						<span class="self">self</span>.<span class="ident">execute_call_with_both_strategy</span>(<span class="ident">on_consensus_failure</span>),
 					<span class="ident">ExecutionManager::NativeElseWasm</span> =&gt;
-						<span class="self">self</span>.<span class="ident">execute_call_with_native_else_wasm_strategy</span>(<span class="ident">native_call</span>.<span class="ident">take</span>()),
+						<span class="self">self</span>.<span class="ident">execute_call_with_native_else_wasm_strategy</span>(),
 					<span class="ident">ExecutionManager::AlwaysWasm</span>(<span class="ident">trust_level</span>) =&gt; {
 						<span class="kw">let</span> <span class="ident">_abort_guard</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">trust_level</span> {
 							<span class="ident">BackendTrustLevel::Trusted</span> =&gt; <span class="prelude-val">None</span>,
 							<span class="ident">BackendTrustLevel::Untrusted</span> =&gt;
 								<span class="prelude-val">Some</span>(<span class="ident">sp_panic_handler::AbortGuard::never_abort</span>()),
 						};
-						<span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">false</span>, <span class="ident">native_call</span>).<span class="number">0</span>
+						<span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">false</span>).<span class="number">0</span>
 					},
-					<span class="ident">ExecutionManager::NativeWhenPossible</span> =&gt; <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">true</span>, <span class="ident">native_call</span>).<span class="number">0</span>,
+					<span class="ident">ExecutionManager::NativeWhenPossible</span> =&gt; <span class="self">self</span>.<span class="ident">execute_aux</span>(<span class="bool-val">true</span>).<span class="number">0</span>,
 				}
 			};
 
@@ -2919,29 +2765,23 @@
 		<span class="kw">let</span> <span class="ident">proving_backend</span> <span class="op">=</span>
 			<span class="ident">TrieBackendBuilder::wrap</span>(<span class="ident">trie_backend</span>).<span class="ident">with_recorder</span>(<span class="ident">Default::default</span>()).<span class="ident">build</span>();
 
-		<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sm</span> <span class="op">=</span> <span class="ident">StateMachine</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">H</span>, <span class="ident">Exec</span><span class="op">&gt;</span><span class="ident">::new</span>(
-				<span class="kw-2">&amp;</span><span class="ident">proving_backend</span>,
-				<span class="ident">overlay</span>,
-				<span class="ident">exec</span>,
-				<span class="ident">method</span>,
-				<span class="ident">call_data</span>,
-				<span class="ident">Extensions::default</span>(),
-				<span class="ident">runtime_code</span>,
-				<span class="ident">spawn_handle</span>,
-			);
-
-			<span class="ident">sm</span>.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">NeverNativeValue</span>, <span class="kw">fn</span>() -&gt; <span class="kw">_</span><span class="op">&gt;</span>(
-				<span class="ident">always_wasm</span>(),
-				<span class="prelude-val">None</span>,
-			)<span class="question-mark">?</span>
-		};
+		<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">StateMachine</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">H</span>, <span class="ident">Exec</span><span class="op">&gt;</span><span class="ident">::new</span>(
+			<span class="kw-2">&amp;</span><span class="ident">proving_backend</span>,
+			<span class="ident">overlay</span>,
+			<span class="ident">exec</span>,
+			<span class="ident">method</span>,
+			<span class="ident">call_data</span>,
+			<span class="ident">Extensions::default</span>(),
+			<span class="ident">runtime_code</span>,
+			<span class="ident">spawn_handle</span>,
+		)
+		.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">always_wasm</span>())<span class="question-mark">?</span>;
 
 		<span class="kw">let</span> <span class="ident">proof</span> <span class="op">=</span> <span class="ident">proving_backend</span>
 			.<span class="ident">extract_proof</span>()
 			.<span class="ident">expect</span>(<span class="string">&quot;A recorder was set and thus, a storage proof can be extracted; qed&quot;</span>);
 
-		<span class="prelude-val">Ok</span>((<span class="ident">result</span>.<span class="ident">into_encoded</span>(), <span class="ident">proof</span>))
+		<span class="prelude-val">Ok</span>((<span class="ident">result</span>, <span class="ident">proof</span>))
 	}
 
 	<span class="doccomment">/// Check execution proof, generated by `prove_execution` call.</span>
@@ -2989,7 +2829,7 @@
 		<span class="ident">Exec</span>: <span class="ident">CodeExecutor</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 		<span class="ident">Spawn</span>: <span class="ident">SpawnNamed</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	{
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sm</span> <span class="op">=</span> <span class="ident">StateMachine</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">H</span>, <span class="ident">Exec</span><span class="op">&gt;</span><span class="ident">::new</span>(
+		<span class="ident">StateMachine</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">H</span>, <span class="ident">Exec</span><span class="op">&gt;</span><span class="ident">::new</span>(
 			<span class="ident">trie_backend</span>,
 			<span class="ident">overlay</span>,
 			<span class="ident">exec</span>,
@@ -2998,13 +2838,8 @@
 			<span class="ident">Extensions::default</span>(),
 			<span class="ident">runtime_code</span>,
 			<span class="ident">spawn_handle</span>,
-		);
-
-		<span class="ident">sm</span>.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">NeverNativeValue</span>, <span class="kw">fn</span>() -&gt; <span class="kw">_</span><span class="op">&gt;</span>(
-			<span class="ident">always_untrusted_wasm</span>(),
-			<span class="prelude-val">None</span>,
 		)
-		.<span class="ident">map</span>(<span class="ident">NativeOrEncoded::into_encoded</span>)
+		.<span class="ident">execute_using_consensus_failure_handler</span>(<span class="ident">always_untrusted_wasm</span>())
 	}
 
 	<span class="doccomment">/// Generate storage read proof.</span>
@@ -3678,21 +3513,16 @@
 	<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">backend::AsTrieBackend</span>, <span class="ident">ext::Ext</span>, <span class="kw-2">*</span>};
 	<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">execution::CallResult</span>, <span class="ident">in_memory_backend::new_in_mem_hash_key</span>};
 	<span class="kw">use</span> <span class="ident">assert_matches::assert_matches</span>;
-	<span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>};
+	<span class="kw">use</span> <span class="ident">codec::Encode</span>;
 	<span class="kw">use</span> <span class="ident">sp_core</span>::{
 		<span class="ident">map</span>,
 		<span class="ident">storage</span>::{<span class="ident">ChildInfo</span>, <span class="ident">StateVersion</span>},
 		<span class="ident">testing::TaskExecutor</span>,
 		<span class="ident">traits</span>::{<span class="ident">CodeExecutor</span>, <span class="ident">Externalities</span>, <span class="ident">RuntimeCode</span>},
-		<span class="ident">NativeOrEncoded</span>, <span class="ident">NeverNativeValue</span>,
 	};
 	<span class="kw">use</span> <span class="ident">sp_runtime::traits::BlakeTwo256</span>;
 	<span class="kw">use</span> <span class="ident">sp_trie::trie_types</span>::{<span class="ident">TrieDBMutBuilderV0</span>, <span class="ident">TrieDBMutBuilderV1</span>};
-	<span class="kw">use</span> <span class="ident">std</span>::{
-		<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashMap</span>},
-		<span class="ident">panic::UnwindSafe</span>,
-		<span class="ident">result</span>,
-	};
+	<span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashMap</span>};
 
 	<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 	<span class="kw">struct</span> <span class="ident">DummyCodeExecutor</span> {
@@ -3704,28 +3534,20 @@
 	<span class="kw">impl</span> <span class="ident">CodeExecutor</span> <span class="kw">for</span> <span class="ident">DummyCodeExecutor</span> {
 		<span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">u8</span>;
 
-		<span class="kw">fn</span> <span class="ident">call</span><span class="op">&lt;</span>
-			<span class="ident">R</span>: <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">Decode</span> <span class="op">+</span> <span class="ident">PartialEq</span>,
-			<span class="ident">NC</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">UnwindSafe</span>,
-		<span class="op">&gt;</span>(
+		<span class="kw">fn</span> <span class="ident">call</span>(
 			<span class="kw-2">&amp;</span><span class="self">self</span>,
 			<span class="ident">ext</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">Externalities</span>,
 			<span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">RuntimeCode</span>,
 			<span class="ident">_method</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
 			<span class="ident">_data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
 			<span class="ident">use_native</span>: <span class="ident">bool</span>,
-			<span class="ident">native_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NC</span><span class="op">&gt;</span>,
-		) -&gt; (<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>, <span class="ident">bool</span>) {
+		) -&gt; (<span class="ident">CallResult</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>, <span class="ident">bool</span>) {
 			<span class="kw">let</span> <span class="ident">using_native</span> <span class="op">=</span> <span class="ident">use_native</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">native_available</span>;
-			<span class="kw">match</span> (<span class="ident">using_native</span>, <span class="self">self</span>.<span class="ident">native_succeeds</span>, <span class="self">self</span>.<span class="ident">fallback_succeeds</span>, <span class="ident">native_call</span>) {
-				(<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="ident">call</span>)) =&gt; {
-					<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">sp_externalities::set_and_run_with_externalities</span>(<span class="ident">ext</span>, <span class="ident">call</span>);
-					(<span class="ident">res</span>.<span class="ident">map</span>(<span class="ident">NativeOrEncoded::Native</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="number">0</span>), <span class="bool-val">true</span>)
-				},
-				(<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="kw">_</span>, <span class="prelude-val">None</span>) <span class="op">|</span> (<span class="bool-val">false</span>, <span class="kw">_</span>, <span class="bool-val">true</span>, <span class="prelude-val">None</span>) =&gt; (
-					<span class="prelude-val">Ok</span>(<span class="ident">NativeOrEncoded::Encoded</span>(<span class="macro">vec!</span>[
+			<span class="kw">match</span> (<span class="ident">using_native</span>, <span class="self">self</span>.<span class="ident">native_succeeds</span>, <span class="self">self</span>.<span class="ident">fallback_succeeds</span>) {
+				(<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="kw">_</span>) <span class="op">|</span> (<span class="bool-val">false</span>, <span class="kw">_</span>, <span class="bool-val">true</span>) =&gt; (
+					<span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[
 						<span class="ident">ext</span>.<span class="ident">storage</span>(<span class="string">b&quot;value1&quot;</span>).<span class="ident">unwrap</span>()[<span class="number">0</span>] <span class="op">+</span> <span class="ident">ext</span>.<span class="ident">storage</span>(<span class="string">b&quot;value2&quot;</span>).<span class="ident">unwrap</span>()[<span class="number">0</span>],
-					])),
+					]),
 					<span class="ident">using_native</span>,
 				),
 				<span class="kw">_</span> =&gt; (<span class="prelude-val">Err</span>(<span class="number">0</span>), <span class="ident">using_native</span>),
@@ -3826,13 +3648,10 @@
 		);
 
 		<span class="macro">assert!</span>(<span class="ident">state_machine</span>
-			.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">NeverNativeValue</span>, <span class="kw">fn</span>() -&gt; <span class="kw">_</span><span class="op">&gt;</span>(
-				<span class="ident">ExecutionManager::Both</span>(<span class="op">|</span><span class="ident">we</span>, <span class="ident">_ne</span><span class="op">|</span> {
-					<span class="ident">consensus_failed</span> <span class="op">=</span> <span class="bool-val">true</span>;
-					<span class="ident">we</span>
-				}),
-				<span class="prelude-val">None</span>,
-			)
+			.<span class="ident">execute_using_consensus_failure_handler</span>(<span class="ident">ExecutionManager::Both</span>(<span class="op">|</span><span class="ident">we</span>, <span class="ident">_ne</span><span class="op">|</span> {
+				<span class="ident">consensus_failed</span> <span class="op">=</span> <span class="bool-val">true</span>;
+				<span class="ident">we</span>
+			}),)
 			.<span class="ident">is_err</span>());
 		<span class="macro">assert!</span>(<span class="ident">consensus_failed</span>);
 	}
@@ -4575,53 +4394,6 @@
 		}
 		<span class="ident">overlay</span>.<span class="ident">commit_transaction</span>().<span class="ident">unwrap</span>();
 		<span class="macro">assert_eq!</span>(<span class="ident">overlay</span>.<span class="ident">storage</span>(<span class="string">b&quot;ccc&quot;</span>), <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>));
-	}
-
-	<span class="attribute">#[<span class="ident">test</span>]</span>
-	<span class="kw">fn</span> <span class="ident">runtime_registered_extensions_are_removed_after_execution</span>() {
-		<span class="kw">let</span> <span class="ident">state_version</span> <span class="op">=</span> <span class="ident">StateVersion::default</span>();
-		<span class="kw">use</span> <span class="ident">sp_externalities::ExternalitiesExt</span>;
-		<span class="macro">sp_externalities::decl_extension!</span> {
-			<span class="kw">struct</span> <span class="ident">DummyExt</span>(<span class="ident">u32</span>);
-		}
-
-		<span class="kw">let</span> <span class="ident">backend</span> <span class="op">=</span> <span class="ident">trie_backend::tests::test_trie</span>(<span class="ident">state_version</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">overlayed_changes</span> <span class="op">=</span> <span class="ident">Default::default</span>();
-		<span class="kw">let</span> <span class="ident">wasm_code</span> <span class="op">=</span> <span class="ident">RuntimeCode::empty</span>();
-
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_machine</span> <span class="op">=</span> <span class="ident">StateMachine::new</span>(
-			<span class="kw-2">&amp;</span><span class="ident">backend</span>,
-			<span class="kw-2">&amp;mut</span> <span class="ident">overlayed_changes</span>,
-			<span class="kw-2">&amp;</span><span class="ident">DummyCodeExecutor</span> {
-				<span class="ident">native_available</span>: <span class="bool-val">true</span>,
-				<span class="ident">native_succeeds</span>: <span class="bool-val">true</span>,
-				<span class="ident">fallback_succeeds</span>: <span class="bool-val">false</span>,
-			},
-			<span class="string">&quot;test&quot;</span>,
-			<span class="kw-2">&amp;</span>[],
-			<span class="ident">Default::default</span>(),
-			<span class="kw-2">&amp;</span><span class="ident">wasm_code</span>,
-			<span class="ident">TaskExecutor::new</span>(),
-		);
-
-		<span class="kw">let</span> <span class="ident">run_state_machine</span> <span class="op">=</span> <span class="op">|</span><span class="ident">state_machine</span>: <span class="kw-2">&amp;mut</span> <span class="ident">StateMachine</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">|</span> {
-			<span class="ident">state_machine</span>
-				.<span class="ident">execute_using_consensus_failure_handler</span>::<span class="op">&lt;</span><span class="kw">fn</span>(<span class="kw">_</span>, <span class="kw">_</span>) -&gt; <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(
-					<span class="ident">ExecutionManager::NativeWhenPossible</span>,
-					<span class="prelude-val">Some</span>(<span class="op">|</span><span class="op">|</span> {
-						<span class="ident">sp_externalities::with_externalities</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">ext</span><span class="op">|</span> {
-							<span class="ident">ext</span>.<span class="ident">register_extension</span>(<span class="ident">DummyExt</span>(<span class="number">2</span>)).<span class="ident">unwrap</span>();
-						})
-						.<span class="ident">unwrap</span>();
-
-						<span class="prelude-val">Ok</span>(())
-					}),
-				)
-				.<span class="ident">unwrap</span>();
-		};
-
-		<span class="ident">run_state_machine</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state_machine</span>);
-		<span class="ident">run_state_machine</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state_machine</span>);
 	}
 }
 </code></pre></div>
