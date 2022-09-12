@@ -27,9 +27,10 @@ pub mod v11 {
 	#[storage_alias]
 	type HistoryDepth<T: Config> = StorageValue<Pallet<T>, u32, ValueQuery>;
 
-	/// Clean up History Depth from storage
+	/// Clean up `HistoryDepth` from storage
 	///
-	/// We will be depending on the configurable value of History Depth post this release.
+	/// We will be depending on the configurable value of `HistoryDepth` post
+	/// this release.
 	pub struct MigrateToV11<T>(sp_std::marker::PhantomData<T>);
 	impl<T: Config> OnRuntimeUpgrade for MigrateToV11<T> {
 		fn on_runtime_upgrade() -> frame_support::weights::Weight {
