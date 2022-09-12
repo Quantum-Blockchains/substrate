@@ -24,8 +24,8 @@ use frame_election_provider_support::{
 use frame_support::{
 	pallet_prelude::*,
 	traits::{
-		Currency, CurrencyToVote, Defensive, EstimateNextNewSession, Get, Imbalance,
-		LockableCurrency, OnUnbalanced, UnixTime, WithdrawReasons, DefensiveResult,
+		Currency, CurrencyToVote, Defensive, DefensiveResult, EstimateNextNewSession, Get,
+		Imbalance, LockableCurrency, OnUnbalanced, UnixTime, WithdrawReasons,
 	},
 	weights::{Weight, WithPostDispatchInfo},
 };
@@ -118,19 +118,21 @@ impl<T: Config> Pallet<T> {
 			Error::<T>::NotStash.with_weight(T::WeightInfo::payout_stakers_alive_staked(0))
 		})?;
 		let mut ledger = <Ledger<T>>::get(&controller).ok_or(Error::<T>::NotController)?;
-		
+
 		ledger
 			.claimed_rewards
 			.retain(|&x| x >= current_era.saturating_sub(history_depth));
-			
+
 		match ledger.claimed_rewards.binary_search(&era) {
 			Ok(_) =>
 				return Err(Error::<T>::AlreadyClaimed
 					.with_weight(T::WeightInfo::payout_stakers_alive_staked(0))),
-			Err(pos) => ledger.claimed_rewards.try_insert(pos, era)
-			// Since we retain era entries in `claimed_rewards` only upto
-			// `HistoryDepth`, following bound is always expected to be satisfied.
-			.defensive_map_err(|_| Error::<T>::BoundNotMet)?,
+			Err(pos) => ledger
+				.claimed_rewards
+				.try_insert(pos, era)
+				// Since we retain era entries in `claimed_rewards` only upto
+				// `HistoryDepth`, following bound is always expected to be satisfied.
+				.defensive_map_err(|_| Error::<T>::BoundNotMet)?,
 		}
 
 		let exposure = <ErasStakersClipped<T>>::get(&era, &ledger.stash);
@@ -876,7 +878,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// This will return the currently configured `HistoryDepth`
-	/// 
+	///
 	/// With release of v11, `HistoryDepth` is migrated to a configurable
 	/// value instead of being a storage item. This function replaces the
 	/// old fn history_depth that used to read from the storage.

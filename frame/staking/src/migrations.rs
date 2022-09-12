@@ -22,11 +22,11 @@ use frame_support::traits::OnRuntimeUpgrade;
 
 pub mod v11 {
 	use super::*;
-	use frame_support::{storage_alias, pallet_prelude::ValueQuery};
+	use frame_support::{pallet_prelude::ValueQuery, storage_alias};
 
 	#[storage_alias]
 	type HistoryDepth<T: Config> = StorageValue<Pallet<T>, u32, ValueQuery>;
-	
+
 	/// Clean up History Depth from storage
 	///
 	/// We will be depending on the configurable value of History Depth post this release.
@@ -34,7 +34,6 @@ pub mod v11 {
 	impl<T: Config> OnRuntimeUpgrade for MigrateToV11<T> {
 		fn on_runtime_upgrade() -> frame_support::weights::Weight {
 			if StorageVersion::<T>::get() == Releases::V10_0_0 {
-
 				// may be just check its greater?
 				debug_assert_eq!(T::HistoryDepth::get(), HistoryDepth::<T>::get());
 				HistoryDepth::<T>::kill();
