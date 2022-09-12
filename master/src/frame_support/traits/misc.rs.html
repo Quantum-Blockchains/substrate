@@ -1026,6 +1026,7 @@
 <span id="1020">1020</span>
 <span id="1021">1021</span>
 <span id="1022">1022</span>
+<span id="1023">1023</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -1179,10 +1180,10 @@
 
 	<span class="doccomment">/// Defensively transform this option to a result, mapping `None` to the return value of an</span>
 	<span class="doccomment">/// error closure.</span>
-	<span class="kw">fn</span> <span class="ident">defensive_ok_or_else</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>;
+	<span class="kw">fn</span> <span class="ident">defensive_ok_or_else</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">sp_std::fmt::Debug</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Defensively transform this option to a result, mapping `None` to a default value.</span>
-	<span class="kw">fn</span> <span class="ident">defensive_ok_or</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">E</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>;
+	<span class="kw">fn</span> <span class="ident">defensive_ok_or</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">sp_std::fmt::Debug</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">E</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Exactly the same as `map`, but it prints the appropriate warnings if the value being mapped</span>
 	<span class="doccomment">/// is `None`.</span>
@@ -1346,16 +1347,17 @@
 		)
 	}
 
-	<span class="kw">fn</span> <span class="ident">defensive_ok_or_else</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">defensive_ok_or_else</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">sp_std::fmt::Debug</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-			<span class="macro">defensive!</span>();
-			<span class="ident">err</span>()
+			<span class="kw">let</span> <span class="ident">err_value</span> <span class="op">=</span> <span class="ident">err</span>();
+			<span class="macro">defensive!</span>(<span class="ident">err_value</span>);
+			<span class="ident">err_value</span>
 		})
 	}
 
-	<span class="kw">fn</span> <span class="ident">defensive_ok_or</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">E</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">defensive_ok_or</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">sp_std::fmt::Debug</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">E</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-			<span class="macro">defensive!</span>();
+			<span class="macro">defensive!</span>(<span class="ident">err</span>);
 			<span class="ident">err</span>
 		})
 	}

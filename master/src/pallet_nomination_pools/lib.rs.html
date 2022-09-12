@@ -2523,6 +2523,37 @@
 <span id="2517">2517</span>
 <span id="2518">2518</span>
 <span id="2519">2519</span>
+<span id="2520">2520</span>
+<span id="2521">2521</span>
+<span id="2522">2522</span>
+<span id="2523">2523</span>
+<span id="2524">2524</span>
+<span id="2525">2525</span>
+<span id="2526">2526</span>
+<span id="2527">2527</span>
+<span id="2528">2528</span>
+<span id="2529">2529</span>
+<span id="2530">2530</span>
+<span id="2531">2531</span>
+<span id="2532">2532</span>
+<span id="2533">2533</span>
+<span id="2534">2534</span>
+<span id="2535">2535</span>
+<span id="2536">2536</span>
+<span id="2537">2537</span>
+<span id="2538">2538</span>
+<span id="2539">2539</span>
+<span id="2540">2540</span>
+<span id="2541">2541</span>
+<span id="2542">2542</span>
+<span id="2543">2543</span>
+<span id="2544">2544</span>
+<span id="2545">2545</span>
+<span id="2546">2546</span>
+<span id="2547">2547</span>
+<span id="2548">2548</span>
+<span id="2549">2549</span>
+<span id="2550">2550</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2020-2022 Parity Technologies (UK) Ltd.</span>
@@ -3978,7 +4009,7 @@
 		<span class="ident">PartialUnbondNotAllowedPermissionlessly</span>,
 	}
 
-	<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Encode</span>, <span class="ident">Decode</span>, <span class="ident">PartialEq</span>, <span class="ident">TypeInfo</span>, <span class="ident">frame_support::PalletError</span>)]</span>
+	<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Encode</span>, <span class="ident">Decode</span>, <span class="ident">PartialEq</span>, <span class="ident">TypeInfo</span>, <span class="ident">frame_support::PalletError</span>, <span class="ident">RuntimeDebug</span>)]</span>
 	<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">DefensiveError</span> {
 		<span class="doccomment">/// There isn&#39;t enough space in the unbond pool.</span>
 		<span class="ident">NotEnoughSpaceInUnbondPool</span>,
@@ -4283,8 +4314,8 @@
 
 			<span class="kw">let</span> <span class="ident">bonded_pool</span> <span class="op">=</span> <span class="ident">BondedPool</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::get</span>(<span class="ident">member</span>.<span class="ident">pool_id</span>)
 				.<span class="ident">defensive_ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">DefensiveError::PoolNotFound</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub_pools</span> <span class="op">=</span> <span class="ident">SubPoolsStorage</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::get</span>(<span class="ident">member</span>.<span class="ident">pool_id</span>)
-				.<span class="ident">defensive_ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">DefensiveError::SubPoolsNotFound</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub_pools</span> <span class="op">=</span>
+				<span class="ident">SubPoolsStorage</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::get</span>(<span class="ident">member</span>.<span class="ident">pool_id</span>).<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::SubPoolsNotFound</span>)<span class="question-mark">?</span>;
 
 			<span class="ident">bonded_pool</span>.<span class="ident">ok_to_withdraw_unbonded_with</span>(<span class="kw-2">&amp;</span><span class="ident">caller</span>, <span class="kw-2">&amp;</span><span class="ident">member_account</span>)<span class="question-mark">?</span>;
 
@@ -4412,10 +4443,10 @@
 			);
 			<span class="macro">ensure!</span>(<span class="op">!</span><span class="ident">PoolMembers</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">who</span>), <span class="ident">Error</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::AccountBelongsToOtherPool</span>);
 
-			<span class="kw">let</span> <span class="ident">pool_id</span> <span class="op">=</span> <span class="ident">LastPoolId</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::mutate</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> {
-				<span class="kw-2">*</span><span class="ident">id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-				<span class="kw-2">*</span><span class="ident">id</span>
-			});
+			<span class="kw">let</span> <span class="ident">pool_id</span> <span class="op">=</span> <span class="ident">LastPoolId</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::try_mutate</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> {
+				<span class="kw-2">*</span><span class="ident">id</span> <span class="op">=</span> <span class="ident">id</span>.<span class="ident">checked_add</span>(<span class="number">1</span>).<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::OverflowRisk</span>)<span class="question-mark">?</span>;
+				<span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">id</span>)
+			})<span class="question-mark">?</span>;
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bonded_pool</span> <span class="op">=</span> <span class="ident">BondedPool</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::new</span>(
 				<span class="ident">pool_id</span>,
 				<span class="ident">PoolRoles</span> {
@@ -4941,16 +4972,46 @@
 
 		<span class="kw">for</span> <span class="ident">id</span> <span class="kw">in</span> <span class="ident">reward_pools</span> {
 			<span class="kw">let</span> <span class="ident">account</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::create_reward_account</span>(<span class="ident">id</span>);
-			<span class="macro">assert!</span>(<span class="ident">T::Currency::free_balance</span>(<span class="kw-2">&amp;</span><span class="ident">account</span>) <span class="op">&gt;</span><span class="op">=</span> <span class="ident">T::Currency::minimum_balance</span>());
+			<span class="macro">assert!</span>(
+				<span class="ident">T::Currency::free_balance</span>(<span class="kw-2">&amp;</span><span class="ident">account</span>) <span class="op">&gt;</span><span class="op">=</span> <span class="ident">T::Currency::minimum_balance</span>(),
+				<span class="string">&quot;reward pool of {id}: {:?} (ed = {:?})&quot;</span>,
+				<span class="ident">T::Currency::free_balance</span>(<span class="kw-2">&amp;</span><span class="ident">account</span>),
+				<span class="ident">T::Currency::minimum_balance</span>()
+			);
 		}
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pools_members</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="op">&lt;</span><span class="ident">PoolId</span>, <span class="ident">u32</span><span class="op">&gt;</span><span class="ident">::new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pools_members_pending_rewards</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="op">&lt;</span><span class="ident">PoolId</span>, <span class="ident">BalanceOf</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">all_members</span> <span class="op">=</span> <span class="number">0u32</span>;
 		<span class="ident">PoolMembers</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::iter</span>().<span class="ident">for_each</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">d</span>)<span class="op">|</span> {
-			<span class="macro">assert!</span>(<span class="ident">BondedPools</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::contains_key</span>(<span class="ident">d</span>.<span class="ident">pool_id</span>));
+			<span class="kw">let</span> <span class="ident">bonded_pool</span> <span class="op">=</span> <span class="ident">BondedPools</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::get</span>(<span class="ident">d</span>.<span class="ident">pool_id</span>).<span class="ident">unwrap</span>();
 			<span class="macro">assert!</span>(<span class="op">!</span><span class="ident">d</span>.<span class="ident">total_points</span>().<span class="ident">is_zero</span>(), <span class="string">&quot;no member should have zero points: {:?}&quot;</span>, <span class="ident">d</span>);
 			<span class="kw-2">*</span><span class="ident">pools_members</span>.<span class="ident">entry</span>(<span class="ident">d</span>.<span class="ident">pool_id</span>).<span class="ident">or_default</span>() <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
 			<span class="ident">all_members</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+
+			<span class="kw">let</span> <span class="ident">reward_pool</span> <span class="op">=</span> <span class="ident">RewardPools</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::get</span>(<span class="ident">d</span>.<span class="ident">pool_id</span>).<span class="ident">unwrap</span>();
+			<span class="kw">if</span> <span class="op">!</span><span class="ident">bonded_pool</span>.<span class="ident">points</span>.<span class="ident">is_zero</span>() {
+				<span class="kw">let</span> <span class="ident">current_rc</span> <span class="op">=</span>
+					<span class="ident">reward_pool</span>.<span class="ident">current_reward_counter</span>(<span class="ident">d</span>.<span class="ident">pool_id</span>, <span class="ident">bonded_pool</span>.<span class="ident">points</span>).<span class="ident">unwrap</span>();
+				<span class="kw-2">*</span><span class="ident">pools_members_pending_rewards</span>.<span class="ident">entry</span>(<span class="ident">d</span>.<span class="ident">pool_id</span>).<span class="ident">or_default</span>() <span class="op">+</span><span class="op">=</span>
+					<span class="ident">d</span>.<span class="ident">pending_rewards</span>(<span class="ident">current_rc</span>).<span class="ident">unwrap</span>();
+			} <span class="comment">// else this pool has been heavily slashed and cannot have any rewards anymore.</span>
+		});
+
+		<span class="ident">RewardPools</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::iter_keys</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> {
+			<span class="comment">// the sum of the pending rewards must be less than the leftover balance. Since the</span>
+			<span class="comment">// reward math rounds down, we might accumulate some dust here.</span>
+			<span class="macro">log!</span>(
+				<span class="ident">trace</span>,
+				<span class="string">&quot;pool {:?}, sum pending rewards = {:?}, remaining balance = {:?}&quot;</span>,
+				<span class="ident">id</span>,
+				<span class="ident">pools_members_pending_rewards</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>),
+				<span class="ident">RewardPool</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::current_balance</span>(<span class="ident">id</span>)
+			);
+			<span class="macro">assert!</span>(
+				<span class="ident">RewardPool</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::current_balance</span>(<span class="ident">id</span>) <span class="op">&gt;</span><span class="op">=</span>
+					<span class="ident">pools_members_pending_rewards</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">unwrap_or_default</span>()
+			)
 		});
 
 		<span class="ident">BondedPools</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::iter</span>().<span class="ident">for_each</span>(<span class="op">|</span>(<span class="ident">id</span>, <span class="ident">inner</span>)<span class="op">|</span> {
@@ -4995,6 +5056,7 @@
 				<span class="ident">sum_unbonding_balance</span>
 			);
 		}
+
 		<span class="prelude-val">Ok</span>(())
 	}
 

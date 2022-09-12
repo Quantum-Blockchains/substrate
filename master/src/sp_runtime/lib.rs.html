@@ -1117,6 +1117,25 @@
 <span id="1111">1111</span>
 <span id="1112">1112</span>
 <span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -1155,6 +1174,8 @@
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">paste</span>;
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">sp_arithmetic::traits::Saturating</span>;
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">sp_application_crypto</span> <span class="kw">as</span> <span class="ident">app_crypto</span>;
@@ -1944,7 +1965,24 @@
 <span class="macro">macro_rules!</span> <span class="ident">assert_eq_error_rate</span> {
 	(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) =&gt; {
 		<span class="macro">assert!</span>(
-			(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>) <span class="op">&gt;</span><span class="op">=</span> ((<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>) <span class="op">-</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>)) <span class="op">&amp;&amp;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>) <span class="op">&lt;</span><span class="op">=</span> ((<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>) <span class="op">+</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>)),
+			(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::Saturating::saturating_sub</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>)) <span class="op">&amp;&amp;</span>
+				(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::Saturating::saturating_add</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>)),
+			<span class="string">&quot;{:?} != {:?} (with error rate {:?})&quot;</span>,
+			<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>,
+			<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>,
+			<span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>,
+		);
+	};
+}
+
+<span class="doccomment">/// Same as [`assert_eq_error_rate`], but intended to be used with floating point number, or</span>
+<span class="doccomment">/// generally those who do not have over/underflow potentials.</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+<span class="macro">macro_rules!</span> <span class="ident">assert_eq_error_rate_float</span> {
+	(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) =&gt; {
+		<span class="macro">assert!</span>(
+			(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">-</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>) <span class="op">&amp;&amp;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">error</span>),
 			<span class="string">&quot;{:?} != {:?} (with error rate {:?})&quot;</span>,
 			<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>,
 			<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>,

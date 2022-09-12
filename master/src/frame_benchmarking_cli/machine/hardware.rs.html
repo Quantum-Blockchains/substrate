@@ -358,7 +358,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-	<span class="kw">use</span> <span class="ident">sp_runtime::assert_eq_error_rate</span>;
+	<span class="kw">use</span> <span class="ident">sp_runtime::assert_eq_error_rate_float</span>;
 
 	<span class="doccomment">/// `SUBSTRATE_REFERENCE_HARDWARE` can be en- and decoded.</span>
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -376,9 +376,9 @@
 		<span class="kw">const</span> <span class="ident">EPS</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">0.1</span>;
 		<span class="kw">let</span> <span class="ident">gib</span> <span class="op">=</span> <span class="ident">Throughput::GiBs</span>(<span class="number">14.324</span>);
 
-		<span class="macro">assert_eq_error_rate!</span>(<span class="number">14.324</span>, <span class="ident">gib</span>.<span class="ident">to_gibs</span>(), <span class="ident">EPS</span>);
-		<span class="macro">assert_eq_error_rate!</span>(<span class="number">14667.776</span>, <span class="ident">gib</span>.<span class="ident">to_mibs</span>(), <span class="ident">EPS</span>);
-		<span class="macro">assert_eq_error_rate!</span>(<span class="number">14667.776</span> <span class="op">*</span> <span class="number">1024.0</span>, <span class="ident">gib</span>.<span class="ident">to_kibs</span>(), <span class="ident">EPS</span>);
+		<span class="macro">assert_eq_error_rate_float!</span>(<span class="number">14.324</span>, <span class="ident">gib</span>.<span class="ident">to_gibs</span>(), <span class="ident">EPS</span>);
+		<span class="macro">assert_eq_error_rate_float!</span>(<span class="number">14667.776</span>, <span class="ident">gib</span>.<span class="ident">to_mibs</span>(), <span class="ident">EPS</span>);
+		<span class="macro">assert_eq_error_rate_float!</span>(<span class="number">14667.776</span> <span class="op">*</span> <span class="number">1024.0</span>, <span class="ident">gib</span>.<span class="ident">to_kibs</span>(), <span class="ident">EPS</span>);
 		<span class="macro">assert_eq!</span>(<span class="string">&quot;14.32 GiB/s&quot;</span>, <span class="ident">gib</span>.<span class="ident">to_string</span>());
 		<span class="macro">assert_eq!</span>(<span class="string">&quot;14.32 GiB/s&quot;</span>, <span class="ident">gib</span>.<span class="ident">normalize</span>().<span class="ident">to_string</span>());
 
