@@ -33,15 +33,29 @@ pub mod v11 {
 	/// this release.
 	pub struct MigrateToV11<T>(sp_std::marker::PhantomData<T>);
 	impl<T: Config> OnRuntimeUpgrade for MigrateToV11<T> {
+		#[cfg(feature = "try-runtime")]
+		fn pre_upgrade() -> Result<(), &'static str> {
+			use frame_support::traits::OnRuntimeUpgradeHelpersExt;
+			frame_support::ensure!(
+				StorageVersion::<T>::get() == Releases::V10_0_0,
+				"must upgrade linearly"
+			);
+
+			frame_support::ensure!(
+				T::HistoryDepth::get() == HistoryDepth::<T>::get(),
+				"Provided value of HistoryDepth should be same as the existing storage value"
+			);
+
+			Ok(())
+		}
+
 		fn on_runtime_upgrade() -> frame_support::weights::Weight {
 			if StorageVersion::<T>::get() == Releases::V10_0_0 {
-				// may be just check its greater?
-				debug_assert_eq!(T::HistoryDepth::get(), HistoryDepth::<T>::get());
 				HistoryDepth::<T>::kill();
 				StorageVersion::<T>::put(Releases::V11_0_0);
 
 				log!(info, "MigrateToV11 executed successfully");
-				T::DbWeight::get().reads_writes(1, 1)
+				T::DbWeight::get().reads_writes(1, 2)
 			} else {
 				log!(warn, "MigrateToV11 should be removed.");
 				T::DbWeight::get().reads(1)
