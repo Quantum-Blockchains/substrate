@@ -127,7 +127,7 @@ pub fn run_benchmark(benchmark: Box<dyn BenchmarkDescription>, mode: Mode) -> Be
 	let mut benchmark = benchmark.setup();
 
 	let mut durations: Vec<u128> = vec![];
-	for _ in 0..50 {
+	for _ in 0..2 {
 		let duration = benchmark.run(mode);
 		durations.push(duration.as_nanos());
 	}
@@ -135,7 +135,7 @@ pub fn run_benchmark(benchmark: Box<dyn BenchmarkDescription>, mode: Mode) -> Be
 	durations.sort_unstable();
 
 	let raw_average = (durations.iter().sum::<u128>() / (durations.len() as u128)) as u64;
-	let average = (durations.iter().skip(10).take(30).sum::<u128>() / 30) as u64;
+	let average = raw_average;
 
 	BenchmarkOutput { name: name.into(), raw_average, average }
 }
