@@ -1238,10 +1238,10 @@
 };
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Encode</span>, <span class="ident">HasCompact</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch::Dispatchable</span>,
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchClass</span>, <span class="ident">Dispatchable</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Pays</span>, <span class="ident">PostDispatchInfo</span>},
 	<span class="ident">ensure</span>,
 	<span class="ident">traits</span>::{<span class="ident">ConstU32</span>, <span class="ident">Contains</span>, <span class="ident">Currency</span>, <span class="ident">Get</span>, <span class="ident">Randomness</span>, <span class="ident">ReservableCurrency</span>, <span class="ident">Time</span>},
-	<span class="ident">weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Pays</span>, <span class="ident">PostDispatchInfo</span>, <span class="ident">Weight</span>},
+	<span class="ident">weights::Weight</span>,
 	<span class="ident">BoundedVec</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_system</span>::{<span class="ident">limits::BlockWeights</span>, <span class="ident">Pallet</span> <span class="kw">as</span> <span class="ident">System</span>};

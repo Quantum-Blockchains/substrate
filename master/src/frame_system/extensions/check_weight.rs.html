@@ -732,8 +732,6 @@
 <span id="726">726</span>
 <span id="727">727</span>
 <span id="728">728</span>
-<span id="729">729</span>
-<span id="730">730</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -754,8 +752,8 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">limits::BlockWeights</span>, <span class="ident">Config</span>, <span class="ident">Pallet</span>};
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">PostDispatchInfo</span>},
 	<span class="ident">traits::Get</span>,
-	<span class="ident">weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">PostDispatchInfo</span>, <span class="ident">Weight</span>},
 };
 <span class="kw">use</span> <span class="ident">scale_info::TypeInfo</span>;
 <span class="kw">use</span> <span class="ident">sp_runtime</span>::{
@@ -763,6 +761,7 @@
 	<span class="ident">transaction_validity</span>::{<span class="ident">InvalidTransaction</span>, <span class="ident">TransactionValidity</span>, <span class="ident">TransactionValidityError</span>},
 	<span class="ident">DispatchResult</span>,
 };
+<span class="kw">use</span> <span class="ident">sp_weights::Weight</span>;
 
 <span class="doccomment">/// Block resource (weight) limit check.</span>
 <span class="doccomment">///</span>
@@ -1005,10 +1004,7 @@
 		<span class="ident">mock</span>::{<span class="ident">new_test_ext</span>, <span class="ident">System</span>, <span class="ident">Test</span>, <span class="ident">CALL</span>},
 		<span class="ident">AllExtrinsicsLen</span>, <span class="ident">BlockWeight</span>,
 	};
-	<span class="kw">use</span> <span class="ident">frame_support</span>::{
-		<span class="ident">assert_err</span>, <span class="ident">assert_ok</span>,
-		<span class="ident">weights</span>::{<span class="ident">Pays</span>, <span class="ident">Weight</span>},
-	};
+	<span class="kw">use</span> <span class="ident">frame_support</span>::{<span class="ident">assert_err</span>, <span class="ident">assert_ok</span>, <span class="ident">dispatch::Pays</span>, <span class="ident">weights::Weight</span>};
 	<span class="kw">use</span> <span class="ident">sp_std::marker::PhantomData</span>;
 
 	<span class="kw">fn</span> <span class="ident">block_weights</span>() -&gt; <span class="ident"><span class="kw">crate</span>::limits::BlockWeights</span> {

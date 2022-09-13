@@ -1795,7 +1795,6 @@
 <span id="1789">1789</span>
 <span id="1790">1790</span>
 <span id="1791">1791</span>
-<span id="1792">1792</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -1861,11 +1860,11 @@
 <span class="kw">use</span> <span class="ident">sp_std::prelude</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch::DispatchResult</span>,
-	<span class="ident">traits</span>::{<span class="ident">EstimateCallFee</span>, <span class="ident">Get</span>},
-	<span class="ident">weights</span>::{
-		<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Pays</span>, <span class="ident">PostDispatchInfo</span>, <span class="ident">Weight</span>, <span class="ident">WeightToFee</span>,
+	<span class="ident">dispatch</span>::{
+		<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">DispatchResult</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Pays</span>, <span class="ident">PostDispatchInfo</span>,
 	},
+	<span class="ident">traits</span>::{<span class="ident">EstimateCallFee</span>, <span class="ident">Get</span>},
+	<span class="ident">weights</span>::{<span class="ident">Weight</span>, <span class="ident">WeightToFee</span>},
 };
 
 <span class="kw">mod</span> <span class="ident">payment</span>;
@@ -2647,12 +2646,11 @@
 	};
 
 	<span class="kw">use</span> <span class="ident">frame_support</span>::{
-		<span class="ident">assert_noop</span>, <span class="ident">assert_ok</span>, <span class="ident">parameter_types</span>,
+		<span class="ident">assert_noop</span>, <span class="ident">assert_ok</span>,
+		<span class="ident">dispatch</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">PostDispatchInfo</span>},
+		<span class="ident">parameter_types</span>,
 		<span class="ident">traits</span>::{<span class="ident">ConstU32</span>, <span class="ident">ConstU64</span>, <span class="ident">Currency</span>, <span class="ident">GenesisBuild</span>, <span class="ident">Imbalance</span>, <span class="ident">OnUnbalanced</span>},
-		<span class="ident">weights</span>::{
-			<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">PostDispatchInfo</span>, <span class="ident">Weight</span>,
-			<span class="ident">WeightToFee</span> <span class="kw">as</span> <span class="ident">WeightToFeeT</span>,
-		},
+		<span class="ident">weights</span>::{<span class="ident">Weight</span>, <span class="ident">WeightToFee</span> <span class="kw">as</span> <span class="ident">WeightToFeeT</span>},
 	};
 	<span class="kw">use</span> <span class="ident">frame_system</span> <span class="kw">as</span> <span class="ident">system</span>;
 	<span class="kw">use</span> <span class="ident">pallet_balances::Call</span> <span class="kw">as</span> <span class="ident">BalancesCall</span>;

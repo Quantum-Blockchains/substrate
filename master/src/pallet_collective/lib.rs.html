@@ -1131,6 +1131,9 @@
 <span id="1125">1125</span>
 <span id="1126">1126</span>
 <span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -1182,12 +1185,15 @@
 
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
 	<span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">MaxEncodedLen</span>},
-	<span class="ident">dispatch</span>::{<span class="ident">DispatchError</span>, <span class="ident">DispatchResultWithPostInfo</span>, <span class="ident">Dispatchable</span>, <span class="ident">PostDispatchInfo</span>},
+	<span class="ident">dispatch</span>::{
+		<span class="ident">DispatchError</span>, <span class="ident">DispatchResultWithPostInfo</span>, <span class="ident">Dispatchable</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Pays</span>,
+		<span class="ident">PostDispatchInfo</span>,
+	},
 	<span class="ident">ensure</span>,
 	<span class="ident">traits</span>::{
 		<span class="ident">Backing</span>, <span class="ident">ChangeMembers</span>, <span class="ident">EnsureOrigin</span>, <span class="ident">Get</span>, <span class="ident">GetBacking</span>, <span class="ident">InitializeMembers</span>, <span class="ident">StorageVersion</span>,
 	},
-	<span class="ident">weights</span>::{<span class="ident">GetDispatchInfo</span>, <span class="ident">Pays</span>, <span class="ident">Weight</span>},
+	<span class="ident">weights::Weight</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

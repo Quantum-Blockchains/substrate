@@ -714,11 +714,11 @@
 	<span class="ident">GRANDPA_ENGINE_ID</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch::DispatchResultWithPostInfo</span>,
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchResultWithPostInfo</span>, <span class="ident">Pays</span>},
 	<span class="ident">pallet_prelude::Get</span>,
 	<span class="ident">storage</span>,
 	<span class="ident">traits</span>::{<span class="ident">KeyOwnerProofSystem</span>, <span class="ident">OneSessionHandler</span>},
-	<span class="ident">weights</span>::{<span class="ident">Pays</span>, <span class="ident">Weight</span>},
+	<span class="ident">weights::Weight</span>,
 	<span class="ident">WeakBoundedVec</span>,
 };
 <span class="kw">use</span> <span class="ident">scale_info::TypeInfo</span>;

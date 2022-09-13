@@ -198,7 +198,7 @@
 <span class="kw">use</span> <span class="ident">sp_runtime::traits</span>::{<span class="ident">AtLeast32BitUnsigned</span>, <span class="ident">Zero</span>};
 <span class="kw">use</span> <span class="ident">sp_std::prelude</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">frame_support::weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">Weight</span>};
+<span class="kw">use</span> <span class="ident">frame_support</span>::{<span class="ident">dispatch::DispatchClass</span>, <span class="ident">weights::Weight</span>};
 
 <span class="doccomment">/// The base fee and adjusted weight and length fees constitute the _inclusion fee_.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Encode</span>, <span class="ident">Decode</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>

@@ -1793,20 +1793,20 @@
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">EncodeLike</span>, <span class="ident">FullCodec</span>, <span class="ident">MaxEncodedLen</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch</span>::{<span class="ident">DispatchResult</span>, <span class="ident">DispatchResultWithPostInfo</span>},
+	<span class="ident">dispatch</span>::{
+		<span class="ident">extract_actual_pays_fee</span>, <span class="ident">extract_actual_weight</span>, <span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>,
+		<span class="ident">DispatchResult</span>, <span class="ident">DispatchResultWithPostInfo</span>, <span class="ident">PerDispatchClass</span>,
+	},
 	<span class="ident">storage</span>,
 	<span class="ident">traits</span>::{
 		<span class="ident">ConstU32</span>, <span class="ident">Contains</span>, <span class="ident">EnsureOrigin</span>, <span class="ident">Get</span>, <span class="ident">HandleLifetime</span>, <span class="ident">OnKilledAccount</span>, <span class="ident">OnNewAccount</span>,
 		<span class="ident">OriginTrait</span>, <span class="ident">PalletInfo</span>, <span class="ident">SortedMembers</span>, <span class="ident">StoredMap</span>, <span class="ident">TypedGet</span>,
 	},
-	<span class="ident">weights</span>::{
-		<span class="ident">extract_actual_pays_fee</span>, <span class="ident">extract_actual_weight</span>, <span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>,
-		<span class="ident">PerDispatchClass</span>, <span class="ident">RuntimeDbWeight</span>, <span class="ident">Weight</span>,
-	},
 	<span class="ident">Parameter</span>,
 };
 <span class="kw">use</span> <span class="ident">scale_info::TypeInfo</span>;
 <span class="kw">use</span> <span class="ident">sp_core::storage::well_known_keys</span>;
+<span class="kw">use</span> <span class="ident">sp_weights</span>::{<span class="ident">RuntimeDbWeight</span>, <span class="ident">Weight</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">frame_support::traits::GenesisBuild</span>;

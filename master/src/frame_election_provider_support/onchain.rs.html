@@ -351,7 +351,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{
 	<span class="ident">Debug</span>, <span class="ident">ElectionDataProvider</span>, <span class="ident">ElectionProvider</span>, <span class="ident">InstantElectionProvider</span>, <span class="ident">NposSolver</span>, <span class="ident">WeightInfo</span>,
 };
-<span class="kw">use</span> <span class="ident">frame_support</span>::{<span class="ident">traits::Get</span>, <span class="ident">weights::DispatchClass</span>};
+<span class="kw">use</span> <span class="ident">frame_support</span>::{<span class="ident">dispatch::DispatchClass</span>, <span class="ident">traits::Get</span>};
 <span class="kw">use</span> <span class="ident">sp_npos_elections</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">sp_std</span>::{<span class="ident">collections::btree_map::BTreeMap</span>, <span class="ident">marker::PhantomData</span>, <span class="ident">prelude</span>::<span class="kw-2">*</span>};
 

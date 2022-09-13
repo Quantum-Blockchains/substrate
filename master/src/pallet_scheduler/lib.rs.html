@@ -995,12 +995,12 @@
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Codec</span>, <span class="ident">Decode</span>, <span class="ident">Encode</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch</span>::{<span class="ident">DispatchError</span>, <span class="ident">DispatchResult</span>, <span class="ident">Dispatchable</span>, <span class="ident">Parameter</span>},
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchError</span>, <span class="ident">DispatchResult</span>, <span class="ident">Dispatchable</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Parameter</span>},
 	<span class="ident">traits</span>::{
 		<span class="ident">schedule</span>::{<span class="self">self</span>, <span class="ident">DispatchTime</span>, <span class="ident">MaybeHashed</span>},
 		<span class="ident">EnsureOrigin</span>, <span class="ident">Get</span>, <span class="ident">IsType</span>, <span class="ident">OriginTrait</span>, <span class="ident">PalletInfoAccess</span>, <span class="ident">PrivilegeCmp</span>, <span class="ident">StorageVersion</span>,
 	},
-	<span class="ident">weights</span>::{<span class="ident">GetDispatchInfo</span>, <span class="ident">Weight</span>},
+	<span class="ident">weights::Weight</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_system</span>::{<span class="self">self</span> <span class="kw">as</span> <span class="ident">system</span>, <span class="ident">ensure_signed</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pallet</span>::<span class="kw-2">*</span>;

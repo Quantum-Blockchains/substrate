@@ -315,7 +315,6 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
-<span id="312">312</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright (C) 2021-2022 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
 
@@ -357,7 +356,7 @@
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch::DispatchResult</span>,
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchInfo</span>, <span class="ident">DispatchResult</span>, <span class="ident">PostDispatchInfo</span>},
 	<span class="ident">traits</span>::{
 		<span class="ident">tokens</span>::{
 			<span class="ident">fungibles</span>::{<span class="ident">Balanced</span>, <span class="ident">CreditOf</span>, <span class="ident">Inspect</span>},
@@ -365,7 +364,6 @@
 		},
 		<span class="ident">IsType</span>,
 	},
-	<span class="ident">weights</span>::{<span class="ident">DispatchInfo</span>, <span class="ident">PostDispatchInfo</span>},
 	<span class="ident">DefaultNoBound</span>,
 };
 <span class="kw">use</span> <span class="ident">pallet_transaction_payment::OnChargeTransaction</span>;

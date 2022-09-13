@@ -1740,13 +1740,13 @@
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// The dispatch info and the length is deduced from the call. The post info can optionally be</span>
 	<span class="doccomment">/// provided.</span>
-	<span class="kw">fn</span> <span class="ident">estimate_call_fee</span>(<span class="ident">call</span>: <span class="kw-2">&amp;</span><span class="ident">Call</span>, <span class="ident">post_info</span>: <span class="ident"><span class="kw">crate</span>::weights::PostDispatchInfo</span>) -&gt; <span class="ident">Balance</span>;
+	<span class="kw">fn</span> <span class="ident">estimate_call_fee</span>(<span class="ident">call</span>: <span class="kw-2">&amp;</span><span class="ident">Call</span>, <span class="ident">post_info</span>: <span class="ident"><span class="kw">crate</span>::dispatch::PostDispatchInfo</span>) -&gt; <span class="ident">Balance</span>;
 }
 
 <span class="comment">// Useful for building mocks.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Call</span>, <span class="ident">Balance</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="kw">const</span> <span class="ident">T</span>: <span class="ident">u32</span><span class="op">&gt;</span> <span class="ident">EstimateCallFee</span><span class="op">&lt;</span><span class="ident">Call</span>, <span class="ident">Balance</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ConstU32</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-	<span class="kw">fn</span> <span class="ident">estimate_call_fee</span>(<span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Call</span>, <span class="kw">_</span>: <span class="ident"><span class="kw">crate</span>::weights::PostDispatchInfo</span>) -&gt; <span class="ident">Balance</span> {
+	<span class="kw">fn</span> <span class="ident">estimate_call_fee</span>(<span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Call</span>, <span class="kw">_</span>: <span class="ident"><span class="kw">crate</span>::dispatch::PostDispatchInfo</span>) -&gt; <span class="ident">Balance</span> {
 		<span class="ident">T</span>.<span class="ident">into</span>()
 	}
 }

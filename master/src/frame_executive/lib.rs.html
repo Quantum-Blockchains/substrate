@@ -1664,12 +1664,12 @@
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Codec</span>, <span class="ident">Encode</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch::PostDispatchInfo</span>,
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">PostDispatchInfo</span>},
 	<span class="ident">traits</span>::{
 		<span class="ident">EnsureInherentsAreFirst</span>, <span class="ident">ExecuteBlock</span>, <span class="ident">OffchainWorker</span>, <span class="ident">OnFinalize</span>, <span class="ident">OnIdle</span>, <span class="ident">OnInitialize</span>,
 		<span class="ident">OnRuntimeUpgrade</span>,
 	},
-	<span class="ident">weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">GetDispatchInfo</span>, <span class="ident">Weight</span>},
+	<span class="ident">weights::Weight</span>,
 };
 <span class="kw">use</span> <span class="ident">sp_runtime</span>::{
 	<span class="ident">generic::Digest</span>,

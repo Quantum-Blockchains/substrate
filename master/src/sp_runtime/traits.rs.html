@@ -2019,6 +2019,12 @@
 <span id="2013">2013</span>
 <span id="2014">2014</span>
 <span id="2015">2015</span>
+<span id="2016">2016</span>
+<span id="2017">2017</span>
+<span id="2018">2018</span>
+<span id="2019">2019</span>
+<span id="2020">2020</span>
+<span id="2021">2021</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -3838,6 +3844,12 @@
 		} <span class="kw">else</span> {
 			<span class="string">&quot;false&quot;</span>.<span class="ident">print</span>()
 		}
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">Printable</span> <span class="kw">for</span> <span class="ident">sp_weights::Weight</span> {
+	<span class="kw">fn</span> <span class="ident">print</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+		<span class="self">self</span>.<span class="ident">ref_time</span>().<span class="ident">print</span>()
 	}
 }
 

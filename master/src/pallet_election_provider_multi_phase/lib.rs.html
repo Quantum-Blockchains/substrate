@@ -2334,6 +2334,7 @@
 <span id="2328">2328</span>
 <span id="2329">2329</span>
 <span id="2330">2330</span>
+<span id="2331">2331</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2021-2022 Parity Technologies (UK) Ltd.</span>
@@ -2570,9 +2571,10 @@
 	<span class="ident">ElectionDataProvider</span>, <span class="ident">ElectionProvider</span>, <span class="ident">InstantElectionProvider</span>, <span class="ident">NposSolution</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
+	<span class="ident">dispatch::DispatchClass</span>,
 	<span class="ident">ensure</span>,
 	<span class="ident">traits</span>::{<span class="ident">Currency</span>, <span class="ident">Get</span>, <span class="ident">OnUnbalanced</span>, <span class="ident">ReservableCurrency</span>},
-	<span class="ident">weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">Weight</span>},
+	<span class="ident">weights::Weight</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_system</span>::{<span class="ident">ensure_none</span>, <span class="ident">offchain::SendTransactionTypes</span>};
 <span class="kw">use</span> <span class="ident">scale_info::TypeInfo</span>;

@@ -4770,7 +4770,7 @@
 		<span class="ident">call_ptr</span>: <span class="ident">u32</span>,
 		<span class="ident">call_len</span>: <span class="ident">u32</span>,
 	) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ReturnCode</span>, <span class="ident">TrapReason</span><span class="op">&gt;</span> {
-		<span class="kw">use</span> <span class="ident">frame_support</span>::{<span class="ident">dispatch::GetDispatchInfo</span>, <span class="ident">weights::extract_actual_weight</span>};
+		<span class="kw">use</span> <span class="ident">frame_support::dispatch</span>::{<span class="ident">extract_actual_weight</span>, <span class="ident">GetDispatchInfo</span>};
 		<span class="ident">ctx</span>.<span class="ident">charge_gas</span>(<span class="ident">RuntimeCosts::CopyFromContract</span>(<span class="ident">call_len</span>))<span class="question-mark">?</span>;
 		<span class="kw">let</span> <span class="ident">call</span>: <span class="op">&lt;</span><span class="ident">E::T</span> <span class="kw">as</span> <span class="ident">Config</span><span class="op">&gt;</span><span class="ident">::RuntimeCall</span> <span class="op">=</span>
 			<span class="ident">ctx</span>.<span class="ident">read_sandbox_memory_as_unbounded</span>(<span class="ident">call_ptr</span>, <span class="ident">call_len</span>)<span class="question-mark">?</span>;

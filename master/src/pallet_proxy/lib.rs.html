@@ -848,7 +848,6 @@
 <span id="842">842</span>
 <span id="843">843</span>
 <span id="844">844</span>
-<span id="845">845</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -886,10 +885,9 @@
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">MaxEncodedLen</span>};
 <span class="kw">use</span> <span class="ident">frame_support</span>::{
-	<span class="ident">dispatch::DispatchError</span>,
+	<span class="ident">dispatch</span>::{<span class="ident">DispatchError</span>, <span class="ident">GetDispatchInfo</span>},
 	<span class="ident">ensure</span>,
 	<span class="ident">traits</span>::{<span class="ident">Currency</span>, <span class="ident">Get</span>, <span class="ident">InstanceFilter</span>, <span class="ident">IsSubType</span>, <span class="ident">IsType</span>, <span class="ident">OriginTrait</span>, <span class="ident">ReservableCurrency</span>},
-	<span class="ident">weights::GetDispatchInfo</span>,
 	<span class="ident">RuntimeDebug</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_system</span>::{<span class="self">self</span> <span class="kw">as</span> <span class="ident">system</span>};

@@ -149,6 +149,9 @@
 <span id="143">143</span>
 <span id="144">144</span>
 <span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -252,7 +255,10 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 	<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::mock</span>::{<span class="ident">new_test_ext</span>, <span class="ident">System</span>, <span class="ident">Test</span>, <span class="ident">CALL</span>};
-	<span class="kw">use</span> <span class="ident">frame_support::weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">Pays</span>, <span class="ident">Weight</span>};
+	<span class="kw">use</span> <span class="ident">frame_support</span>::{
+		<span class="ident">dispatch</span>::{<span class="ident">DispatchClass</span>, <span class="ident">DispatchInfo</span>, <span class="ident">Pays</span>},
+		<span class="ident">weights::Weight</span>,
+	};
 	<span class="kw">use</span> <span class="ident">sp_core::H256</span>;
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>

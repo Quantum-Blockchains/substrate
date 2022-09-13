@@ -66,7 +66,6 @@
 <span id="60">60</span>
 <span id="61">61</span>
 <span id="62">62</span>
-<span id="63">63</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2022 Parity Technologies (UK) Ltd.</span>
@@ -85,10 +84,9 @@
 <span class="comment">// limitations under the License.</span>
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">constants</span> {
-	<span class="kw">use</span> <span class="ident">frame_support</span>::{
-		<span class="ident">parameter_types</span>,
-		<span class="ident">weights</span>::{<span class="ident">constants</span>, <span class="ident">RuntimeDbWeight</span>},
-	};
+	<span class="kw">use</span> <span class="ident">frame_support::weights::constants</span>;
+	<span class="kw">use</span> <span class="ident">sp_core::parameter_types</span>;
+	<span class="kw">use</span> <span class="ident">sp_weights::RuntimeDbWeight</span>;
 
 	<span class="macro">parameter_types!</span> {
 		<span class="doccomment">/// ParityDB can be enabled with a feature flag, but is still experimental. These weights</span>
@@ -102,7 +100,7 @@
 	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 	<span class="kw">mod</span> <span class="ident">test_db_weights</span> {
 		<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::constants::ParityDbWeight</span> <span class="kw">as</span> <span class="ident">W</span>;
-		<span class="kw">use</span> <span class="ident">frame_support::weights::constants</span>;
+		<span class="kw">use</span> <span class="ident">sp_weights::constants</span>;
 
 		<span class="doccomment">/// Checks that all weights exist and have sane values.</span>
 		<span class="comment">// NOTE: If this test fails but you are sure that the generated values are fine,</span>

@@ -2568,6 +2568,9 @@
 <span id="2562">2562</span>
 <span id="2563">2563</span>
 <span id="2564">2564</span>
+<span id="2565">2565</span>
+<span id="2566">2566</span>
+<span id="2567">2567</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -3946,7 +3949,10 @@
 	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 	<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::traits::GenesisBuild</span>;
 	<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::{
-		<span class="ident">dispatch</span>::{<span class="ident">DispatchError</span>, <span class="ident">DispatchResult</span>, <span class="ident">DispatchResultWithPostInfo</span>, <span class="ident">Parameter</span>},
+		<span class="ident">dispatch</span>::{
+			<span class="ident">DispatchClass</span>, <span class="ident">DispatchError</span>, <span class="ident">DispatchResult</span>, <span class="ident">DispatchResultWithPostInfo</span>, <span class="ident">Parameter</span>,
+			<span class="ident">Pays</span>,
+		},
 		<span class="ident">ensure</span>,
 		<span class="ident">inherent</span>::{<span class="ident">InherentData</span>, <span class="ident">InherentIdentifier</span>, <span class="ident">ProvideInherent</span>},
 		<span class="ident">storage</span>,
@@ -3961,7 +3967,6 @@
 			<span class="ident">ConstU32</span>, <span class="ident">EnsureOrigin</span>, <span class="ident">Get</span>, <span class="ident">GetDefault</span>, <span class="ident">GetStorageVersion</span>, <span class="ident">Hooks</span>, <span class="ident">IsType</span>,
 			<span class="ident">PalletInfoAccess</span>, <span class="ident">StorageInfoTrait</span>, <span class="ident">StorageVersion</span>, <span class="ident">TypedGet</span>,
 		},
-		<span class="ident">weights</span>::{<span class="ident">DispatchClass</span>, <span class="ident">Pays</span>, <span class="ident">Weight</span>},
 		<span class="ident">Blake2_128</span>, <span class="ident">Blake2_128Concat</span>, <span class="ident">Blake2_256</span>, <span class="ident">CloneNoBound</span>, <span class="ident">DebugNoBound</span>, <span class="ident">EqNoBound</span>, <span class="ident">Identity</span>,
 		<span class="ident">PartialEqNoBound</span>, <span class="ident">RuntimeDebug</span>, <span class="ident">RuntimeDebugNoBound</span>, <span class="ident">Twox128</span>, <span class="ident">Twox256</span>, <span class="ident">Twox64Concat</span>,
 	};
@@ -3977,6 +3982,7 @@
 		<span class="ident">MAX_MODULE_ERROR_ENCODED_SIZE</span>,
 	};
 	<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">sp_std::marker::PhantomData</span>;
+	<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">sp_weights::Weight</span>;
 }
 
 <span class="doccomment">/// `pallet` attribute macro allows to define a pallet to be used in `construct_runtime!`.</span>
