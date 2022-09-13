@@ -233,6 +233,12 @@
 <span id="227">227</span>
 <span id="228">228</span>
 <span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2022 Parity Technologies (UK) Ltd.</span>
@@ -340,8 +346,14 @@
 	<span class="doccomment">/// Trie cache size in bytes.</span>
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// Providing `0` will disable the cache.</span>
-	<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">default_value</span> <span class="op">=</span> <span class="string">&quot;1024&quot;</span>)]</span>
+	<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">value_name</span> <span class="op">=</span> <span class="string">&quot;Bytes&quot;</span>, <span class="ident">default_value</span> <span class="op">=</span> <span class="string">&quot;67108864&quot;</span>)]</span>
 	<span class="kw">pub</span> <span class="ident">trie_cache_size</span>: <span class="ident">usize</span>,
+
+	<span class="doccomment">/// Enable the Trie cache.</span>
+	<span class="doccomment">///</span>
+	<span class="doccomment">/// This should only be used for performance analysis and not for final results.</span>
+	<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>)]</span>
+	<span class="kw">pub</span> <span class="ident">enable_trie_cache</span>: <span class="ident">bool</span>,
 
 	<span class="doccomment">/// Include child trees in benchmark.</span>
 	<span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>)]</span>
@@ -455,10 +467,10 @@
 	}
 
 	<span class="kw">fn</span> <span class="ident">trie_cache_maximum_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-		<span class="kw">if</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">trie_cache_size</span> <span class="op">==</span> <span class="number">0</span> {
-			<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-		} <span class="kw">else</span> {
+		<span class="kw">if</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">enable_trie_cache</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">trie_cache_size</span> <span class="op">&gt;</span> <span class="number">0</span> {
 			<span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">params</span>.<span class="ident">trie_cache_size</span>))
+		} <span class="kw">else</span> {
+			<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
 		}
 	}
 }
