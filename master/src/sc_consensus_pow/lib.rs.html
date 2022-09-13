@@ -688,37 +688,6 @@
 <span id="682">682</span>
 <span id="683">683</span>
 <span id="684">684</span>
-<span id="685">685</span>
-<span id="686">686</span>
-<span id="687">687</span>
-<span id="688">688</span>
-<span id="689">689</span>
-<span id="690">690</span>
-<span id="691">691</span>
-<span id="692">692</span>
-<span id="693">693</span>
-<span id="694">694</span>
-<span id="695">695</span>
-<span id="696">696</span>
-<span id="697">697</span>
-<span id="698">698</span>
-<span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
-<span id="706">706</span>
-<span id="707">707</span>
-<span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
-<span id="711">711</span>
-<span id="712">712</span>
-<span id="713">713</span>
-<span id="714">714</span>
-<span id="715">715</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -777,9 +746,7 @@
 <span class="kw">use</span> <span class="ident">sp_api::ProvideRuntimeApi</span>;
 <span class="kw">use</span> <span class="ident">sp_block_builder::BlockBuilder</span> <span class="kw">as</span> <span class="ident">BlockBuilderApi</span>;
 <span class="kw">use</span> <span class="ident">sp_blockchain</span>::{<span class="ident">well_known_cache_keys::Id</span> <span class="kw">as</span> <span class="ident">CacheKeyId</span>, <span class="ident">HeaderBackend</span>};
-<span class="kw">use</span> <span class="ident">sp_consensus</span>::{
-	<span class="ident">CanAuthorWith</span>, <span class="ident">Environment</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ConsensusError</span>, <span class="ident">Proposer</span>, <span class="ident">SelectChain</span>, <span class="ident">SyncOracle</span>,
-};
+<span class="kw">use</span> <span class="ident">sp_consensus</span>::{<span class="ident">Environment</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ConsensusError</span>, <span class="ident">Proposer</span>, <span class="ident">SelectChain</span>, <span class="ident">SyncOracle</span>};
 <span class="kw">use</span> <span class="ident">sp_consensus_pow</span>::{<span class="ident">Seal</span>, <span class="ident">TotalDifficulty</span>, <span class="ident">POW_ENGINE_ID</span>};
 <span class="kw">use</span> <span class="ident">sp_core::ExecutionContext</span>;
 <span class="kw">use</span> <span class="ident">sp_inherents</span>::{<span class="ident">CreateInherentDataProviders</span>, <span class="ident">InherentDataProvider</span>};
@@ -935,18 +902,17 @@
 }
 
 <span class="doccomment">/// A block importer for PoW.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">BlockT</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">BlockT</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> {
 	<span class="ident">algorithm</span>: <span class="ident">Algorithm</span>,
 	<span class="ident">inner</span>: <span class="ident">I</span>,
 	<span class="ident">select_chain</span>: <span class="ident">S</span>,
 	<span class="ident">client</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
 	<span class="ident">create_inherent_data_providers</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">CIDP</span><span class="op">&gt;</span>,
 	<span class="ident">check_inherents_after</span>: <span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">B</span> <span class="kw">as</span> <span class="ident">BlockT</span><span class="op">&gt;</span><span class="ident">::Header</span> <span class="kw">as</span> <span class="ident">HeaderT</span><span class="op">&gt;</span><span class="ident">::Number</span>,
-	<span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">BlockT</span>, <span class="ident">I</span>: <span class="ident">Clone</span>, <span class="ident">C</span>, <span class="ident">S</span>: <span class="ident">Clone</span>, <span class="ident">Algorithm</span>: <span class="ident">Clone</span>, <span class="ident">CAW</span>: <span class="ident">Clone</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">Clone</span>
-	<span class="kw">for</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">BlockT</span>, <span class="ident">I</span>: <span class="ident">Clone</span>, <span class="ident">C</span>, <span class="ident">S</span>: <span class="ident">Clone</span>, <span class="ident">Algorithm</span>: <span class="ident">Clone</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">Clone</span>
+	<span class="kw">for</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
 {
 	<span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
 		<span class="self">Self</span> {
@@ -956,12 +922,11 @@
 			<span class="ident">client</span>: <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">clone</span>(),
 			<span class="ident">create_inherent_data_providers</span>: <span class="self">self</span>.<span class="ident">create_inherent_data_providers</span>.<span class="ident">clone</span>(),
 			<span class="ident">check_inherents_after</span>: <span class="self">self</span>.<span class="ident">check_inherents_after</span>,
-			<span class="ident">can_author_with</span>: <span class="self">self</span>.<span class="ident">can_author_with</span>.<span class="ident">clone</span>(),
 		}
 	}
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
 <span class="kw">where</span>
 	<span class="ident">B</span>: <span class="ident">BlockT</span>,
 	<span class="ident">I</span>: <span class="ident">BlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Transaction</span> <span class="op">=</span> <span class="ident">sp_api::TransactionFor</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
@@ -969,7 +934,6 @@
 	<span class="ident">C</span>: <span class="ident">ProvideRuntimeApi</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">HeaderBackend</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">AuxStore</span> <span class="op">+</span> <span class="ident">BlockOf</span>,
 	<span class="ident">C::Api</span>: <span class="ident">BlockBuilderApi</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
 	<span class="ident">Algorithm</span>: <span class="ident">PowAlgorithm</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">B</span>, ()<span class="op">&gt;</span>,
 {
 	<span class="doccomment">/// Create a new block import suitable to be used in PoW</span>
@@ -980,7 +944,6 @@
 		<span class="ident">check_inherents_after</span>: <span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">B</span> <span class="kw">as</span> <span class="ident">BlockT</span><span class="op">&gt;</span><span class="ident">::Header</span> <span class="kw">as</span> <span class="ident">HeaderT</span><span class="op">&gt;</span><span class="ident">::Number</span>,
 		<span class="ident">select_chain</span>: <span class="ident">S</span>,
 		<span class="ident">create_inherent_data_providers</span>: <span class="ident">CIDP</span>,
-		<span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
 	) -&gt; <span class="self">Self</span> {
 		<span class="self">Self</span> {
 			<span class="ident">inner</span>,
@@ -989,7 +952,6 @@
 			<span class="ident">check_inherents_after</span>,
 			<span class="ident">select_chain</span>,
 			<span class="ident">create_inherent_data_providers</span>: <span class="ident">Arc::new</span>(<span class="ident">create_inherent_data_providers</span>),
-			<span class="ident">can_author_with</span>,
 		}
 	}
 
@@ -1001,16 +963,6 @@
 		<span class="ident">execution_context</span>: <span class="ident">ExecutionContext</span>,
 	) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 		<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">block</span>.<span class="ident">header</span>().<span class="ident">number</span>() <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">check_inherents_after</span> {
-			<span class="kw">return</span> <span class="prelude-val">Ok</span>(())
-		}
-
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">can_author_with</span>.<span class="ident">can_author_with</span>(<span class="kw-2">&amp;</span><span class="ident">block_id</span>) {
-			<span class="macro">debug!</span>(
-				<span class="ident">target</span>: <span class="string">&quot;pow&quot;</span>,
-				<span class="string">&quot;Skipping `check_inherents` as authoring version is not compatible: {}&quot;</span>,
-				<span class="ident">e</span>,
-			);
-
 			<span class="kw">return</span> <span class="prelude-val">Ok</span>(())
 		}
 
@@ -1038,8 +990,7 @@
 }
 
 <span class="attribute">#[<span class="ident">async_trait::async_trait</span>]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">BlockImport</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>
-	<span class="kw">for</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">BlockImport</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">PowBlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">I</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
 <span class="kw">where</span>
 	<span class="ident">B</span>: <span class="ident">BlockT</span>,
 	<span class="ident">I</span>: <span class="ident">BlockImport</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Transaction</span> <span class="op">=</span> <span class="ident">sp_api::TransactionFor</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
@@ -1049,7 +1000,6 @@
 	<span class="ident">C::Api</span>: <span class="ident">BlockBuilderApi</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
 	<span class="ident">Algorithm</span>: <span class="ident">PowAlgorithm</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 	<span class="ident">Algorithm::Difficulty</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Send</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">B</span>, ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 {
 	<span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">ConsensusError</span>;
@@ -1233,7 +1183,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// `pre_runtime` is a parameter that allows a custom additional pre-runtime digest to be inserted</span>
 <span class="doccomment">/// for blocks being built. This can encode authorship information, or just be a graffiti.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_mining_worker</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">E</span>, <span class="ident">SO</span>, <span class="ident">L</span>, <span class="ident">CIDP</span>, <span class="ident">CAW</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_mining_worker</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">Algorithm</span>, <span class="ident">E</span>, <span class="ident">SO</span>, <span class="ident">L</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>(
 	<span class="ident">block_import</span>: <span class="ident">BoxBlockImport</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">sp_api::TransactionFor</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">Block</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 	<span class="ident">client</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
 	<span class="ident">select_chain</span>: <span class="ident">S</span>,
@@ -1245,7 +1195,6 @@
 	<span class="ident">create_inherent_data_providers</span>: <span class="ident">CIDP</span>,
 	<span class="ident">timeout</span>: <span class="ident">Duration</span>,
 	<span class="ident">build_time</span>: <span class="ident">Duration</span>,
-	<span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
 ) -&gt; (
 	<span class="ident">MiningHandle</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Algorithm</span>, <span class="ident">C</span>, <span class="ident">L</span>, <span class="op">&lt;</span><span class="ident">E::Proposer</span> <span class="kw">as</span> <span class="ident">Proposer</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Proof</span><span class="op">&gt;</span>,
 	<span class="kw">impl</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span>,
@@ -1262,7 +1211,6 @@
 	<span class="ident">SO</span>: <span class="ident">SyncOracle</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">L</span>: <span class="ident">sc_consensus::JustificationSyncLink</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">Block</span>, ()<span class="op">&gt;</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
 	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">timer</span> <span class="op">=</span> <span class="ident">UntilImportedOrTimeout::new</span>(<span class="ident">client</span>.<span class="ident">import_notification_stream</span>(), <span class="ident">timeout</span>);
 	<span class="kw">let</span> <span class="ident">worker</span> <span class="op">=</span> <span class="ident">MiningHandle::new</span>(<span class="ident">algorithm</span>.<span class="ident">clone</span>(), <span class="ident">block_import</span>, <span class="ident">justification_sync_link</span>);
@@ -1293,16 +1241,6 @@
 				},
 			};
 			<span class="kw">let</span> <span class="ident">best_hash</span> <span class="op">=</span> <span class="ident">best_header</span>.<span class="ident">hash</span>();
-
-			<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">can_author_with</span>.<span class="ident">can_author_with</span>(<span class="kw-2">&amp;</span><span class="ident">BlockId::Hash</span>(<span class="ident">best_hash</span>)) {
-				<span class="macro">warn!</span>(
-					<span class="ident">target</span>: <span class="string">&quot;pow&quot;</span>,
-					<span class="string">&quot;Skipping proposal `can_author_with` returned: {} \
-					 Probably a node update is required!&quot;</span>,
-					<span class="ident">err</span>,
-				);
-				<span class="kw">continue</span>
-			}
 
 			<span class="kw">if</span> <span class="ident">worker</span>.<span class="ident">best_hash</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">best_hash</span>) {
 				<span class="kw">continue</span>

@@ -1234,23 +1234,6 @@
 <span id="1228">1228</span>
 <span id="1229">1229</span>
 <span id="1230">1230</span>
-<span id="1231">1231</span>
-<span id="1232">1232</span>
-<span id="1233">1233</span>
-<span id="1234">1234</span>
-<span id="1235">1235</span>
-<span id="1236">1236</span>
-<span id="1237">1237</span>
-<span id="1238">1238</span>
-<span id="1239">1239</span>
-<span id="1240">1240</span>
-<span id="1241">1241</span>
-<span id="1242">1242</span>
-<span id="1243">1243</span>
-<span id="1244">1244</span>
-<span id="1245">1245</span>
-<span id="1246">1246</span>
-<span id="1247">1247</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -1291,13 +1274,10 @@
 <span class="kw">use</span> <span class="ident">sc_consensus</span>::{<span class="ident">BlockImport</span>, <span class="ident">JustificationSyncLink</span>};
 <span class="kw">use</span> <span class="ident">sc_telemetry</span>::{<span class="ident">telemetry</span>, <span class="ident">TelemetryHandle</span>, <span class="ident">CONSENSUS_DEBUG</span>, <span class="ident">CONSENSUS_INFO</span>, <span class="ident">CONSENSUS_WARN</span>};
 <span class="kw">use</span> <span class="ident">sp_arithmetic::traits::BaseArithmetic</span>;
-<span class="kw">use</span> <span class="ident">sp_consensus</span>::{<span class="ident">CanAuthorWith</span>, <span class="ident">Proposal</span>, <span class="ident">Proposer</span>, <span class="ident">SelectChain</span>, <span class="ident">SyncOracle</span>};
+<span class="kw">use</span> <span class="ident">sp_consensus</span>::{<span class="ident">Proposal</span>, <span class="ident">Proposer</span>, <span class="ident">SelectChain</span>, <span class="ident">SyncOracle</span>};
 <span class="kw">use</span> <span class="ident">sp_consensus_slots</span>::{<span class="ident">Slot</span>, <span class="ident">SlotDuration</span>};
 <span class="kw">use</span> <span class="ident">sp_inherents::CreateInherentDataProviders</span>;
-<span class="kw">use</span> <span class="ident">sp_runtime</span>::{
-	<span class="ident">generic::BlockId</span>,
-	<span class="ident">traits</span>::{<span class="ident">Block</span> <span class="kw">as</span> <span class="ident">BlockT</span>, <span class="ident">HashFor</span>, <span class="ident">Header</span> <span class="kw">as</span> <span class="ident">HeaderT</span>},
-};
+<span class="kw">use</span> <span class="ident">sp_runtime::traits</span>::{<span class="ident">Block</span> <span class="kw">as</span> <span class="ident">BlockT</span>, <span class="ident">HashFor</span>, <span class="ident">Header</span> <span class="kw">as</span> <span class="ident">HeaderT</span>};
 <span class="kw">use</span> <span class="ident">sp_timestamp::Timestamp</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt::Debug</span>, <span class="ident">ops::Deref</span>, <span class="ident">time::Duration</span>};
 
@@ -1739,13 +1719,12 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Every time a new slot is triggered, `worker.on_slot` is called and the future it returns is</span>
 <span class="doccomment">/// polled until completion, unless we are major syncing.</span>
-<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">start_slot_worker</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">W</span>, <span class="ident">SO</span>, <span class="ident">CIDP</span>, <span class="ident">CAW</span>, <span class="ident">Proof</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">start_slot_worker</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">W</span>, <span class="ident">SO</span>, <span class="ident">CIDP</span>, <span class="ident">Proof</span><span class="op">&gt;</span>(
 	<span class="ident">slot_duration</span>: <span class="ident">SlotDuration</span>,
 	<span class="ident">client</span>: <span class="ident">C</span>,
 	<span class="kw-2">mut</span> <span class="ident">worker</span>: <span class="ident">W</span>,
 	<span class="ident">sync_oracle</span>: <span class="ident">SO</span>,
 	<span class="ident">create_inherent_data_providers</span>: <span class="ident">CIDP</span>,
-	<span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
 ) <span class="kw">where</span>
 	<span class="ident">B</span>: <span class="ident">BlockT</span>,
 	<span class="ident">C</span>: <span class="ident">SelectChain</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
@@ -1753,7 +1732,6 @@
 	<span class="ident">SO</span>: <span class="ident">SyncOracle</span> <span class="op">+</span> <span class="ident">Send</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">B</span>, ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span>,
 	<span class="ident">CIDP::InherentDataProviders</span>: <span class="ident">InherentDataProviderExt</span> <span class="op">+</span> <span class="ident">Send</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span>,
 {
 	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slots</span> <span class="op">=</span> <span class="ident">Slots::new</span>(<span class="ident">slot_duration</span>.<span class="ident">as_duration</span>(), <span class="ident">create_inherent_data_providers</span>, <span class="ident">client</span>);
 
@@ -1771,19 +1749,7 @@
 			<span class="kw">continue</span>
 		}
 
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span>
-			<span class="ident">can_author_with</span>.<span class="ident">can_author_with</span>(<span class="kw-2">&amp;</span><span class="ident">BlockId::Hash</span>(<span class="ident">slot_info</span>.<span class="ident">chain_head</span>.<span class="ident">hash</span>()))
-		{
-			<span class="macro">warn!</span>(
-				<span class="ident">target</span>: <span class="string">&quot;slots&quot;</span>,
-				<span class="string">&quot;Unable to author block in slot {},. `can_author_with` returned: {} \
-				Probably a node update is required!&quot;</span>,
-				<span class="ident">slot_info</span>.<span class="ident">slot</span>,
-				<span class="ident">err</span>,
-			);
-		} <span class="kw">else</span> {
-			<span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">worker</span>.<span class="ident">on_slot</span>(<span class="ident">slot_info</span>).<span class="kw">await</span>;
-		}
+		<span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">worker</span>.<span class="ident">on_slot</span>(<span class="ident">slot_info</span>).<span class="kw">await</span>;
 	}
 }
 

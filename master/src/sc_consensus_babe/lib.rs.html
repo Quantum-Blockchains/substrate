@@ -1878,29 +1878,6 @@
 <span id="1872">1872</span>
 <span id="1873">1873</span>
 <span id="1874">1874</span>
-<span id="1875">1875</span>
-<span id="1876">1876</span>
-<span id="1877">1877</span>
-<span id="1878">1878</span>
-<span id="1879">1879</span>
-<span id="1880">1880</span>
-<span id="1881">1881</span>
-<span id="1882">1882</span>
-<span id="1883">1883</span>
-<span id="1884">1884</span>
-<span id="1885">1885</span>
-<span id="1886">1886</span>
-<span id="1887">1887</span>
-<span id="1888">1888</span>
-<span id="1889">1889</span>
-<span id="1890">1890</span>
-<span id="1891">1891</span>
-<span id="1892">1892</span>
-<span id="1893">1893</span>
-<span id="1894">1894</span>
-<span id="1895">1895</span>
-<span id="1896">1896</span>
-<span id="1897">1897</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -2018,8 +1995,7 @@
 	<span class="ident">Backend</span> <span class="kw">as</span> <span class="kw">_</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ClientError</span>, <span class="ident">HeaderBackend</span>, <span class="ident">HeaderMetadata</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">ClientResult</span>,
 };
 <span class="kw">use</span> <span class="ident">sp_consensus</span>::{
-	<span class="ident">BlockOrigin</span>, <span class="ident">CacheKeyId</span>, <span class="ident">CanAuthorWith</span>, <span class="ident">Environment</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ConsensusError</span>, <span class="ident">Proposer</span>,
-	<span class="ident">SelectChain</span>,
+	<span class="ident">BlockOrigin</span>, <span class="ident">CacheKeyId</span>, <span class="ident">Environment</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ConsensusError</span>, <span class="ident">Proposer</span>, <span class="ident">SelectChain</span>,
 };
 <span class="kw">use</span> <span class="ident">sp_consensus_babe::inherents::BabeInherentData</span>;
 <span class="kw">use</span> <span class="ident">sp_consensus_slots::Slot</span>;
@@ -2273,7 +2249,7 @@
 }
 
 <span class="doccomment">/// Parameters for BABE.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BabeParams</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">BlockT</span>, <span class="ident">C</span>, <span class="ident">SC</span>, <span class="ident">E</span>, <span class="ident">I</span>, <span class="ident">SO</span>, <span class="ident">L</span>, <span class="ident">CIDP</span>, <span class="ident">BS</span>, <span class="ident">CAW</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BabeParams</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">BlockT</span>, <span class="ident">C</span>, <span class="ident">SC</span>, <span class="ident">E</span>, <span class="ident">I</span>, <span class="ident">SO</span>, <span class="ident">L</span>, <span class="ident">CIDP</span>, <span class="ident">BS</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// The keystore that manages the keys of the node.</span>
 	<span class="kw">pub</span> <span class="ident">keystore</span>: <span class="ident">SyncCryptoStorePtr</span>,
 
@@ -2309,9 +2285,6 @@
 	<span class="doccomment">/// The source of timestamps for relative slots</span>
 	<span class="kw">pub</span> <span class="ident">babe_link</span>: <span class="ident">BabeLink</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
 
-	<span class="doccomment">/// Checks if the current native implementation can author with a runtime at a given block.</span>
-	<span class="kw">pub</span> <span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
-
 	<span class="doccomment">/// The proportion of the slot dedicated to proposing.</span>
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// The block proposing will be limited to this proportion of the slot from the starting of the</span>
@@ -2328,7 +2301,7 @@
 }
 
 <span class="doccomment">/// Start the babe worker.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_babe</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">SC</span>, <span class="ident">E</span>, <span class="ident">I</span>, <span class="ident">SO</span>, <span class="ident">CIDP</span>, <span class="ident">BS</span>, <span class="ident">CAW</span>, <span class="ident">L</span>, <span class="ident">Error</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_babe</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">SC</span>, <span class="ident">E</span>, <span class="ident">I</span>, <span class="ident">SO</span>, <span class="ident">CIDP</span>, <span class="ident">BS</span>, <span class="ident">L</span>, <span class="ident">Error</span><span class="op">&gt;</span>(
 	<span class="ident">BabeParams</span> {
 		<span class="ident">keystore</span>,
 		<span class="ident">client</span>,
@@ -2341,11 +2314,10 @@
 		<span class="ident">force_authoring</span>,
 		<span class="ident">backoff_authoring_blocks</span>,
 		<span class="ident">babe_link</span>,
-		<span class="ident">can_author_with</span>,
 		<span class="ident">block_proposal_slot_portion</span>,
 		<span class="ident">max_block_proposal_slot_portion</span>,
 		<span class="ident">telemetry</span>,
-	}: <span class="ident">BabeParams</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">SC</span>, <span class="ident">E</span>, <span class="ident">I</span>, <span class="ident">SO</span>, <span class="ident">L</span>, <span class="ident">CIDP</span>, <span class="ident">BS</span>, <span class="ident">CAW</span><span class="op">&gt;</span>,
+	}: <span class="ident">BabeParams</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">SC</span>, <span class="ident">E</span>, <span class="ident">I</span>, <span class="ident">SO</span>, <span class="ident">L</span>, <span class="ident">CIDP</span>, <span class="ident">BS</span><span class="op">&gt;</span>,
 ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BabeWorker</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">sp_consensus::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
 	<span class="ident">B</span>: <span class="ident">BlockT</span>,
@@ -2371,7 +2343,6 @@
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">B</span>, ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">CIDP::InherentDataProviders</span>: <span class="ident">InherentDataProviderExt</span> <span class="op">+</span> <span class="ident">Send</span>,
 	<span class="ident">BS</span>: <span class="ident">BackoffAuthoringBlocksStrategy</span><span class="op">&lt;</span><span class="ident">NumberFor</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">Error</span>: <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ConsensusError</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">I::Error</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
 	<span class="kw">const</span> <span class="ident">HANDLE_BUFFER_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1024</span>;
@@ -2403,7 +2374,6 @@
 		<span class="ident">sc_consensus_slots::SimpleSlotWorkerToSlotWorker</span>(<span class="ident">worker</span>),
 		<span class="ident">sync_oracle</span>,
 		<span class="ident">create_inherent_data_providers</span>,
-		<span class="ident">can_author_with</span>,
 	);
 
 	<span class="kw">let</span> (<span class="ident">worker_tx</span>, <span class="ident">worker_rx</span>) <span class="op">=</span> <span class="ident">channel</span>(<span class="ident">HANDLE_BUFFER_SIZE</span>);
@@ -2912,23 +2882,21 @@
 }
 
 <span class="doccomment">/// A verifier for Babe blocks.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BabeVerifier</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockT</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BabeVerifier</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockT</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> {
 	<span class="ident">client</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Client</span><span class="op">&gt;</span>,
 	<span class="ident">select_chain</span>: <span class="ident">SelectChain</span>,
 	<span class="ident">create_inherent_data_providers</span>: <span class="ident">CIDP</span>,
 	<span class="ident">config</span>: <span class="ident">BabeConfiguration</span>,
 	<span class="ident">epoch_changes</span>: <span class="ident">SharedEpochChanges</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Epoch</span><span class="op">&gt;</span>,
-	<span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
 	<span class="ident">telemetry</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TelemetryHandle</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">BabeVerifier</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">BabeVerifier</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
 <span class="kw">where</span>
 	<span class="ident">Block</span>: <span class="ident">BlockT</span>,
 	<span class="ident">Client</span>: <span class="ident">AuxStore</span> <span class="op">+</span> <span class="ident">HeaderBackend</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">HeaderMetadata</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">ProvideRuntimeApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">Client::Api</span>: <span class="ident">BlockBuilderApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">BabeApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">SelectChain</span>: <span class="ident">sp_consensus::SelectChain</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">Block</span>, ()<span class="op">&gt;</span>,
 {
 	<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">check_inherents</span>(
@@ -2939,16 +2907,6 @@
 		<span class="ident">create_inherent_data_providers</span>: <span class="ident">CIDP::InherentDataProviders</span>,
 		<span class="ident">execution_context</span>: <span class="ident">ExecutionContext</span>,
 	) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">can_author_with</span>.<span class="ident">can_author_with</span>(<span class="kw-2">&amp;</span><span class="ident">block_id</span>) {
-			<span class="macro">debug!</span>(
-				<span class="ident">target</span>: <span class="string">&quot;babe&quot;</span>,
-				<span class="string">&quot;Skipping `check_inherents` as authoring version is not compatible: {}&quot;</span>,
-				<span class="ident">e</span>,
-			);
-
-			<span class="kw">return</span> <span class="prelude-val">Ok</span>(())
-		}
-
 		<span class="kw">let</span> <span class="ident">inherent_res</span> <span class="op">=</span> <span class="self">self</span>
 			.<span class="ident">client</span>
 			.<span class="ident">runtime_api</span>()
@@ -3053,8 +3011,8 @@
 	<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">BlockImportParams</span><span class="op">&lt;</span><span class="ident">Block</span>, ()<span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">CacheKeyId</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)<span class="op">&gt;</span><span class="op">&gt;</span>), <span class="ident">String</span><span class="op">&gt;</span>;
 
 <span class="attribute">#[<span class="ident">async_trait::async_trait</span>]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>
-	<span class="kw">for</span> <span class="ident">BabeVerifier</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CIDP</span><span class="op">&gt;</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>
+	<span class="kw">for</span> <span class="ident">BabeVerifier</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>
 <span class="kw">where</span>
 	<span class="ident">Block</span>: <span class="ident">BlockT</span>,
 	<span class="ident">Client</span>: <span class="ident">HeaderMetadata</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">sp_blockchain::Error</span><span class="op">&gt;</span>
@@ -3065,7 +3023,6 @@
 		<span class="op">+</span> <span class="ident">AuxStore</span>,
 	<span class="ident">Client::Api</span>: <span class="ident">BlockBuilderApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">BabeApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">SelectChain</span>: <span class="ident">sp_consensus::SelectChain</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">Block</span>, ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 	<span class="ident">CIDP::InherentDataProviders</span>: <span class="ident">InherentDataProviderExt</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 {
@@ -3676,7 +3633,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// The block import object provided must be the `BabeBlockImport` or a wrapper</span>
 <span class="doccomment">/// of it, otherwise crucial import logic will be omitted.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">import_queue</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockT</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">Inner</span>, <span class="ident">CAW</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">import_queue</span><span class="op">&lt;</span><span class="ident">Block</span>: <span class="ident">BlockT</span>, <span class="ident">Client</span>, <span class="ident">SelectChain</span>, <span class="ident">Inner</span>, <span class="ident">CIDP</span><span class="op">&gt;</span>(
 	<span class="ident">babe_link</span>: <span class="ident">BabeLink</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">block_import</span>: <span class="ident">Inner</span>,
 	<span class="ident">justification_import</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BoxJustificationImport</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -3685,7 +3642,6 @@
 	<span class="ident">create_inherent_data_providers</span>: <span class="ident">CIDP</span>,
 	<span class="ident">spawner</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">sp_core::traits::SpawnEssentialNamed</span>,
 	<span class="ident">registry</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Registry</span><span class="op">&gt;</span>,
-	<span class="ident">can_author_with</span>: <span class="ident">CAW</span>,
 	<span class="ident">telemetry</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TelemetryHandle</span><span class="op">&gt;</span>,
 ) -&gt; <span class="ident">ClientResult</span><span class="op">&lt;</span><span class="ident">DefaultImportQueue</span><span class="op">&lt;</span><span class="ident">Block</span>, <span class="ident">Client</span><span class="op">&gt;</span><span class="op">&gt;</span>
 <span class="kw">where</span>
@@ -3705,7 +3661,6 @@
 		<span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">Client::Api</span>: <span class="ident">BlockBuilderApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">BabeApi</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">ApiExt</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>,
 	<span class="ident">SelectChain</span>: <span class="ident">sp_consensus::SelectChain</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-	<span class="ident">CAW</span>: <span class="ident">CanAuthorWith</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">CIDP</span>: <span class="ident">CreateInherentDataProviders</span><span class="op">&lt;</span><span class="ident">Block</span>, ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">CIDP::InherentDataProviders</span>: <span class="ident">InherentDataProviderExt</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
 {
@@ -3714,7 +3669,6 @@
 		<span class="ident">create_inherent_data_providers</span>,
 		<span class="ident">config</span>: <span class="ident">babe_link</span>.<span class="ident">config</span>,
 		<span class="ident">epoch_changes</span>: <span class="ident">babe_link</span>.<span class="ident">epoch_changes</span>,
-		<span class="ident">can_author_with</span>,
 		<span class="ident">telemetry</span>,
 		<span class="ident">client</span>,
 	};
