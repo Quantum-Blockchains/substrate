@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["sc_network"] = [{"text":"impl&lt;B&gt; NetworkBehaviour for <a class=\"struct\" href=\"sc_network/bitswap/struct.Bitswap.html\" title=\"struct sc_network::bitswap::Bitswap\">Bitswap</a>&lt;B&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;B: <a class=\"trait\" href=\"sp_runtime/traits/trait.Block.html\" title=\"trait sp_runtime::traits::Block\">BlockT</a>,&nbsp;</span>","synthetic":false,"types":["sc_network::bitswap::Bitswap"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

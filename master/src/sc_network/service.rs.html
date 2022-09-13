@@ -2052,11 +2052,6 @@
 <span id="2046">2046</span>
 <span id="2047">2047</span>
 <span id="2048">2048</span>
-<span id="2049">2049</span>
-<span id="2050">2050</span>
-<span id="2051">2051</span>
-<span id="2052">2052</span>
-<span id="2053">2053</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -2196,7 +2191,7 @@
 <span class="kw">where</span>
 	<span class="ident">B</span>: <span class="ident">BlockT</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 	<span class="ident">H</span>: <span class="ident">ExHashT</span>,
-	<span class="ident">Client</span>: <span class="ident">sp_blockchain::HeaderBackend</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+	<span class="ident">Client</span>: <span class="ident">HeaderBackend</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
 	<span class="doccomment">/// Creates the network service.</span>
 	<span class="doccomment">///</span>
@@ -2435,7 +2430,6 @@
 					<span class="ident">params</span>.<span class="ident">block_request_protocol_config</span>,
 					<span class="ident">params</span>.<span class="ident">state_request_protocol_config</span>,
 					<span class="ident">params</span>.<span class="ident">warp_sync_protocol_config</span>,
-					<span class="ident">params</span>.<span class="ident">bitswap</span>,
 					<span class="ident">params</span>.<span class="ident">light_client_request_protocol_config</span>,
 					<span class="ident">params</span>.<span class="ident">network_config</span>.<span class="ident">request_response_protocols</span>,
 					<span class="ident">peerset_handle</span>.<span class="ident">clone</span>(),
@@ -3802,14 +3796,10 @@
 						<span class="kw">let</span> <span class="ident">reason</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">cause</span> {
 							<span class="prelude-val">Some</span>(<span class="ident">ConnectionError::IO</span>(<span class="kw">_</span>)) =&gt; <span class="string">&quot;transport-error&quot;</span>,
 							<span class="prelude-val">Some</span>(<span class="ident">ConnectionError::Handler</span>(<span class="ident">EitherError::A</span>(<span class="ident">EitherError::A</span>(
-								<span class="ident">EitherError::A</span>(<span class="ident">EitherError::B</span>(<span class="ident">EitherError::A</span>(
-									<span class="ident">PingFailure::Timeout</span>,
-								))),
+								<span class="ident">EitherError::B</span>(<span class="ident">EitherError::A</span>(<span class="ident">PingFailure::Timeout</span>)),
 							)))) =&gt; <span class="string">&quot;ping-timeout&quot;</span>,
 							<span class="prelude-val">Some</span>(<span class="ident">ConnectionError::Handler</span>(<span class="ident">EitherError::A</span>(<span class="ident">EitherError::A</span>(
-								<span class="ident">EitherError::A</span>(<span class="ident">EitherError::A</span>(
-									<span class="ident">NotifsHandlerError::SyncNotificationsClogged</span>,
-								)),
+								<span class="ident">EitherError::A</span>(<span class="ident">NotifsHandlerError::SyncNotificationsClogged</span>),
 							)))) =&gt; <span class="string">&quot;sync-notifications-clogged&quot;</span>,
 							<span class="prelude-val">Some</span>(<span class="ident">ConnectionError::Handler</span>(<span class="kw">_</span>)) =&gt; <span class="string">&quot;protocol-error&quot;</span>,
 							<span class="prelude-val">Some</span>(<span class="ident">ConnectionError::KeepAliveTimeout</span>) =&gt; <span class="string">&quot;keep-alive-timeout&quot;</span>,

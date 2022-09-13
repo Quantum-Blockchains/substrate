@@ -2025,11 +2025,11 @@
 			<span class="ident">import_queue</span>,
 			<span class="ident">chain_sync</span>: <span class="ident">Box::new</span>(<span class="ident">chain_sync</span>),
 			<span class="ident">metrics_registry</span>: <span class="prelude-val">None</span>,
-			<span class="ident">bitswap</span>: <span class="prelude-val">None</span>,
 			<span class="ident">block_request_protocol_config</span>,
 			<span class="ident">state_request_protocol_config</span>,
 			<span class="ident">light_client_request_protocol_config</span>,
 			<span class="ident">warp_sync_protocol_config</span>: <span class="prelude-val">Some</span>(<span class="ident">warp_protocol_config</span>),
+			<span class="ident">request_response_protocol_configs</span>: <span class="ident">Vec::new</span>(),
 		})
 		.<span class="ident">unwrap</span>();
 

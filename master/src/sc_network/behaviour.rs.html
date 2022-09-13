@@ -556,22 +556,6 @@
 <span id="550">550</span>
 <span id="551">551</span>
 <span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
-<span id="560">560</span>
-<span id="561">561</span>
-<span id="562">562</span>
-<span id="563">563</span>
-<span id="564">564</span>
-<span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -591,7 +575,6 @@
 <span class="comment">// along with this program. If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
-	<span class="ident">bitswap::Bitswap</span>,
 	<span class="ident">discovery</span>::{<span class="ident">DiscoveryBehaviour</span>, <span class="ident">DiscoveryConfig</span>, <span class="ident">DiscoveryOut</span>},
 	<span class="ident">peer_info</span>,
 	<span class="ident">protocol</span>::{<span class="ident">message::Roles</span>, <span class="ident">CustomMessageOutcome</span>, <span class="ident">NotificationsSink</span>, <span class="ident">Protocol</span>},
@@ -606,8 +589,7 @@
 	<span class="ident">identify::IdentifyInfo</span>,
 	<span class="ident">kad::record</span>,
 	<span class="ident">swarm</span>::{
-		<span class="ident">behaviour::toggle::Toggle</span>, <span class="ident">NetworkBehaviour</span>, <span class="ident">NetworkBehaviourAction</span>,
-		<span class="ident">NetworkBehaviourEventProcess</span>, <span class="ident">PollParameters</span>,
+		<span class="ident">NetworkBehaviour</span>, <span class="ident">NetworkBehaviourAction</span>, <span class="ident">NetworkBehaviourEventProcess</span>, <span class="ident">PollParameters</span>,
 	},
 	<span class="ident">NetworkBehaviour</span>,
 };
@@ -653,8 +635,6 @@
 	<span class="ident">peer_info</span>: <span class="ident">peer_info::PeerInfoBehaviour</span>,
 	<span class="doccomment">/// Discovers nodes of the network.</span>
 	<span class="ident">discovery</span>: <span class="ident">DiscoveryBehaviour</span>,
-	<span class="doccomment">/// Bitswap server for blockchain data.</span>
-	<span class="ident">bitswap</span>: <span class="ident">Toggle</span><span class="op">&lt;</span><span class="ident">Bitswap</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 	<span class="doccomment">/// Generic request-response protocols.</span>
 	<span class="ident">request_responses</span>: <span class="ident">request_responses::RequestResponsesBehaviour</span>,
 
@@ -788,7 +768,6 @@
 		<span class="ident">block_request_protocol_config</span>: <span class="ident">ProtocolConfig</span>,
 		<span class="ident">state_request_protocol_config</span>: <span class="ident">ProtocolConfig</span>,
 		<span class="ident">warp_sync_protocol_config</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ProtocolConfig</span><span class="op">&gt;</span>,
-		<span class="ident">bitswap</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bitswap</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 		<span class="ident">light_client_request_protocol_config</span>: <span class="ident">ProtocolConfig</span>,
 		<span class="comment">// All remaining request protocol configs.</span>
 		<span class="kw-2">mut</span> <span class="ident">request_response_protocols</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ProtocolConfig</span><span class="op">&gt;</span>,
@@ -813,7 +792,6 @@
 			<span class="ident">substrate</span>,
 			<span class="ident">peer_info</span>: <span class="ident">peer_info::PeerInfoBehaviour::new</span>(<span class="ident">user_agent</span>, <span class="ident">local_public_key</span>),
 			<span class="ident">discovery</span>: <span class="ident">disco_config</span>.<span class="ident">finish</span>(),
-			<span class="ident">bitswap</span>: <span class="ident">bitswap</span>.<span class="ident">into</span>(),
 			<span class="ident">request_responses</span>: <span class="ident">request_responses::RequestResponsesBehaviour::new</span>(
 				<span class="ident">request_response_protocols</span>.<span class="ident">into_iter</span>(),
 				<span class="ident">peerset</span>,
@@ -909,16 +887,6 @@
 		<span class="ident">ObservedRole::Full</span>
 	} <span class="kw">else</span> {
 		<span class="ident">ObservedRole::Light</span>
-	}
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Client</span><span class="op">&gt;</span> <span class="ident">NetworkBehaviourEventProcess</span><span class="op">&lt;</span><span class="ident">void::Void</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Behaviour</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Client</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-	<span class="ident">B</span>: <span class="ident">BlockT</span>,
-	<span class="ident">Client</span>: <span class="ident">HeaderBackend</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-{
-	<span class="kw">fn</span> <span class="ident">inject_event</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">event</span>: <span class="ident">void::Void</span>) {
-		<span class="ident">void::unreachable</span>(<span class="ident">event</span>)
 	}
 }
 
