@@ -1909,6 +1909,8 @@
 <span id="1903">1903</span>
 <span id="1904">1904</span>
 <span id="1905">1905</span>
+<span id="1906">1906</span>
+<span id="1907">1907</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2020-2022 Parity Technologies (UK) Ltd.</span>
@@ -2886,6 +2888,8 @@
 		( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name_extra</span>:<span class="ident">ident</span> ),<span class="op">*</span> )
 		( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name_skip_meta</span>:<span class="ident">ident</span> ),<span class="op">*</span> )
 	) =&gt; {
+		<span class="comment">// We only need to implement benchmarks for the runtime-benchmarks feature or testing.</span>
+		<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;runtime-benchmarks&quot;</span>, <span class="ident">test</span>))]</span>
 		<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Config</span> $(<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">instance</span><span class="op">&gt;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">instance</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">instance_bound</span> )<span class="question-mark">?</span> <span class="op">&gt;</span>
 			<span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::Benchmarking</span> <span class="kw">for</span> <span class="ident">Pallet</span><span class="op">&lt;</span><span class="ident">T</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">instance</span>)<span class="question-mark">?</span> <span class="op">&gt;</span>
 			<span class="kw">where</span> <span class="ident">T</span>: <span class="ident">frame_system::Config</span>, $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">where_clause</span> )<span class="op">*</span>

@@ -1807,7 +1807,7 @@
 		<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">id</span>
 	}
 
-	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;runtime-benchmarks&quot;</span>, <span class="ident">test</span>))]</span>
+	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;runtime-benchmarks&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;fuzz&quot;</span>, <span class="ident">test</span>))]</span>
 	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_score</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">s</span>: <span class="ident">T::Score</span>) {
 		<span class="self">self</span>.<span class="ident">score</span> <span class="op">=</span> <span class="ident">s</span>
 	}

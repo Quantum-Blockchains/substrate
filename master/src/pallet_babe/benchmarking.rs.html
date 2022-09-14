@@ -78,31 +78,6 @@
 <span id="72">72</span>
 <span id="73">73</span>
 <span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
-<span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2020-2022 Parity Technologies (UK) Ltd.</span>
@@ -121,6 +96,8 @@
 <span class="comment">// limitations under the License.</span>
 
 <span class="doccomment">//! Benchmarks for the BABE Pallet.</span>
+
+<span class="attribute">#![<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;runtime-benchmarks&quot;</span>)]</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">frame_benchmarking::benchmarks</span>;
@@ -174,33 +151,6 @@
 		<span class="ident"><span class="kw">crate</span>::mock::new_test_ext</span>(<span class="number">3</span>),
 		<span class="ident"><span class="kw">crate</span>::mock::Test</span>,
 	)
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-	<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::mock</span>::<span class="kw-2">*</span>;
-
-	<span class="attribute">#[<span class="ident">test</span>]</span>
-	<span class="kw">fn</span> <span class="ident">test_generate_equivocation_report_blob</span>() {
-		<span class="kw">let</span> (<span class="ident">pairs</span>, <span class="kw-2">mut</span> <span class="ident">ext</span>) <span class="op">=</span> <span class="ident">new_test_ext_with_pairs</span>(<span class="number">3</span>);
-
-		<span class="kw">let</span> <span class="ident">offending_authority_index</span> <span class="op">=</span> <span class="number">0</span>;
-		<span class="kw">let</span> <span class="ident">offending_authority_pair</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pairs</span>[<span class="number">0</span>];
-
-		<span class="ident">ext</span>.<span class="ident">execute_with</span>(<span class="op">|</span><span class="op">|</span> {
-			<span class="ident">start_era</span>(<span class="number">1</span>);
-
-			<span class="kw">let</span> <span class="ident">equivocation_proof</span> <span class="op">=</span> <span class="ident">generate_equivocation_proof</span>(
-				<span class="ident">offending_authority_index</span>,
-				<span class="ident">offending_authority_pair</span>,
-				<span class="ident">CurrentSlot</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span><span class="ident">::get</span>() <span class="op">+</span> <span class="number">1</span>,
-			);
-
-			<span class="macro">println!</span>(<span class="string">&quot;equivocation_proof: {:?}&quot;</span>, <span class="ident">equivocation_proof</span>);
-			<span class="macro">println!</span>(<span class="string">&quot;equivocation_proof.encode(): {:?}&quot;</span>, <span class="ident">equivocation_proof</span>.<span class="ident">encode</span>());
-		});
-	}
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_babe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (7fe022f5a 2022-07-24)" ></div>
