@@ -569,9 +569,6 @@
 <span id="563">563</span>
 <span id="564">564</span>
 <span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2020-2022 Parity Technologies (UK) Ltd.</span>
@@ -603,7 +600,6 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">pallet::command::ComponentRange</span>, <span class="ident">shared::UnderscoreHelper</span>, <span class="ident">PalletCmd</span>};
 <span class="kw">use</span> <span class="ident">frame_benchmarking</span>::{
 	<span class="ident">Analysis</span>, <span class="ident">AnalysisChoice</span>, <span class="ident">BenchmarkBatchSplitResults</span>, <span class="ident">BenchmarkResult</span>, <span class="ident">BenchmarkSelector</span>,
-	<span class="ident">RegressionModel</span>,
 };
 <span class="kw">use</span> <span class="ident">frame_support::traits::StorageInfo</span>;
 <span class="kw">use</span> <span class="ident">sp_core::hexdisplay::HexDisplay</span>;
@@ -719,13 +715,15 @@
 	<span class="prelude-val">Ok</span>(<span class="ident">all_benchmarks</span>)
 }
 
-<span class="comment">// Get an iterator of errors from a model. If the model is `None` all errors are zero.</span>
-<span class="kw">fn</span> <span class="ident">extract_errors</span>(<span class="ident">model</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RegressionModel</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">u128</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">errors</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">se</span>.<span class="ident">regressor_values</span>.<span class="ident">iter</span>());
-	<span class="ident">std::iter::from_fn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="ident">errors</span> {
-		<span class="prelude-val">Some</span>(<span class="ident">model</span>) =&gt; <span class="ident">model</span>.<span class="ident">next</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">val</span> <span class="kw">as</span> <span class="ident">u128</span>),
-		<span class="kw">_</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">0</span>),
-	})
+<span class="comment">// Get an iterator of errors.</span>
+<span class="kw">fn</span> <span class="ident">extract_errors</span>(<span class="ident">errors</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u128</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">u128</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
+	<span class="ident">errors</span>
+		.<span class="ident">as_ref</span>()
+		.<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">as_slice</span>())
+		.<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>[])
+		.<span class="ident">iter</span>()
+		.<span class="ident">copied</span>()
+		.<span class="ident">chain</span>(<span class="ident">std::iter::repeat</span>(<span class="number">0</span>))
 }
 
 <span class="comment">// Analyze and return the relevant results for a given benchmark.</span>
@@ -764,24 +762,20 @@
 		.<span class="ident">slopes</span>
 		.<span class="ident">into_iter</span>()
 		.<span class="ident">zip</span>(<span class="ident">extrinsic_time</span>.<span class="ident">names</span>.<span class="ident">iter</span>())
-		.<span class="ident">zip</span>(<span class="ident">extract_errors</span>(<span class="kw-2">&amp;</span><span class="ident">extrinsic_time</span>.<span class="ident">model</span>))
+		.<span class="ident">zip</span>(<span class="ident">extract_errors</span>(<span class="kw-2">&amp;</span><span class="ident">extrinsic_time</span>.<span class="ident">errors</span>))
 		.<span class="ident">for_each</span>(<span class="op">|</span>((<span class="ident">slope</span>, <span class="ident">name</span>), <span class="ident">error</span>)<span class="op">|</span> {
 			<span class="kw">if</span> <span class="op">!</span><span class="ident">slope</span>.<span class="ident">is_zero</span>() {
 				<span class="kw">if</span> <span class="op">!</span><span class="ident">used_components</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>) {
 					<span class="ident">used_components</span>.<span class="ident">push</span>(<span class="ident">name</span>);
 				}
-				<span class="ident">used_extrinsic_time</span>.<span class="ident">push</span>(<span class="ident">ComponentSlope</span> {
-					<span class="ident">name</span>: <span class="ident">name</span>.<span class="ident">clone</span>(),
-					<span class="ident">slope</span>: <span class="ident">slope</span>.<span class="ident">saturating_mul</span>(<span class="number">1000</span>),
-					<span class="ident">error</span>: <span class="ident">error</span>.<span class="ident">saturating_mul</span>(<span class="number">1000</span>),
-				});
+				<span class="ident">used_extrinsic_time</span>.<span class="ident">push</span>(<span class="ident">ComponentSlope</span> { <span class="ident">name</span>: <span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">slope</span>, <span class="ident">error</span> });
 			}
 		});
 	<span class="ident">reads</span>
 		.<span class="ident">slopes</span>
 		.<span class="ident">into_iter</span>()
 		.<span class="ident">zip</span>(<span class="ident">reads</span>.<span class="ident">names</span>.<span class="ident">iter</span>())
-		.<span class="ident">zip</span>(<span class="ident">extract_errors</span>(<span class="kw-2">&amp;</span><span class="ident">reads</span>.<span class="ident">model</span>))
+		.<span class="ident">zip</span>(<span class="ident">extract_errors</span>(<span class="kw-2">&amp;</span><span class="ident">reads</span>.<span class="ident">errors</span>))
 		.<span class="ident">for_each</span>(<span class="op">|</span>((<span class="ident">slope</span>, <span class="ident">name</span>), <span class="ident">error</span>)<span class="op">|</span> {
 			<span class="kw">if</span> <span class="op">!</span><span class="ident">slope</span>.<span class="ident">is_zero</span>() {
 				<span class="kw">if</span> <span class="op">!</span><span class="ident">used_components</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>) {
@@ -794,7 +788,7 @@
 		.<span class="ident">slopes</span>
 		.<span class="ident">into_iter</span>()
 		.<span class="ident">zip</span>(<span class="ident">writes</span>.<span class="ident">names</span>.<span class="ident">iter</span>())
-		.<span class="ident">zip</span>(<span class="ident">extract_errors</span>(<span class="kw-2">&amp;</span><span class="ident">writes</span>.<span class="ident">model</span>))
+		.<span class="ident">zip</span>(<span class="ident">extract_errors</span>(<span class="kw-2">&amp;</span><span class="ident">writes</span>.<span class="ident">errors</span>))
 		.<span class="ident">for_each</span>(<span class="op">|</span>((<span class="ident">slope</span>, <span class="ident">name</span>), <span class="ident">error</span>)<span class="op">|</span> {
 			<span class="kw">if</span> <span class="op">!</span><span class="ident">slope</span>.<span class="ident">is_zero</span>() {
 				<span class="kw">if</span> <span class="op">!</span><span class="ident">used_components</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>) {
@@ -825,7 +819,7 @@
 	<span class="ident">BenchmarkData</span> {
 		<span class="ident">name</span>: <span class="ident">String::from_utf8</span>(<span class="ident">batch</span>.<span class="ident">benchmark</span>.<span class="ident">clone</span>()).<span class="ident">unwrap</span>(),
 		<span class="ident">components</span>,
-		<span class="ident">base_weight</span>: <span class="ident">extrinsic_time</span>.<span class="ident">base</span>.<span class="ident">saturating_mul</span>(<span class="number">1000</span>),
+		<span class="ident">base_weight</span>: <span class="ident">extrinsic_time</span>.<span class="ident">base</span>,
 		<span class="ident">base_reads</span>: <span class="ident">reads</span>.<span class="ident">base</span>,
 		<span class="ident">base_writes</span>: <span class="ident">writes</span>.<span class="ident">base</span>,
 		<span class="ident">component_weight</span>: <span class="ident">used_extrinsic_time</span>,
