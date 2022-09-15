@@ -2620,7 +2620,7 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">RuntimeCosts</span> {
 	<span class="doccomment">/// Charge the gas meter with the cost of a metering block. The charged costs are</span>
 	<span class="doccomment">/// the supplied cost of the block plus the overhead of the metering itself.</span>
-	<span class="ident">MeteringBlock</span>(<span class="ident">u32</span>),
+	<span class="ident">MeteringBlock</span>(<span class="ident">u64</span>),
 	<span class="doccomment">/// Weight charged for copying data from the sandbox.</span>
 	<span class="ident">CopyFromContract</span>(<span class="ident">u32</span>),
 	<span class="doccomment">/// Weight charged for copying data to the sandbox.</span>
@@ -2717,7 +2717,7 @@
 	{
 		<span class="kw">use</span> <span class="ident"><span class="self">self</span>::RuntimeCosts</span>::<span class="kw-2">*</span>;
 		<span class="kw">let</span> <span class="ident">weight</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-			<span class="ident">MeteringBlock</span>(<span class="ident">amount</span>) =&gt; <span class="ident">s</span>.<span class="ident">gas</span>.<span class="ident">saturating_add</span>(<span class="ident">amount</span>.<span class="ident">into</span>()),
+			<span class="ident">MeteringBlock</span>(<span class="ident">amount</span>) =&gt; <span class="ident">s</span>.<span class="ident">gas</span>.<span class="ident">saturating_add</span>(<span class="ident">amount</span>),
 			<span class="ident">CopyFromContract</span>(<span class="ident">len</span>) =&gt; <span class="ident">s</span>.<span class="ident">return_per_byte</span>.<span class="ident">saturating_mul</span>(<span class="ident">len</span>.<span class="ident">into</span>()),
 			<span class="ident">CopyToContract</span>(<span class="ident">len</span>) =&gt; <span class="ident">s</span>.<span class="ident">input_per_byte</span>.<span class="ident">saturating_mul</span>(<span class="ident">len</span>.<span class="ident">into</span>()),
 			<span class="ident">Caller</span> =&gt; <span class="ident">s</span>.<span class="ident">caller</span>,
@@ -3413,7 +3413,7 @@
 	<span class="doccomment">/// This call is supposed to be called only by instrumentation injected code.</span>
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// - amount: How much gas is used.</span>
-	<span class="kw">fn</span> <span class="ident">gas</span>(<span class="ident">ctx</span>: <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">amount</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">TrapReason</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">gas</span>(<span class="ident">ctx</span>: <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">amount</span>: <span class="ident">u64</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">TrapReason</span><span class="op">&gt;</span> {
 		<span class="ident">ctx</span>.<span class="ident">charge_gas</span>(<span class="ident">RuntimeCosts::MeteringBlock</span>(<span class="ident">amount</span>))<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
@@ -4193,7 +4193,7 @@
 	<span class="attribute">#[<span class="ident">prefixed_alias</span>]</span>
 	<span class="kw">fn</span> <span class="ident">gas_left</span>(<span class="ident">ctx</span>: <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">out_ptr</span>: <span class="ident">u32</span>, <span class="ident">out_len_ptr</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">TrapReason</span><span class="op">&gt;</span> {
 		<span class="ident">ctx</span>.<span class="ident">charge_gas</span>(<span class="ident">RuntimeCosts::GasLeft</span>)<span class="question-mark">?</span>;
-		<span class="kw">let</span> <span class="ident">gas_left</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ctx</span>.<span class="ident">ext</span>.<span class="ident">gas_meter</span>().<span class="ident">gas_left</span>().<span class="ident">encode</span>();
+		<span class="kw">let</span> <span class="ident">gas_left</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ctx</span>.<span class="ident">ext</span>.<span class="ident">gas_meter</span>().<span class="ident">gas_left</span>().<span class="ident">ref_time</span>().<span class="ident">encode</span>();
 		<span class="prelude-val">Ok</span>(<span class="ident">ctx</span>.<span class="ident">write_sandbox_output</span>(<span class="ident">out_ptr</span>, <span class="ident">out_len_ptr</span>, <span class="ident">gas_left</span>, <span class="bool-val">false</span>, <span class="ident">already_charged</span>)<span class="question-mark">?</span>)
 	}
 

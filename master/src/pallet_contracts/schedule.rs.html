@@ -1313,7 +1313,7 @@
 	<span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
 		<span class="kw">let</span> <span class="ident">max_pages</span> <span class="op">=</span> <span class="ident">Limits::default</span>().<span class="ident">memory_pages</span>;
 		<span class="self">Self</span> {
-			<span class="ident">version</span>: <span class="number">2</span>,
+			<span class="ident">version</span>: <span class="number">3</span>,
 			<span class="ident">i64const</span>: <span class="macro">cost_instr!</span>(<span class="ident">instr_i64const</span>, <span class="number">1</span>),
 			<span class="ident">i64load</span>: <span class="macro">cost_instr!</span>(<span class="ident">instr_i64load</span>, <span class="number">2</span>),
 			<span class="ident">i64store</span>: <span class="macro">cost_instr!</span>(<span class="ident">instr_i64store</span>, <span class="number">2</span>),

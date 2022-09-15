@@ -3577,11 +3577,11 @@
 			<span class="ident">imported_functions</span>: <span class="macro">vec!</span>[<span class="ident">ImportedFunction</span> {
 				<span class="ident">module</span>: <span class="string">&quot;seal0&quot;</span>,
 				<span class="ident">name</span>: <span class="string">&quot;gas&quot;</span>,
-				<span class="ident">params</span>: <span class="macro">vec!</span>[<span class="ident">ValueType::I32</span>],
+				<span class="ident">params</span>: <span class="macro">vec!</span>[<span class="ident">ValueType::I64</span>],
 				<span class="ident">return_type</span>: <span class="prelude-val">None</span>,
 			}],
 			<span class="ident">call_body</span>: <span class="prelude-val">Some</span>(<span class="ident">body::repeated</span>(<span class="ident">r</span> <span class="op">*</span> <span class="ident">API_BENCHMARK_BATCH_SIZE</span>, <span class="kw-2">&amp;</span>[
-				<span class="ident">Instruction::I32Const</span>(<span class="number">42</span>),
+				<span class="ident">Instruction::I64Const</span>(<span class="number">42</span>),
 				<span class="ident">Instruction::Call</span>(<span class="number">0</span>),
 			])),
 			.. <span class="ident">Default::default</span>()
