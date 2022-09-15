@@ -130,7 +130,7 @@ mod test {
 					}),
 					None,
 					Some(ScheduledV3Of::<Test> {
-						maybe_id: Some([i as u8; 32]),
+						maybe_id: Some(vec![i as u8; 32]),
 						priority: 123,
 						call: large_call.clone().into(),
 						maybe_periodic: Some((4u64, 20)),
@@ -138,7 +138,7 @@ mod test {
 						_phantom: PhantomData::<u64>::default(),
 					}),
 					Some(ScheduledV3Of::<Test> {
-						maybe_id: Some([(255 - i as u8); 32]),
+						maybe_id: Some(vec![255 - i as u8; 32]),
 						priority: 123,
 						call: MaybeHashed::Hash(bound_hashed_call.hash()),
 						maybe_periodic: Some((8u64, 10)),

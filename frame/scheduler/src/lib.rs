@@ -103,9 +103,9 @@ struct ScheduledV1<Call, BlockNumber> {
 /// Information regarding an item to be executed in the future.
 #[cfg_attr(any(feature = "std", test), derive(PartialEq, Eq))]
 #[derive(Clone, RuntimeDebug, Encode, Decode, MaxEncodedLen, TypeInfo)]
-pub struct Scheduled<Call, BlockNumber, PalletsOrigin, AccountId> {
+pub struct Scheduled<Id, Call, BlockNumber, PalletsOrigin, AccountId> {
 	/// The unique identity for this task, if there is one.
-	maybe_id: Option<[u8; 32]>,
+	maybe_id: Option<Id>,
 	/// This task's priority.
 	priority: schedule::Priority,
 	/// The call to be dispatched.
@@ -120,6 +120,7 @@ pub struct Scheduled<Call, BlockNumber, PalletsOrigin, AccountId> {
 use crate::{Scheduled as ScheduledV3, Scheduled as ScheduledV2};
 
 pub type ScheduledV2Of<T> = ScheduledV2<
+	Vec<u8>,
 	<T as Config>::RuntimeCall,
 	<T as frame_system::Config>::BlockNumber,
 	<T as Config>::PalletsOrigin,
@@ -127,6 +128,7 @@ pub type ScheduledV2Of<T> = ScheduledV2<
 >;
 
 pub type ScheduledV3Of<T> = ScheduledV3<
+	Vec<u8>,
 	CallOrHashOf<T>,
 	<T as frame_system::Config>::BlockNumber,
 	<T as Config>::PalletsOrigin,
@@ -134,6 +136,7 @@ pub type ScheduledV3Of<T> = ScheduledV3<
 >;
 
 pub type ScheduledOf<T> = Scheduled<
+	TaskName,
 	Bounded<<T as Config>::RuntimeCall>,
 	<T as frame_system::Config>::BlockNumber,
 	<T as Config>::PalletsOrigin,
@@ -507,7 +510,7 @@ impl<T: Config<Hash = PreimageHash>> Pallet<T> {
 						schedule.and_then(|schedule| {
 							if let Some(id) = schedule.maybe_id.as_ref() {
 								let name = blake2_256(id);
-								if let Some(item) = Lookup::<T>::take(id) {
+								if let Some(item) = LookupV1::<T>::take(id) {
 									Lookup::<T>::insert(name, item);
 								}
 								weight.saturating_accrue(T::DbWeight::get().reads_writes(2, 2));
@@ -560,7 +563,7 @@ impl<T: Config<Hash = PreimageHash>> Pallet<T> {
 						schedule.and_then(|schedule| {
 							if let Some(id) = schedule.maybe_id.as_ref() {
 								let name = blake2_256(id);
-								if let Some(item) = Lookup::<T>::take(id) {
+								if let Some(item) = LookupV1::<T>::take(id) {
 									Lookup::<T>::insert(name, item);
 								}
 								weight.saturating_accrue(T::DbWeight::get().reads_writes(2, 2));
@@ -613,6 +616,7 @@ impl<T: Config> Pallet<T> {
 			Vec<
 				Option<
 					Scheduled<
+						TaskName,
 						Bounded<<T as Config>::RuntimeCall>,
 						T::BlockNumber,
 						OldOrigin,
@@ -724,7 +728,7 @@ impl<T: Config> Pallet<T> {
 		let scheduled = Agenda::<T>::try_mutate(when, |agenda| {
 			agenda.get_mut(index as usize).map_or(
 				Ok(None),
-				|s| -> Result<Option<Scheduled<_, _, _, _>>, DispatchError> {
+				|s| -> Result<Option<Scheduled<_, _, _, _, _>>, DispatchError> {
 					if let (Some(ref o), Some(ref s)) = (origin, s.borrow()) {
 						if matches!(
 							T::OriginPrivilegeCmp::cmp_privilege(o, &s.origin),
