@@ -1417,6 +1417,22 @@
 <span id="1411">1411</span>
 <span id="1412">1412</span>
 <span id="1413">1413</span>
+<span id="1414">1414</span>
+<span id="1415">1415</span>
+<span id="1416">1416</span>
+<span id="1417">1417</span>
+<span id="1418">1418</span>
+<span id="1419">1419</span>
+<span id="1420">1420</span>
+<span id="1421">1421</span>
+<span id="1422">1422</span>
+<span id="1423">1423</span>
+<span id="1424">1424</span>
+<span id="1425">1425</span>
+<span id="1426">1426</span>
+<span id="1427">1427</span>
+<span id="1428">1428</span>
+<span id="1429">1429</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -1551,9 +1567,7 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cc</span>: [<span class="ident">u8</span>; <span class="ident">JUNCTION_ID_LEN</span>] <span class="op">=</span> <span class="ident">Default::default</span>();
 		<span class="ident">index</span>.<span class="ident">using_encoded</span>(<span class="op">|</span><span class="ident">data</span><span class="op">|</span> {
 			<span class="kw">if</span> <span class="ident">data</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">JUNCTION_ID_LEN</span> {
-				<span class="kw">let</span> <span class="ident">hash_result</span> <span class="op">=</span> <span class="ident">blake2_rfc::blake2b::blake2b</span>(<span class="ident">JUNCTION_ID_LEN</span>, <span class="kw-2">&amp;</span>[], <span class="ident">data</span>);
-				<span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">hash_result</span>.<span class="ident">as_bytes</span>();
-				<span class="ident">cc</span>.<span class="ident">copy_from_slice</span>(<span class="ident">hash</span>);
+				<span class="ident">cc</span>.<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">sp_core_hashing::blake2_256</span>(<span class="ident">data</span>));
 			} <span class="kw">else</span> {
 				<span class="ident">cc</span>[<span class="number">0</span>..<span class="ident">data</span>.<span class="ident">len</span>()].<span class="ident">copy_from_slice</span>(<span class="ident">data</span>);
 			}
@@ -1711,7 +1725,7 @@
 		}
 
 		<span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">ss58hash</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>[<span class="number">0</span>..<span class="ident">body_len</span> <span class="op">+</span> <span class="ident">prefix_len</span>]);
-		<span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">as_bytes</span>()[<span class="number">0</span>..<span class="ident">CHECKSUM_LEN</span>];
+		<span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">hash</span>[<span class="number">0</span>..<span class="ident">CHECKSUM_LEN</span>];
 		<span class="kw">if</span> <span class="ident">data</span>[<span class="ident">body_len</span> <span class="op">+</span> <span class="ident">prefix_len</span>..<span class="ident">body_len</span> <span class="op">+</span> <span class="ident">prefix_len</span> <span class="op">+</span> <span class="ident">CHECKSUM_LEN</span>] <span class="op">!</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">checksum</span> {
 			<span class="comment">// Invalid checksum.</span>
 			<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PublicError::InvalidChecksum</span>)
@@ -1752,7 +1766,7 @@
 		};
 		<span class="ident">v</span>.<span class="ident">extend</span>(<span class="self">self</span>.<span class="ident">as_ref</span>());
 		<span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">ss58hash</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>);
-		<span class="ident">v</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">as_bytes</span>()[<span class="number">0</span>..<span class="number">2</span>]);
+		<span class="ident">v</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>[<span class="number">0</span>..<span class="number">2</span>]);
 		<span class="ident">v</span>.<span class="ident">to_base58</span>()
 	}
 
@@ -1785,11 +1799,13 @@
 <span class="kw">const</span> <span class="ident">PREFIX</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;SS58PRE&quot;</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">ss58hash</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">blake2_rfc::blake2b::Blake2bResult</span> {
-	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">blake2_rfc::blake2b::Blake2b::new</span>(<span class="number">64</span>);
-	<span class="ident">context</span>.<span class="ident">update</span>(<span class="ident">PREFIX</span>);
-	<span class="ident">context</span>.<span class="ident">update</span>(<span class="ident">data</span>);
-	<span class="ident">context</span>.<span class="ident">finalize</span>()
+<span class="kw">fn</span> <span class="ident">ss58hash</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+	<span class="kw">use</span> <span class="ident">blake2</span>::{<span class="ident">Blake2b512</span>, <span class="ident">Digest</span>};
+
+	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="ident">Blake2b512::new</span>();
+	<span class="ident">ctx</span>.<span class="ident">update</span>(<span class="ident">PREFIX</span>);
+	<span class="ident">ctx</span>.<span class="ident">update</span>(<span class="ident">data</span>);
+	<span class="ident">ctx</span>.<span class="ident">finalize</span>().<span class="ident">to_vec</span>()
 }
 
 <span class="doccomment">/// Default prefix number</span>
@@ -2731,6 +2747,14 @@
 			})
 		);
 		<span class="macro">assert_eq!</span>(
+			<span class="ident">TestPair::from_string</span>(<span class="string">&quot;hello world/0123456789012345678901234567890123456789&quot;</span>, <span class="prelude-val">None</span>),
+			<span class="prelude-val">Ok</span>(<span class="ident">TestPair::Standard</span> {
+				<span class="ident">phrase</span>: <span class="string">&quot;hello world&quot;</span>.<span class="ident">to_owned</span>(),
+				<span class="ident">password</span>: <span class="prelude-val">None</span>,
+				<span class="ident">path</span>: <span class="macro">vec!</span>[<span class="ident">DeriveJunction::soft</span>(<span class="string">&quot;0123456789012345678901234567890123456789&quot;</span>)]
+			})
+		);
+		<span class="macro">assert_eq!</span>(
 			<span class="ident">TestPair::from_string</span>(<span class="string">&quot;hello world//1&quot;</span>, <span class="prelude-val">None</span>),
 			<span class="prelude-val">Ok</span>(<span class="ident">TestPair::Standard</span> {
 				<span class="ident">phrase</span>: <span class="string">&quot;hello world&quot;</span>.<span class="ident">to_owned</span>(),
@@ -2744,6 +2768,14 @@
 				<span class="ident">phrase</span>: <span class="string">&quot;hello world&quot;</span>.<span class="ident">to_owned</span>(),
 				<span class="ident">password</span>: <span class="prelude-val">None</span>,
 				<span class="ident">path</span>: <span class="macro">vec!</span>[<span class="ident">DeriveJunction::hard</span>(<span class="string">&quot;DOT&quot;</span>)]
+			})
+		);
+		<span class="macro">assert_eq!</span>(
+			<span class="ident">TestPair::from_string</span>(<span class="string">&quot;hello world//0123456789012345678901234567890123456789&quot;</span>, <span class="prelude-val">None</span>),
+			<span class="prelude-val">Ok</span>(<span class="ident">TestPair::Standard</span> {
+				<span class="ident">phrase</span>: <span class="string">&quot;hello world&quot;</span>.<span class="ident">to_owned</span>(),
+				<span class="ident">password</span>: <span class="prelude-val">None</span>,
+				<span class="ident">path</span>: <span class="macro">vec!</span>[<span class="ident">DeriveJunction::hard</span>(<span class="string">&quot;0123456789012345678901234567890123456789&quot;</span>)]
 			})
 		);
 		<span class="macro">assert_eq!</span>(
