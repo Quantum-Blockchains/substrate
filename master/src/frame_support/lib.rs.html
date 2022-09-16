@@ -2571,6 +2571,21 @@
 <span id="2565">2565</span>
 <span id="2566">2566</span>
 <span id="2567">2567</span>
+<span id="2568">2568</span>
+<span id="2569">2569</span>
+<span id="2570">2570</span>
+<span id="2571">2571</span>
+<span id="2572">2572</span>
+<span id="2573">2573</span>
+<span id="2574">2574</span>
+<span id="2575">2575</span>
+<span id="2576">2576</span>
+<span id="2577">2577</span>
+<span id="2578">2578</span>
+<span id="2579">2579</span>
+<span id="2580">2580</span>
+<span id="2581">2581</span>
+<span id="2582">2582</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.</span>
@@ -4429,6 +4444,21 @@
 <span class="doccomment">/// #[cfg(feature = &quot;my-feature&quot;)]</span>
 <span class="doccomment">/// #[pallet::storage]</span>
 <span class="doccomment">/// pub(super) type MyStorage&lt;T&gt; = StorageValue&lt;Value = u32&gt;;</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The optional attribute `#[pallet::whitelist_storage]` will declare the</span>
+<span class="doccomment">/// storage as whitelisted from benchmarking. Doing so will exclude reads of</span>
+<span class="doccomment">/// that value&#39;s storage key from counting towards weight calculations during</span>
+<span class="doccomment">/// benchmarking.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This attribute should only be attached to storages that are known to be</span>
+<span class="doccomment">/// read/used in every block. This will result in a more accurate benchmarking weight.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ### Example</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// #[pallet::storage]</span>
+<span class="doccomment">/// #[pallet::whitelist_storage]</span>
+<span class="doccomment">/// pub(super) type Number&lt;T: Config&gt; = StorageValue&lt;_, T::BlockNumber, ValueQuery&gt;;</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// All the `cfg` attributes are automatically copied to the items generated for the storage,</span>

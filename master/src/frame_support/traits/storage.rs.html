@@ -96,6 +96,34 @@
 <span id="90">90</span>
 <span id="91">91</span>
 <span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.</span>
@@ -115,7 +143,9 @@
 
 <span class="doccomment">//! Traits for encoding data related to pallet&#39;s storage items.</span>
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::sp_std::collections::btree_set::BTreeSet</span>;
 <span class="kw">use</span> <span class="ident">impl_trait_for_tuples::impl_for_tuples</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">sp_core::storage::TrackedStorageKey</span>;
 <span class="kw">use</span> <span class="ident">sp_std::prelude</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// An instance of a pallet in the storage.</span>
@@ -187,6 +217,32 @@
 <span class="doccomment">/// implement some bounds.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PartialStorageInfoTrait</span> {
 	<span class="kw">fn</span> <span class="ident">partial_storage_info</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StorageInfo</span><span class="op">&gt;</span>;
+}
+
+<span class="doccomment">/// Allows a pallet to specify storage keys to whitelist during benchmarking.</span>
+<span class="doccomment">/// This means those keys will be excluded from the benchmarking performance</span>
+<span class="doccomment">/// calculation.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WhitelistedStorageKeys</span> {
+	<span class="doccomment">/// Returns a [`Vec&lt;TrackedStorageKey&gt;`] indicating the storage keys that</span>
+	<span class="doccomment">/// should be whitelisted during benchmarking. This means that those keys</span>
+	<span class="doccomment">/// will be excluded from the benchmarking performance calculation.</span>
+	<span class="kw">fn</span> <span class="ident">whitelisted_storage_keys</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TrackedStorageKey</span><span class="op">&gt;</span>;
+}
+
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tuples-96&quot;</span>), <span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tuples-128&quot;</span>)), <span class="ident">impl_for_tuples</span>(<span class="number">64</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tuples-96&quot;</span>, <span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tuples-128&quot;</span>)), <span class="ident">impl_for_tuples</span>(<span class="number">96</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tuples-128&quot;</span>, <span class="ident">impl_for_tuples</span>(<span class="number">128</span>))]</span>
+<span class="kw">impl</span> <span class="ident">WhitelistedStorageKeys</span> <span class="kw">for</span> <span class="ident">Tuple</span> {
+	<span class="kw">fn</span> <span class="ident">whitelisted_storage_keys</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TrackedStorageKey</span><span class="op">&gt;</span> {
+		<span class="comment">// de-duplicate the storage keys</span>
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">combined_keys</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">TrackedStorageKey</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
+		<span class="macro">for_tuples!</span>( #(
+			<span class="kw">for</span> <span class="ident">storage_key</span> <span class="kw">in</span> <span class="ident">Tuple::whitelisted_storage_keys</span>() {
+				<span class="ident">combined_keys</span>.<span class="ident">insert</span>(<span class="ident">storage_key</span>);
+			}
+		 )<span class="op">*</span> );
+		<span class="ident">combined_keys</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+	}
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="frame_support" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (7fe022f5a 2022-07-24)" ></div>

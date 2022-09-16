@@ -2220,6 +2220,34 @@
 <span id="2214">2214</span>
 <span id="2215">2215</span>
 <span id="2216">2216</span>
+<span id="2217">2217</span>
+<span id="2218">2218</span>
+<span id="2219">2219</span>
+<span id="2220">2220</span>
+<span id="2221">2221</span>
+<span id="2222">2222</span>
+<span id="2223">2223</span>
+<span id="2224">2224</span>
+<span id="2225">2225</span>
+<span id="2226">2226</span>
+<span id="2227">2227</span>
+<span id="2228">2228</span>
+<span id="2229">2229</span>
+<span id="2230">2230</span>
+<span id="2231">2231</span>
+<span id="2232">2232</span>
+<span id="2233">2233</span>
+<span id="2234">2234</span>
+<span id="2235">2235</span>
+<span id="2236">2236</span>
+<span id="2237">2237</span>
+<span id="2238">2238</span>
+<span id="2239">2239</span>
+<span id="2240">2240</span>
+<span id="2241">2241</span>
+<span id="2242">2242</span>
+<span id="2243">2243</span>
+<span id="2244">2244</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.</span>
@@ -4370,22 +4398,14 @@
 			<span class="kw">impl</span> <span class="ident">baseline::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {}
 			<span class="kw">impl</span> <span class="ident">pallet_nomination_pools_benchmarking::Config</span> <span class="kw">for</span> <span class="ident">Runtime</span> {}
 
-			<span class="kw">let</span> <span class="ident">whitelist</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TrackedStorageKey</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[
-				<span class="comment">// Block Number</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-				<span class="comment">// Total Issuance</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-				<span class="comment">// Execution Phase</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-				<span class="comment">// Event Count</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-				<span class="comment">// System Events</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-				<span class="comment">// System BlockWeight</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef734abf5cb34d6244378cddbf18e849d96&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-				<span class="comment">// Treasury Account</span>
-				<span class="macro">hex_literal::hex!</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da95ecffd7b6c0f78751baa9d281e0bfa3a6d6f646c70792f74727372790000000000000000000000000000000000000000&quot;</span>).<span class="ident">to_vec</span>().<span class="ident">into</span>(),
-			];
+			<span class="kw">use</span> <span class="ident">frame_support::traits::WhitelistedStorageKeys</span>;
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">whitelist</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TrackedStorageKey</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">AllPalletsWithSystem::whitelisted_storage_keys</span>();
+
+			<span class="comment">// Treasury Account</span>
+			<span class="comment">// TODO: this is manual for now, someday we might be able to use a</span>
+			<span class="comment">// macro for this particular key</span>
+			<span class="kw">let</span> <span class="ident">treasury_key</span> <span class="op">=</span> <span class="ident">frame_system::Account</span>::<span class="op">&lt;</span><span class="ident">Runtime</span><span class="op">&gt;</span><span class="ident">::hashed_key_for</span>(<span class="ident">Treasury::account_id</span>());
+			<span class="ident">whitelist</span>.<span class="ident">push</span>(<span class="ident">treasury_key</span>.<span class="ident">to_vec</span>().<span class="ident">into</span>());
 
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">batches</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">BenchmarkBatch</span><span class="op">&gt;</span><span class="ident">::new</span>();
 			<span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">whitelist</span>);
@@ -4399,8 +4419,44 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 	<span class="kw">use</span> <span class="ident">frame_election_provider_support::NposSolution</span>;
+	<span class="kw">use</span> <span class="ident">frame_support::traits::WhitelistedStorageKeys</span>;
 	<span class="kw">use</span> <span class="ident">frame_system::offchain::CreateSignedTransaction</span>;
+	<span class="kw">use</span> <span class="ident">sp_core::hexdisplay::HexDisplay</span>;
 	<span class="kw">use</span> <span class="ident">sp_runtime::UpperOf</span>;
+	<span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">check_whitelist</span>() {
+		<span class="kw">let</span> <span class="ident">whitelist</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">AllPalletsWithSystem::whitelisted_storage_keys</span>()
+			.<span class="ident">iter</span>()
+			.<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">HexDisplay::from</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">key</span>).<span class="ident">to_string</span>())
+			.<span class="ident">collect</span>();
+
+		<span class="comment">// Block Number</span>
+		<span class="macro">assert!</span>(
+			<span class="ident">whitelist</span>.<span class="ident">contains</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac&quot;</span>)
+		);
+		<span class="comment">// Total Issuance</span>
+		<span class="macro">assert!</span>(
+			<span class="ident">whitelist</span>.<span class="ident">contains</span>(<span class="string">&quot;c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80&quot;</span>)
+		);
+		<span class="comment">// Execution Phase</span>
+		<span class="macro">assert!</span>(
+			<span class="ident">whitelist</span>.<span class="ident">contains</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a&quot;</span>)
+		);
+		<span class="comment">// Event Count</span>
+		<span class="macro">assert!</span>(
+			<span class="ident">whitelist</span>.<span class="ident">contains</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850&quot;</span>)
+		);
+		<span class="comment">// System Events</span>
+		<span class="macro">assert!</span>(
+			<span class="ident">whitelist</span>.<span class="ident">contains</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7&quot;</span>)
+		);
+		<span class="comment">// System BlockWeight</span>
+		<span class="macro">assert!</span>(
+			<span class="ident">whitelist</span>.<span class="ident">contains</span>(<span class="string">&quot;26aa394eea5630e07c48ae0c9558cef734abf5cb34d6244378cddbf18e849d96&quot;</span>)
+		);
+	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">validate_transaction_submitter_bounds</span>() {
