@@ -1556,6 +1556,7 @@
 <span id="1550">1550</span>
 <span id="1551">1551</span>
 <span id="1552">1552</span>
+<span id="1553">1553</span>
 </pre><pre class="rust"><code><span class="comment">// This file is part of Substrate.</span>
 
 <span class="comment">// Copyright (C) 2021-2022 Parity Technologies (UK) Ltd.</span>
@@ -1582,10 +1583,10 @@
 };
 
 <span class="kw">use</span> <span class="ident">codec</span>::{<span class="ident">Codec</span>, <span class="ident">Decode</span>, <span class="ident">Encode</span>};
-<span class="kw">use</span> <span class="ident">futures::StreamExt</span>;
+<span class="kw">use</span> <span class="ident">futures</span>::{<span class="ident">stream::Fuse</span>, <span class="ident">StreamExt</span>};
 <span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">log_enabled</span>, <span class="ident">trace</span>, <span class="ident">warn</span>};
 
-<span class="kw">use</span> <span class="ident">sc_client_api</span>::{<span class="ident">Backend</span>, <span class="ident">FinalityNotification</span>, <span class="ident">HeaderBackend</span>};
+<span class="kw">use</span> <span class="ident">sc_client_api</span>::{<span class="ident">Backend</span>, <span class="ident">FinalityNotification</span>, <span class="ident">FinalityNotifications</span>, <span class="ident">HeaderBackend</span>};
 <span class="kw">use</span> <span class="ident">sc_network_gossip::GossipEngine</span>;
 
 <span class="kw">use</span> <span class="ident">sp_api</span>::{<span class="ident">BlockId</span>, <span class="ident">ProvideRuntimeApi</span>};
@@ -2281,12 +2282,11 @@
 
 	<span class="doccomment">/// Wait for BEEFY runtime pallet to be available.</span>
 	<span class="doccomment">/// Should be called only once during worker initialization.</span>
-	<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">wait_for_runtime_pallet</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+	<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">wait_for_runtime_pallet</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">finality</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Fuse</span><span class="op">&lt;</span><span class="ident">FinalityNotifications</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gossip_engine</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">gossip_engine</span>;
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">finality_stream</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">finality_notification_stream</span>().<span class="ident">fuse</span>();
 		<span class="kw">loop</span> {
 			<span class="macro">futures::select!</span> {
-				<span class="ident">notif</span> <span class="op">=</span> <span class="ident">finality_stream</span>.<span class="ident">next</span>() =&gt; {
+				<span class="ident">notif</span> <span class="op">=</span> <span class="ident">finality</span>.<span class="ident">next</span>() =&gt; {
 					<span class="kw">let</span> <span class="ident">notif</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">notif</span> {
 						<span class="prelude-val">Some</span>(<span class="ident">notif</span>) =&gt; <span class="ident">notif</span>,
 						<span class="prelude-val">None</span> =&gt; <span class="kw">break</span>
@@ -2320,11 +2320,13 @@
 	<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">mut</span> <span class="self">self</span>) {
 		<span class="macro">info!</span>(<span class="ident">target</span>: <span class="string">&quot;beefy&quot;</span>, <span class="string">&quot;🥩 run BEEFY worker, best grandpa: #{:?}.&quot;</span>, <span class="self">self</span>.<span class="ident">best_grandpa_block_header</span>.<span class="ident">number</span>());
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">block_import_justif</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">links</span>.<span class="ident">from_block_import_justif_stream</span>.<span class="ident">subscribe</span>().<span class="ident">fuse</span>();
+		<span class="comment">// Subscribe to finality notifications before waiting for runtime pallet and reuse stream,</span>
+		<span class="comment">// so we process notifications for all finalized blocks after pallet is available.</span>
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">finality_notifications</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">finality_notification_stream</span>().<span class="ident">fuse</span>();
 
-		<span class="self">self</span>.<span class="ident">wait_for_runtime_pallet</span>().<span class="kw">await</span>;
+		<span class="self">self</span>.<span class="ident">wait_for_runtime_pallet</span>(<span class="kw-2">&amp;mut</span> <span class="ident">finality_notifications</span>).<span class="kw">await</span>;
 		<span class="macro">trace!</span>(<span class="ident">target</span>: <span class="string">&quot;beefy&quot;</span>, <span class="string">&quot;🥩 BEEFY pallet available, starting voter.&quot;</span>);
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">finality_notifications</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">finality_notification_stream</span>().<span class="ident">fuse</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">votes</span> <span class="op">=</span> <span class="ident">Box::pin</span>(
 			<span class="self">self</span>.<span class="ident">gossip_engine</span>
 				.<span class="ident">messages_for</span>(<span class="ident">topic</span>::<span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>())
