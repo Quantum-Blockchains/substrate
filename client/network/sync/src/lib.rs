@@ -315,6 +315,8 @@ pub enum PeerSyncState<B: BlockT> {
 	DownloadingState,
 	/// Downloading warp proof.
 	DownloadingWarpProof,
+	/// Downloading warp sync target block.
+	DownloadingWarpTarget(B::Hash),
 	/// Actively downloading block history after warp sync.
 	DownloadingGap(NumberFor<B>),
 }
@@ -1030,6 +1032,9 @@ where
 							peer.state = PeerSyncState::Available;
 							Vec::new()
 						}
+					},
+					PeerSyncState::DownloadingWarpTarget(_) => {
+						return Ok(todo!());
 					},
 					PeerSyncState::Available |
 					PeerSyncState::DownloadingJustification(..) |

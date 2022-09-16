@@ -34,6 +34,7 @@ use std::sync::Arc;
 
 enum Phase<B: BlockT, Client> {
 	WarpProof { set_id: SetId, authorities: AuthorityList, last_hash: B::Hash },
+	TargetBlock { client: Arc<Client>, header: B::Header, body: Vec<B::Extrinsic> },
 	State(StateSync<B, Client>),
 }
 
@@ -105,7 +106,8 @@ where
 						log::debug!(target: "sync", "Verified complete proof, set_id={:?}", new_set_id);
 						self.total_proof_bytes += response.0.len() as u64;
 						let state_sync = StateSync::new(self.client.clone(), header, false);
-						self.phase = Phase::State(state_sync);
+						//self.phase = Phase::State(state_sync);
+						self.phase = Phase::TargetBlock { client, header, body: None };
 						WarpProofImportResult::Success
 					},
 				}

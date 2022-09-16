@@ -64,6 +64,8 @@ pub enum WarpSyncPhase<Block: BlockT> {
 	AwaitingPeers,
 	/// Downloading and verifying grandpa warp proofs.
 	DownloadingWarpProofs,
+	/// Downloading target block.
+	DownloadingTargetBlock,
 	/// Downloading state data.
 	DownloadingState,
 	/// Importing state.
