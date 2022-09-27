@@ -49,6 +49,7 @@ use sp_core::{
 	ecdsa, ed25519,
 	hash::{H256, H512},
 	sr25519,
+	dilithium2,
 };
 use sp_std::prelude::*;
 
@@ -309,6 +310,8 @@ pub enum MultiSigner {
 	Sr25519(sr25519::Public),
 	/// An SECP256k1/ECDSA identity (actually, the Blake2 hash of the compressed pub key).
 	Ecdsa(ecdsa::Public),
+	/// An Dilithium2 identity.
+	Dilithium2(dilithium2::Public),
 }
 
 /// NOTE: This implementations is required by `SimpleAddressDeterminer`,
@@ -325,6 +328,7 @@ impl AsRef<[u8]> for MultiSigner {
 			Self::Ed25519(ref who) => who.as_ref(),
 			Self::Sr25519(ref who) => who.as_ref(),
 			Self::Ecdsa(ref who) => who.as_ref(),
+			Self::Dilithium2(ref who) => who.as_ref(),
 		}
 	}
 }
@@ -336,6 +340,7 @@ impl traits::IdentifyAccount for MultiSigner {
 			Self::Ed25519(who) => <[u8; 32]>::from(who).into(),
 			Self::Sr25519(who) => <[u8; 32]>::from(who).into(),
 			Self::Ecdsa(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
+			Self::Dilithium2(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
 		}
 	}
 }
@@ -391,6 +396,23 @@ impl TryFrom<MultiSigner> for ecdsa::Public {
 	}
 }
 
+impl From<dilithium2::Public> for MultiSigner {
+	fn from(x: dilithium2::Public) -> Self {
+		Self::Dilithium2(x)
+	}
+}
+
+impl TryFrom<MultiSigner> for dilithium2::Public {
+	type Error = ();
+	fn try_from(m: MultiSigner) -> Result<Self, Self::Error> {
+		if let MultiSigner::Dilithium2(x) = m {
+			Ok(x)
+		} else {
+			Err(())
+		}
+	}
+}
+
 #[cfg(feature = "std")]
 impl std::fmt::Display for MultiSigner {
 	fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -398,6 +420,7 @@ impl std::fmt::Display for MultiSigner {
 			Self::Ed25519(ref who) => write!(fmt, "ed25519: {}", who),
 			Self::Sr25519(ref who) => write!(fmt, "sr25519: {}", who),
 			Self::Ecdsa(ref who) => write!(fmt, "ecdsa: {}", who),
+			Self::Dilithium2(ref who) => write!(fmt, "dilithium2: {}", who),
 		}
 	}
 }
