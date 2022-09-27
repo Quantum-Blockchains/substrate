@@ -59,6 +59,7 @@ pub mod hexdisplay;
 pub mod defer;
 pub mod ecdsa;
 pub mod ed25519;
+pub mod dilithium2;
 pub mod hash;
 #[cfg(feature = "std")]
 mod hasher;

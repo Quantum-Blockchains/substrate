@@ -27,6 +27,7 @@ wasmi = { version = "0.9.1", optional = true }
 hash-db = { version = "0.15.2", default-features = false }
 hash256-std-hasher = { version = "0.15.2", default-features = false }
 base58 = { version = "0.2.0", optional = true }
+bs58 = { version = "0.4.0" }
 rand = { version = "0.7.3", optional = true, features = ["small_rng"] }
 substrate-bip39 = { version = "0.4.4", optional = true }
 tiny-bip39 = { version = "0.8.2", optional = true }
@@ -60,6 +61,8 @@ secp256k1 = { version = "0.24.0", default-features = false, features = ["recover
 ss58-registry = { version = "1.18.0", default-features = false }
 sp-core-hashing = { version = "4.0.0", path = "./hashing", default-features = false, optional = true }
 sp-runtime-interface = { version = "6.0.0", default-features = false, path = "../runtime-interface" }
+pqcrypto-dilithium = { version = "0.4.5", git = "https://github.com/Quantum-Blockchains/pqcrypto.git", branch = "kostiask/generate_keys_from_seed" }
+pqcrypto-traits = { version = "0.3.4", git = "https://github.com/Quantum-Blockchains/pqcrypto.git", branch = "kostiask/generate_keys_from_seed" }
 
 [dev-dependencies]
 sp-serializer = { version = "4.0.0-dev", path = "../serializer" }
