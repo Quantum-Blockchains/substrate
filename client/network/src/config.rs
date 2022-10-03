@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -21,20 +21,15 @@
 //! The [`Params`] struct is the struct that must be passed in order to initialize the networking.
 //! See the documentation of [`Params`].
 
-pub use crate::{
-	chain::Client,
-	on_demand_layer::{AlwaysBadChecker, OnDemand},
+pub use sc_network_common::{
+	config::ProtocolId,
 	request_responses::{
 		IncomingRequest, OutgoingResponse, ProtocolConfig as RequestResponseConfig,
 	},
-	warp_request_handler::WarpSyncProvider,
+	sync::warp::WarpSyncProvider,
 };
-pub use libp2p::{build_multiaddr, core::PublicKey, identity};
 
-// Note: this re-export shouldn't be part of the public API of the crate and will be removed in
-// the future.
-#[doc(hidden)]
-pub use crate::protocol::ProtocolConfig;
+pub use libp2p::{build_multiaddr, core::PublicKey, identity};
 
 use crate::ExHashT;
 
@@ -46,12 +41,11 @@ use libp2p::{
 };
 use prometheus_endpoint::Registry;
 use sc_consensus::ImportQueue;
-use sp_consensus::block_validation::BlockAnnounceValidator;
+use sc_network_common::sync::ChainSync;
 use sp_runtime::traits::Block as BlockT;
 use std::{
 	borrow::Cow,
 	collections::HashMap,
-	convert::TryFrom,
 	error::Error,
 	fs,
 	future::Future,
@@ -66,7 +60,11 @@ use std::{
 use zeroize::Zeroize;
 
 /// Network initialization parameters.
-pub struct Params<B: BlockT, H: ExHashT> {
+pub struct Params<B, H, Client>
+where
+	B: BlockT + 'static,
+	H: ExHashT,
+{
 	/// Assigned role for our node (full, light, ...).
 	pub role: Role,
 
@@ -81,12 +79,7 @@ pub struct Params<B: BlockT, H: ExHashT> {
 	pub network_config: NetworkConfiguration,
 
 	/// Client that contains the blockchain.
-	pub chain: Arc<dyn Client<B>>,
-
-	/// The `OnDemand` object acts as a "receiver" for block data requests from the client.
-	/// If `Some`, the network worker will process these requests and answer them.
-	/// Normally used only for light clients.
-	pub on_demand: Option<Arc<OnDemand<B>>>,
+	pub chain: Arc<Client>,
 
 	/// Pool of transactions.
 	///
@@ -94,8 +87,12 @@ pub struct Params<B: BlockT, H: ExHashT> {
 	/// the network.
 	pub transaction_pool: Arc<dyn TransactionPool<H, B>>,
 
-	/// Name of the protocol to use on the wire. Should be different for each chain.
+	/// Legacy name of the protocol to use on the wire. Should be different for each chain.
 	pub protocol_id: ProtocolId,
+
+	/// Fork ID to distinguish protocols of different hard forks. Part of the standard protocol
+	/// name on the wire.
+	pub fork_id: Option<String>,
 
 	/// Import queue to use.
 	///
@@ -103,8 +100,8 @@ pub struct Params<B: BlockT, H: ExHashT> {
 	/// valid.
 	pub import_queue: Box<dyn ImportQueue<B>>,
 
-	/// Type to check incoming block announcements.
-	pub block_announce_validator: Box<dyn BlockAnnounceValidator<B> + Send>,
+	/// Instance of chain sync implementation.
+	pub chain_sync: Box<dyn ChainSync<B>>,
 
 	/// Registry for recording prometheus metrics to.
 	pub metrics_registry: Option<Registry>,
@@ -115,32 +112,32 @@ pub struct Params<B: BlockT, H: ExHashT> {
 	/// protocol name. In addition all of [`RequestResponseConfig`] is used to handle incoming
 	/// block requests, if enabled.
 	///
-	/// Can be constructed either via [`crate::block_request_handler::generate_protocol_config`]
-	/// allowing outgoing but not incoming requests, or constructed via
-	/// [`crate::block_request_handler::BlockRequestHandler::new`] allowing both outgoing and
-	/// incoming requests.
+	/// Can be constructed either via
+	/// `sc_network_sync::block_request_handler::generate_protocol_config` allowing outgoing but
+	/// not incoming requests, or constructed via `sc_network_sync::block_request_handler::
+	/// BlockRequestHandler::new` allowing both outgoing and incoming requests.
 	pub block_request_protocol_config: RequestResponseConfig,
 
 	/// Request response configuration for the light client request protocol.
 	///
 	/// Can be constructed either via
-	/// [`crate::light_client_requests::generate_protocol_config`] allowing outgoing but not
-	/// incoming requests, or constructed via
-	/// [`crate::light_client_requests::handler::LightClientRequestHandler::new`] allowing
-	/// both outgoing and incoming requests.
+	/// `sc_network_light::light_client_requests::generate_protocol_config` allowing outgoing but
+	/// not incoming requests, or constructed via
+	/// `sc_network_light::light_client_requests::handler::LightClientRequestHandler::new`
+	/// allowing both outgoing and incoming requests.
 	pub light_client_request_protocol_config: RequestResponseConfig,
 
 	/// Request response configuration for the state request protocol.
 	///
 	/// Can be constructed either via
-	/// [`crate::block_request_handler::generate_protocol_config`] allowing outgoing but not
-	/// incoming requests, or constructed via
-	/// [`crate::state_request_handler::StateRequestHandler::new`] allowing
+	/// `sc_network_sync::state_request_handler::generate_protocol_config` allowing outgoing but
+	/// not incoming requests, or constructed via
+	/// `sc_network_sync::state_request_handler::StateRequestHandler::new` allowing
 	/// both outgoing and incoming requests.
 	pub state_request_protocol_config: RequestResponseConfig,
 
-	/// Optional warp sync protocol support. Include protocol config and sync provider.
-	pub warp_sync: Option<(Arc<dyn WarpSyncProvider<B>>, RequestResponseConfig)>,
+	/// Optional warp sync protocol config.
+	pub warp_sync_protocol_config: Option<RequestResponseConfig>,
 }
 
 /// Role of the local node.
@@ -148,8 +145,6 @@ pub struct Params<B: BlockT, H: ExHashT> {
 pub enum Role {
 	/// Regular full node.
 	Full,
-	/// Regular light node.
-	Light,
 	/// Actual authority.
 	Authority,
 }
@@ -159,18 +154,12 @@ impl Role {
 	pub fn is_authority(&self) -> bool {
 		matches!(self, Self::Authority { .. })
 	}
-
-	/// True for [`Role::Light`].
-	pub fn is_light(&self) -> bool {
-		matches!(self, Self::Light { .. })
-	}
 }
 
 impl fmt::Display for Role {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::Full => write!(f, "FULL"),
-			Self::Light => write!(f, "LIGHT"),
 			Self::Authority { .. } => write!(f, "AUTHORITY"),
 		}
 	}
@@ -236,29 +225,6 @@ impl<H: ExHashT + Default, B: BlockT> TransactionPool<H, B> for EmptyTransaction
 	}
 }
 
-/// Name of a protocol, transmitted on the wire. Should be unique for each chain. Always UTF-8.
-#[derive(Clone, PartialEq, Eq, Hash)]
-pub struct ProtocolId(smallvec::SmallVec<[u8; 6]>);
-
-impl<'a> From<&'a str> for ProtocolId {
-	fn from(bytes: &'a str) -> ProtocolId {
-		Self(bytes.as_bytes().into())
-	}
-}
-
-impl AsRef<str> for ProtocolId {
-	fn as_ref(&self) -> &str {
-		str::from_utf8(&self.0[..])
-			.expect("the only way to build a ProtocolId is through a UTF-8 String; qed")
-	}
-}
-
-impl fmt::Debug for ProtocolId {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		fmt::Debug::fmt(self.as_ref(), f)
-	}
-}
-
 /// Parses a string address and splits it into Multiaddress and PeerId, if
 /// valid.
 ///
@@ -301,7 +267,7 @@ pub fn parse_addr(mut addr: Multiaddr) -> Result<(PeerId, Multiaddr), ParseErr> 
 /// assert_eq!(addr.peer_id.to_base58(), "QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV");
 /// assert_eq!(addr.multiaddr.to_string(), "/ip4/198.51.100.19/tcp/30333");
 /// ```
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
 pub struct MultiaddrWithPeerId {
 	/// Address of the node.
@@ -383,8 +349,8 @@ impl From<multiaddr::Error> for ParseErr {
 	}
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
 /// Sync operation mode.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum SyncMode {
 	/// Full block download and verification.
 	Full,
@@ -397,6 +363,18 @@ pub enum SyncMode {
 	},
 	/// Warp sync - verify authority set transitions and the latest state.
 	Warp,
+}
+
+impl SyncMode {
+	/// Returns if `self` is [`Self::Warp`].
+	pub fn is_warp(&self) -> bool {
+		matches!(self, Self::Warp)
+	}
+
+	/// Returns if `self` is [`Self::Fast`].
+	pub fn is_fast(&self) -> bool {
+		matches!(self, Self::Fast { .. })
+	}
 }
 
 impl Default for SyncMode {
@@ -422,6 +400,11 @@ pub struct NetworkConfiguration {
 	pub request_response_protocols: Vec<RequestResponseConfig>,
 	/// Configuration for the default set of nodes used for block syncing and transactions.
 	pub default_peers_set: SetConfig,
+	/// Number of substreams to reserve for full nodes for block syncing and transactions.
+	/// Any other slot will be dedicated to light nodes.
+	///
+	/// This value is implicitly capped to `default_set.out_peers + default_set.in_peers`.
+	pub default_peers_set_num_full: u32,
 	/// Configuration for extra sets of nodes.
 	pub extra_sets: Vec<NonDefaultSetConfig>,
 	/// Client identifier. Sent over the wire for debugging purposes.
@@ -479,6 +462,7 @@ impl NetworkConfiguration {
 		node_key: NodeKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
+		let default_peers_set = SetConfig::default();
 		Self {
 			net_config_path,
 			listen_addresses: Vec::new(),
@@ -486,7 +470,8 @@ impl NetworkConfiguration {
 			boot_nodes: Vec::new(),
 			node_key,
 			request_response_protocols: Vec::new(),
-			default_peers_set: Default::default(),
+			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
+			default_peers_set,
 			extra_sets: Vec::new(),
 			client_version: client_version.into(),
 			node_name: node_name.into(),
@@ -567,7 +552,7 @@ pub struct NonDefaultSetConfig {
 	/// considered established once this protocol is open.
 	///
 	/// > **Note**: This field isn't present for the default set, as this is handled internally
-	/// >           by the networking code.
+	/// > by the networking code.
 	pub notifications_protocol: Cow<'static, str>,
 	/// If the remote reports that it doesn't support the protocol indicated in the
 	/// `notifications_protocol` field, then each of these fallback names will be tried one by
@@ -608,6 +593,13 @@ impl NonDefaultSetConfig {
 	/// Add a node to the list of reserved nodes.
 	pub fn add_reserved(&mut self, peer: MultiaddrWithPeerId) {
 		self.set_config.reserved_nodes.push(peer);
+	}
+
+	/// Add a list of protocol names used for backward compatibility.
+	///
+	/// See the explanations in [`NonDefaultSetConfig::fallback_names`].
+	pub fn add_fallback_names(&mut self, fallback_names: Vec<Cow<'static, str>>) {
+		self.fallback_names.extend(fallback_names);
 	}
 }
 

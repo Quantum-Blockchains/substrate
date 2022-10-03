@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2021-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,8 @@ extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
+use beefy_primitives::mmr::{BeefyAuthoritySet, BeefyNextAuthoritySet};
+
 /// Supported hashing output size.
 ///
 /// The size is restricted to 32 bytes to allow for a more optimised implementation.
@@ -44,7 +46,8 @@ pub type Hash = [u8; 32];
 /// Generic hasher trait.
 ///
 /// Implement the function to support custom way of hashing data.
-/// The implementation must return a [Hash] type, so only 32-byte output hashes are supported.
+/// The implementation must return a [Hash](type@Hash) type, so only 32-byte output hashes are
+/// supported.
 pub trait Hasher {
 	/// Hash given arbitrary-length piece of data.
 	fn hash(data: &[u8]) -> Hash;
@@ -173,7 +176,7 @@ impl Visitor for () {
 ///
 /// # Panic
 ///
-/// The function will panic if given [`leaf_index`] is greater than the number of leaves.
+/// The function will panic if given `leaf_index` is greater than the number of leaves.
 pub fn merkle_proof<H, I, T>(leaves: I, leaf_index: usize) -> MerkleProof<T>
 where
 	H: Hasher,
@@ -371,6 +374,21 @@ where
 				return Err(next)
 			},
 		}
+	}
+}
+
+sp_api::decl_runtime_apis! {
+	/// API useful for BEEFY light clients.
+	pub trait BeefyMmrApi<H>
+	where
+		H: From<Hash> + Into<Hash>,
+		BeefyAuthoritySet<H>: sp_api::Decode,
+	{
+		/// Return the currently active BEEFY authority set proof.
+		fn authority_set_proof() -> BeefyAuthoritySet<H>;
+
+		/// Return the next/queued BEEFY authority set proof.
+		fn next_authority_set_proof() -> BeefyNextAuthoritySet<H>;
 	}
 }
 

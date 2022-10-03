@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -45,7 +45,7 @@ use finality_grandpa::{
 	Message::{Precommit, Prevote, PrimaryPropose},
 };
 use parity_scale_codec::{Decode, Encode};
-use sc_network::{NetworkService, ReputationChange};
+use sc_network::ReputationChange;
 use sc_network_gossip::{GossipEngine, Network as GossipNetwork};
 use sc_telemetry::{telemetry, TelemetryHandle, CONSENSUS_DEBUG, CONSENSUS_INFO};
 use sp_keystore::SyncCryptoStorePtr;
@@ -58,6 +58,7 @@ use crate::{
 use gossip::{
 	FullCatchUpMessage, FullCommitMessage, GossipMessage, GossipValidator, PeerReport, VoteMessage,
 };
+use sc_network_common::service::{NetworkBlock, NetworkSyncForkRequest};
 use sc_utils::mpsc::TracingUnboundedReceiver;
 use sp_finality_grandpa::{AuthorityId, AuthoritySignature, RoundNumber, SetId as SetIdNumber};
 
@@ -67,9 +68,27 @@ mod periodic;
 #[cfg(test)]
 pub(crate) mod tests;
 
-/// Name of the notifications protocol used by Grandpa. Must be registered towards the networking
-/// in order for Grandpa to properly function.
-pub const GRANDPA_PROTOCOL_NAME: &'static str = "/paritytech/grandpa/1";
+pub mod grandpa_protocol_name {
+	use sc_chain_spec::ChainSpec;
+
+	pub(crate) const NAME: &str = "/grandpa/1";
+	/// Old names for the notifications protocol, used for backward compatibility.
+	pub(crate) const LEGACY_NAMES: [&str; 1] = ["/paritytech/grandpa/1"];
+
+	/// Name of the notifications protocol used by GRANDPA.
+	///
+	/// Must be registered towards the networking in order for GRANDPA to properly function.
+	pub fn standard_name<Hash: AsRef<[u8]>>(
+		genesis_hash: &Hash,
+		chain_spec: &Box<dyn ChainSpec>,
+	) -> std::borrow::Cow<'static, str> {
+		let chain_prefix = match chain_spec.fork_id() {
+			Some(fork_id) => format!("/{}/{}", hex::encode(genesis_hash), fork_id),
+			None => format!("/{}", hex::encode(genesis_hash)),
+		};
+		format!("{}{}", chain_prefix, NAME).into()
+	}
+}
 
 // cost scalars for reporting peers.
 mod cost {
@@ -138,34 +157,26 @@ const TELEMETRY_VOTERS_LIMIT: usize = 10;
 ///
 /// Something that provides both the capabilities needed for the `gossip_network::Network` trait as
 /// well as the ability to set a fork sync request for a particular block.
-pub trait Network<Block: BlockT>: GossipNetwork<Block> + Clone + Send + 'static {
-	/// Notifies the sync service to try and sync the given block from the given
-	/// peers.
-	///
-	/// If the given vector of peers is empty then the underlying implementation
-	/// should make a best effort to fetch the block from any peers it is
-	/// connected to (NOTE: this assumption will change in the future #3629).
-	fn set_sync_fork_request(
-		&self,
-		peers: Vec<sc_network::PeerId>,
-		hash: Block::Hash,
-		number: NumberFor<Block>,
-	);
+pub trait Network<Block: BlockT>:
+	NetworkSyncForkRequest<Block::Hash, NumberFor<Block>>
+	+ NetworkBlock<Block::Hash, NumberFor<Block>>
+	+ GossipNetwork<Block>
+	+ Clone
+	+ Send
+	+ 'static
+{
 }
 
-impl<B, H> Network<B> for Arc<NetworkService<B, H>>
+impl<Block, T> Network<Block> for T
 where
-	B: BlockT,
-	H: sc_network::ExHashT,
+	Block: BlockT,
+	T: NetworkSyncForkRequest<Block::Hash, NumberFor<Block>>
+		+ NetworkBlock<Block::Hash, NumberFor<Block>>
+		+ GossipNetwork<Block>
+		+ Clone
+		+ Send
+		+ 'static,
 {
-	fn set_sync_fork_request(
-		&self,
-		peers: Vec<sc_network::PeerId>,
-		hash: B::Hash,
-		number: NumberFor<B>,
-	) {
-		NetworkService::set_sync_fork_request(self, peers, hash, number)
-	}
 }
 
 /// Create a unique topic for a round and set-id combo.
@@ -220,13 +231,14 @@ impl<B: BlockT, N: Network<B>> NetworkBridge<B, N> {
 		prometheus_registry: Option<&Registry>,
 		telemetry: Option<TelemetryHandle>,
 	) -> Self {
+		let protocol = config.protocol_name.clone();
 		let (validator, report_stream) =
 			GossipValidator::new(config, set_state.clone(), prometheus_registry, telemetry.clone());
 
 		let validator = Arc::new(validator);
 		let gossip_engine = Arc::new(Mutex::new(GossipEngine::new(
 			service.clone(),
-			GRANDPA_PROTOCOL_NAME,
+			protocol,
 			validator.clone(),
 			prometheus_registry,
 		)));
@@ -301,7 +313,7 @@ impl<B: BlockT, N: Network<B>> NetworkBridge<B, N> {
 		voters: Arc<VoterSet<AuthorityId>>,
 		has_voted: HasVoted<B>,
 	) -> (impl Stream<Item = SignedMessage<B>> + Unpin, OutgoingMessages<B>) {
-		self.note_round(round, set_id, &*voters);
+		self.note_round(round, set_id, &voters);
 
 		let keystore = keystore.and_then(|ks| {
 			let id = ks.local_id();
@@ -448,7 +460,7 @@ impl<B: BlockT, N: Network<B>> NetworkBridge<B, N> {
 		hash: B::Hash,
 		number: NumberFor<B>,
 	) {
-		Network::set_sync_fork_request(&self.service, peers, hash, number)
+		self.service.set_sync_fork_request(peers, hash, number)
 	}
 }
 
@@ -618,9 +630,9 @@ fn incoming_global<B: BlockT>(
 		.filter_map(move |(notification, msg)| {
 			future::ready(match msg {
 				GossipMessage::Commit(msg) =>
-					process_commit(msg, notification, &gossip_engine, &gossip_validator, &*voters),
+					process_commit(msg, notification, &gossip_engine, &gossip_validator, &voters),
 				GossipMessage::CatchUp(msg) =>
-					process_catch_up(msg, notification, &gossip_engine, &gossip_validator, &*voters),
+					process_catch_up(msg, notification, &gossip_engine, &gossip_validator, &voters),
 				_ => {
 					debug!(target: "afg", "Skipping unknown message type");
 					None
@@ -857,7 +869,7 @@ fn check_catch_up<Block: BlockT>(
 		let mut total_weight = 0;
 
 		for id in votes {
-			if let Some(weight) = voters.get(&id).map(|info| info.weight()) {
+			if let Some(weight) = voters.get(id).map(|info| info.weight()) {
 				total_weight += weight.get();
 				if total_weight > full_threshold {
 					return Err(cost::MALFORMED_CATCH_UP)

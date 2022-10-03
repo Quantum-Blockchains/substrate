@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2018-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,13 +18,15 @@
 use codec::{Decode, Encode};
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use frame_support::Hashable;
-use node_executor::ExecutorDispatch;
-use node_primitives::{BlockNumber, Hash};
-use node_runtime::{
+use kitchensink_runtime::{
 	constants::currency::*, Block, BuildStorage, Call, CheckedExtrinsic, GenesisConfig, Header,
 	UncheckedExtrinsic,
 };
+use node_executor::ExecutorDispatch;
+use node_primitives::{BlockNumber, Hash};
 use node_testing::keyring::*;
+#[cfg(feature = "wasmtime")]
+use sc_executor::WasmtimeInstantiationStrategy;
 use sc_executor::{Externalities, NativeElseWasmExecutor, RuntimeVersionOf, WasmExecutionMethod};
 use sp_core::{
 	storage::well_known_keys,
@@ -39,7 +41,7 @@ criterion_main!(benches);
 
 /// The wasm runtime code.
 pub fn compact_code_unwrap() -> &'static [u8] {
-	node_runtime::WASM_BINARY.expect(
+	kitchensink_runtime::WASM_BINARY.expect(
 		"Development wasm binary is not available. Testing is only supported with the flag \
 		 disabled.",
 	)
@@ -47,13 +49,13 @@ pub fn compact_code_unwrap() -> &'static [u8] {
 
 const GENESIS_HASH: [u8; 32] = [69u8; 32];
 
-const TRANSACTION_VERSION: u32 = node_runtime::VERSION.transaction_version;
+const TRANSACTION_VERSION: u32 = kitchensink_runtime::VERSION.transaction_version;
 
-const SPEC_VERSION: u32 = node_runtime::VERSION.spec_version;
+const SPEC_VERSION: u32 = kitchensink_runtime::VERSION.spec_version;
 
 const HEAP_PAGES: u64 = 20;
 
-type TestExternalities<H> = CoreTestExternalities<H, u64>;
+type TestExternalities<H> = CoreTestExternalities<H>;
 
 #[derive(Debug)]
 enum ExecutionMethod {
@@ -83,14 +85,14 @@ fn construct_block<E: Externalities>(
 	parent_hash: Hash,
 	extrinsics: Vec<CheckedExtrinsic>,
 ) -> (Vec<u8>, Hash) {
-	use sp_trie::{trie_types::Layout, TrieConfiguration};
+	use sp_trie::{LayoutV0, TrieConfiguration};
 
 	// sign extrinsics.
 	let extrinsics = extrinsics.into_iter().map(sign).collect::<Vec<_>>();
 
 	// calculate the header fields that we can.
 	let extrinsics_root =
-		Layout::<BlakeTwo256>::ordered_trie_root(extrinsics.iter().map(Encode::encode))
+		LayoutV0::<BlakeTwo256>::ordered_trie_root(extrinsics.iter().map(Encode::encode))
 			.to_fixed_bytes()
 			.into();
 
@@ -183,18 +185,20 @@ fn bench_execute_block(c: &mut Criterion) {
 		ExecutionMethod::Native,
 		ExecutionMethod::Wasm(WasmExecutionMethod::Interpreted),
 		#[cfg(feature = "wasmtime")]
-		ExecutionMethod::Wasm(WasmExecutionMethod::Compiled),
+		ExecutionMethod::Wasm(WasmExecutionMethod::Compiled {
+			instantiation_strategy: WasmtimeInstantiationStrategy::PoolingCopyOnWrite,
+		}),
 	];
 
 	for strategy in execution_methods {
 		group.bench_function(format!("{:?}", strategy), |b| {
-			let genesis_config = node_testing::genesis::config(false, Some(compact_code_unwrap()));
+			let genesis_config = node_testing::genesis::config(Some(compact_code_unwrap()));
 			let (use_native, wasm_method) = match strategy {
 				ExecutionMethod::Native => (true, WasmExecutionMethod::Interpreted),
 				ExecutionMethod::Wasm(wasm_method) => (false, wasm_method),
 			};
 
-			let executor = NativeElseWasmExecutor::new(wasm_method, None, 8);
+			let executor = NativeElseWasmExecutor::new(wasm_method, None, 8, 2);
 			let runtime_code = RuntimeCode {
 				code_fetcher: &sp_core::traits::WrappedRuntimeCode(compact_code_unwrap().into()),
 				hash: vec![1, 2, 3],

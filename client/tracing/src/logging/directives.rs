@@ -84,7 +84,7 @@ pub fn reload_filter() -> Result<(), String> {
 	log::debug!(target: "tracing", "Reloading log filter with: {}", env_filter);
 	FILTER_RELOAD_HANDLE
 		.get()
-		.ok_or("No reload handle present".to_string())?
+		.ok_or("No reload handle present")?
 		.reload(env_filter)
 		.map_err(|e| format!("{}", e))
 }
@@ -109,5 +109,5 @@ pub(crate) fn set_reload_handle(handle: Handle<EnvFilter, SCSubscriber>) {
 type SCSubscriber<
 	N = tracing_fmt::format::DefaultFields,
 	E = crate::logging::EventFormat,
-	W = fn() -> std::io::Stderr,
+	W = crate::logging::DefaultLogger,
 > = layer::Layered<tracing_fmt::Layer<Registry, N, E, W>, Registry>;

@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ use sp_state_machine::{
 };
 use substrate_test_runtime_client::{
 	prelude::*,
-	runtime::{Block, DecodeFails, Header, TestAPI, Transfer},
+	runtime::{Block, Header, TestAPI, Transfer},
 	DefaultTestClientBuilderExt, TestClientBuilder,
 };
 
@@ -49,28 +49,6 @@ fn calling_native_runtime_function() {
 #[test]
 fn calling_wasm_runtime_function() {
 	calling_function_with_strat(ExecutionStrategy::AlwaysWasm);
-}
-
-#[test]
-#[should_panic(expected = "FailedToConvertParameter { function: \"fail_convert_parameter\"")]
-fn calling_native_runtime_function_with_non_decodable_parameter() {
-	let client = TestClientBuilder::new()
-		.set_execution_strategy(ExecutionStrategy::NativeWhenPossible)
-		.build();
-	let runtime_api = client.runtime_api();
-	let block_id = BlockId::Number(client.chain_info().best_number);
-	runtime_api.fail_convert_parameter(&block_id, DecodeFails::new()).unwrap();
-}
-
-#[test]
-#[should_panic(expected = "FailedToConvertReturnValue { function: \"fail_convert_return_value\"")]
-fn calling_native_runtime_function_with_non_decodable_return_value() {
-	let client = TestClientBuilder::new()
-		.set_execution_strategy(ExecutionStrategy::NativeWhenPossible)
-		.build();
-	let runtime_api = client.runtime_api();
-	let block_id = BlockId::Number(client.chain_info().best_number);
-	runtime_api.fail_convert_return_value(&block_id).unwrap();
 }
 
 #[test]
@@ -187,7 +165,7 @@ fn record_proof_works() {
 		amount: 1000,
 		nonce: 0,
 		from: AccountKeyring::Alice.into(),
-		to: Default::default(),
+		to: AccountKeyring::Bob.into(),
 	}
 	.into_signed_tx();
 
@@ -210,8 +188,9 @@ fn record_proof_works() {
 		WasmExecutionMethod::Interpreted,
 		None,
 		8,
+		2,
 	);
-	execution_proof_check_on_trie_backend::<_, u64, _, _>(
+	execution_proof_check_on_trie_backend(
 		&backend,
 		&mut overlay,
 		&executor,

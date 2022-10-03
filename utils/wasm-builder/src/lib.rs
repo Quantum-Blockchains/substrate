@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,10 +83,16 @@
 //!   needs to be absolute.
 //! - `WASM_BUILD_TOOLCHAIN` - The toolchain that should be used to build the Wasm binaries. The
 //!   format needs to be the same as used by cargo, e.g. `nightly-2020-02-20`.
+//! - `WASM_BUILD_WORKSPACE_HINT` - Hint the workspace that is being built. This is normally not
+//!   required as we walk up from the target directory until we find a `Cargo.toml`. If the target
+//!   directory is changed for the build, this environment variable can be used to point to the
+//!   actual workspace.
+//! - `CARGO_NET_OFFLINE` - If `true`, `--offline` will be passed to all processes launched to
+//!   prevent network access. Useful in offline environments.
 //!
 //! Each project can be skipped individually by using the environment variable
 //! `SKIP_PROJECT_NAME_WASM_BUILD`. Where `PROJECT_NAME` needs to be replaced by the name of the
-//! cargo project, e.g. `node-runtime` will be `NODE_RUNTIME`.
+//! cargo project, e.g. `kitchensink-runtime` will be `NODE_RUNTIME`.
 //!
 //! ## Prerequisites:
 //!
@@ -115,10 +121,15 @@ pub use builder::{WasmBuilder, WasmBuilderSelectProject};
 /// Environment variable that tells us to skip building the wasm binary.
 const SKIP_BUILD_ENV: &str = "SKIP_WASM_BUILD";
 
+/// Environment variable that tells us whether we should avoid network requests
+const OFFLINE: &str = "CARGO_NET_OFFLINE";
+
 /// Environment variable to force a certain build type when building the wasm binary.
-/// Expects "debug" or "release" as value.
+/// Expects "debug", "release" or "production" as value.
 ///
-/// By default the WASM binary uses the same build type as the main cargo build.
+/// When unset the WASM binary uses the same build type as the main cargo build with
+/// the exception of a debug build: In this case the wasm build defaults to `release` in
+/// order to avoid a slowdown when not explicitly requested.
 const WASM_BUILD_TYPE_ENV: &str = "WASM_BUILD_TYPE";
 
 /// Environment variable to extend the `RUSTFLAGS` variable given to the wasm build.
@@ -137,6 +148,9 @@ const WASM_BUILD_TOOLCHAIN: &str = "WASM_BUILD_TOOLCHAIN";
 
 /// Environment variable that makes sure the WASM build is triggered.
 const FORCE_WASM_BUILD_ENV: &str = "FORCE_WASM_BUILD";
+
+/// Environment variable that hints the workspace we are building.
+const WASM_BUILD_WORKSPACE_HINT: &str = "WASM_BUILD_WORKSPACE_HINT";
 
 /// Write to the given `file` if the `content` is different.
 fn write_file_if_changed(file: impl AsRef<Path>, content: impl AsRef<str>) {

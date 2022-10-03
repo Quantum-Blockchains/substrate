@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,22 +36,24 @@ use sp_runtime::{
 
 #[test]
 fn test_unresponsiveness_slash_fraction() {
+	let dummy_offence =
+		UnresponsivenessOffence { session_index: 0, validator_set_count: 50, offenders: vec![()] };
 	// A single case of unresponsiveness is not slashed.
-	assert_eq!(UnresponsivenessOffence::<()>::slash_fraction(1, 50), Perbill::zero());
+	assert_eq!(dummy_offence.slash_fraction(1), Perbill::zero());
 
 	assert_eq!(
-		UnresponsivenessOffence::<()>::slash_fraction(5, 50),
+		dummy_offence.slash_fraction(5),
 		Perbill::zero(), // 0%
 	);
 
 	assert_eq!(
-		UnresponsivenessOffence::<()>::slash_fraction(7, 50),
+		dummy_offence.slash_fraction(7),
 		Perbill::from_parts(4200000), // 0.42%
 	);
 
 	// One third offline should be punished around 5%.
 	assert_eq!(
-		UnresponsivenessOffence::<()>::slash_fraction(17, 50),
+		dummy_offence.slash_fraction(17),
 		Perbill::from_parts(46200000), // 4.62%
 	);
 }
@@ -341,7 +343,7 @@ fn should_not_send_a_report_if_already_online() {
 		UintAuthorityId::set_all_keys(vec![1, 2, 3]);
 		// we expect error, since the authority is already online.
 		let mut res = ImOnline::send_heartbeats(4).unwrap();
-		assert_eq!(res.next().unwrap().unwrap(), ());
+		res.next().unwrap().unwrap();
 		assert_eq!(res.next().unwrap().unwrap_err(), OffchainErr::AlreadyOnline(1));
 		assert_eq!(res.next().unwrap().unwrap_err(), OffchainErr::AlreadyOnline(2));
 		assert_eq!(res.next(), None);

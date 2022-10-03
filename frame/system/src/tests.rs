@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,9 @@
 
 use crate::*;
 use frame_support::{
-	assert_noop, assert_ok, dispatch::PostDispatchInfo, weights::WithPostDispatchInfo,
+	assert_noop, assert_ok,
+	dispatch::PostDispatchInfo,
+	weights::{Pays, WithPostDispatchInfo},
 };
 use mock::{Origin, *};
 use sp_core::H256;
@@ -154,7 +156,8 @@ fn provider_required_to_support_consumer() {
 #[test]
 fn deposit_event_should_work() {
 	new_test_ext().execute_with(|| {
-		System::initialize(&1, &[0u8; 32].into(), &Default::default(), InitKind::Full);
+		System::reset_events();
+		System::initialize(&1, &[0u8; 32].into(), &Default::default());
 		System::note_finished_extrinsics();
 		System::deposit_event(SysEvent::CodeUpdated);
 		System::finalize();
@@ -167,45 +170,46 @@ fn deposit_event_should_work() {
 			}]
 		);
 
-		System::initialize(&2, &[0u8; 32].into(), &Default::default(), InitKind::Full);
-		System::deposit_event(SysEvent::NewAccount(32));
+		System::reset_events();
+		System::initialize(&2, &[0u8; 32].into(), &Default::default());
+		System::deposit_event(SysEvent::NewAccount { account: 32 });
 		System::note_finished_initialize();
-		System::deposit_event(SysEvent::KilledAccount(42));
+		System::deposit_event(SysEvent::KilledAccount { account: 42 });
 		System::note_applied_extrinsic(&Ok(().into()), Default::default());
 		System::note_applied_extrinsic(&Err(DispatchError::BadOrigin.into()), Default::default());
 		System::note_finished_extrinsics();
-		System::deposit_event(SysEvent::NewAccount(3));
+		System::deposit_event(SysEvent::NewAccount { account: 3 });
 		System::finalize();
 		assert_eq!(
 			System::events(),
 			vec![
 				EventRecord {
 					phase: Phase::Initialization,
-					event: SysEvent::NewAccount(32).into(),
+					event: SysEvent::NewAccount { account: 32 }.into(),
 					topics: vec![],
 				},
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(0),
-					event: SysEvent::KilledAccount(42).into(),
+					event: SysEvent::KilledAccount { account: 42 }.into(),
 					topics: vec![]
 				},
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(0),
-					event: SysEvent::ExtrinsicSuccess(Default::default()).into(),
+					event: SysEvent::ExtrinsicSuccess { dispatch_info: Default::default() }.into(),
 					topics: vec![]
 				},
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(1),
-					event: SysEvent::ExtrinsicFailed(
-						DispatchError::BadOrigin.into(),
-						Default::default()
-					)
+					event: SysEvent::ExtrinsicFailed {
+						dispatch_error: DispatchError::BadOrigin.into(),
+						dispatch_info: Default::default()
+					}
 					.into(),
 					topics: vec![]
 				},
 				EventRecord {
 					phase: Phase::Finalization,
-					event: SysEvent::NewAccount(3).into(),
+					event: SysEvent::NewAccount { account: 3 }.into(),
 					topics: vec![]
 				},
 			]
@@ -214,9 +218,10 @@ fn deposit_event_should_work() {
 }
 
 #[test]
-fn deposit_event_uses_actual_weight() {
+fn deposit_event_uses_actual_weight_and_pays_fee() {
 	new_test_ext().execute_with(|| {
-		System::initialize(&1, &[0u8; 32].into(), &Default::default(), InitKind::Full);
+		System::reset_events();
+		System::initialize(&1, &[0u8; 32].into(), &Default::default());
 		System::note_finished_initialize();
 
 		let pre_info = DispatchInfo { weight: 1000, ..Default::default() };
@@ -227,44 +232,154 @@ fn deposit_event_uses_actual_weight() {
 			&Ok(Some(1200).into()),
 			pre_info,
 		);
+		System::note_applied_extrinsic(&Ok((Some(2_500_000), Pays::Yes).into()), pre_info);
+		System::note_applied_extrinsic(&Ok(Pays::No.into()), pre_info);
+		System::note_applied_extrinsic(&Ok((Some(2_500_000), Pays::No).into()), pre_info);
+		System::note_applied_extrinsic(&Ok((Some(500), Pays::No).into()), pre_info);
 		System::note_applied_extrinsic(&Err(DispatchError::BadOrigin.with_weight(999)), pre_info);
+
+		System::note_applied_extrinsic(
+			&Err(DispatchErrorWithPostInfo {
+				post_info: PostDispatchInfo { actual_weight: None, pays_fee: Pays::Yes },
+				error: DispatchError::BadOrigin,
+			}),
+			pre_info,
+		);
+		System::note_applied_extrinsic(
+			&Err(DispatchErrorWithPostInfo {
+				post_info: PostDispatchInfo { actual_weight: Some(800), pays_fee: Pays::Yes },
+				error: DispatchError::BadOrigin,
+			}),
+			pre_info,
+		);
+		System::note_applied_extrinsic(
+			&Err(DispatchErrorWithPostInfo {
+				post_info: PostDispatchInfo { actual_weight: Some(800), pays_fee: Pays::No },
+				error: DispatchError::BadOrigin,
+			}),
+			pre_info,
+		);
 
 		assert_eq!(
 			System::events(),
 			vec![
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(0),
-					event: SysEvent::ExtrinsicSuccess(DispatchInfo {
-						weight: 300,
-						..Default::default()
-					},)
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo { weight: 300, ..Default::default() },
+					}
 					.into(),
 					topics: vec![]
 				},
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(1),
-					event: SysEvent::ExtrinsicSuccess(DispatchInfo {
-						weight: 1000,
-						..Default::default()
-					},)
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo { weight: 1000, ..Default::default() },
+					}
 					.into(),
 					topics: vec![]
 				},
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(2),
-					event: SysEvent::ExtrinsicSuccess(DispatchInfo {
-						weight: 1000,
-						..Default::default()
-					},)
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo { weight: 1000, ..Default::default() },
+					}
 					.into(),
 					topics: vec![]
 				},
 				EventRecord {
 					phase: Phase::ApplyExtrinsic(3),
-					event: SysEvent::ExtrinsicFailed(
-						DispatchError::BadOrigin.into(),
-						DispatchInfo { weight: 999, ..Default::default() },
-					)
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo {
+							weight: 1000,
+							pays_fee: Pays::Yes,
+							..Default::default()
+						},
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(4),
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo {
+							weight: 1000,
+							pays_fee: Pays::No,
+							..Default::default()
+						},
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(5),
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo {
+							weight: 1000,
+							pays_fee: Pays::No,
+							..Default::default()
+						},
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(6),
+					event: SysEvent::ExtrinsicSuccess {
+						dispatch_info: DispatchInfo {
+							weight: 500,
+							pays_fee: Pays::No,
+							..Default::default()
+						},
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(7),
+					event: SysEvent::ExtrinsicFailed {
+						dispatch_error: DispatchError::BadOrigin.into(),
+						dispatch_info: DispatchInfo { weight: 999, ..Default::default() },
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(8),
+					event: SysEvent::ExtrinsicFailed {
+						dispatch_error: DispatchError::BadOrigin.into(),
+						dispatch_info: DispatchInfo {
+							weight: 1000,
+							pays_fee: Pays::Yes,
+							..Default::default()
+						},
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(9),
+					event: SysEvent::ExtrinsicFailed {
+						dispatch_error: DispatchError::BadOrigin.into(),
+						dispatch_info: DispatchInfo {
+							weight: 800,
+							pays_fee: Pays::Yes,
+							..Default::default()
+						},
+					}
+					.into(),
+					topics: vec![]
+				},
+				EventRecord {
+					phase: Phase::ApplyExtrinsic(10),
+					event: SysEvent::ExtrinsicFailed {
+						dispatch_error: DispatchError::BadOrigin.into(),
+						dispatch_info: DispatchInfo {
+							weight: 800,
+							pays_fee: Pays::No,
+							..Default::default()
+						},
+					}
 					.into(),
 					topics: vec![]
 				},
@@ -278,15 +393,16 @@ fn deposit_event_topics() {
 	new_test_ext().execute_with(|| {
 		const BLOCK_NUMBER: u64 = 1;
 
-		System::initialize(&BLOCK_NUMBER, &[0u8; 32].into(), &Default::default(), InitKind::Full);
+		System::reset_events();
+		System::initialize(&BLOCK_NUMBER, &[0u8; 32].into(), &Default::default());
 		System::note_finished_extrinsics();
 
 		let topics = vec![H256::repeat_byte(1), H256::repeat_byte(2), H256::repeat_byte(3)];
 
 		// We deposit a few events with different sets of topics.
-		System::deposit_event_indexed(&topics[0..3], SysEvent::NewAccount(1).into());
-		System::deposit_event_indexed(&topics[0..1], SysEvent::NewAccount(2).into());
-		System::deposit_event_indexed(&topics[1..2], SysEvent::NewAccount(3).into());
+		System::deposit_event_indexed(&topics[0..3], SysEvent::NewAccount { account: 1 }.into());
+		System::deposit_event_indexed(&topics[0..1], SysEvent::NewAccount { account: 2 }.into());
+		System::deposit_event_indexed(&topics[1..2], SysEvent::NewAccount { account: 3 }.into());
 
 		System::finalize();
 
@@ -296,17 +412,17 @@ fn deposit_event_topics() {
 			vec![
 				EventRecord {
 					phase: Phase::Finalization,
-					event: SysEvent::NewAccount(1).into(),
+					event: SysEvent::NewAccount { account: 1 }.into(),
 					topics: topics[0..3].to_vec(),
 				},
 				EventRecord {
 					phase: Phase::Finalization,
-					event: SysEvent::NewAccount(2).into(),
+					event: SysEvent::NewAccount { account: 2 }.into(),
 					topics: topics[0..1].to_vec(),
 				},
 				EventRecord {
 					phase: Phase::Finalization,
-					event: SysEvent::NewAccount(3).into(),
+					event: SysEvent::NewAccount { account: 3 }.into(),
 					topics: topics[1..2].to_vec(),
 				}
 			]
@@ -336,7 +452,8 @@ fn prunes_block_hash_mappings() {
 	new_test_ext().execute_with(|| {
 		// simulate import of 15 blocks
 		for n in 1..=15 {
-			System::initialize(&n, &[n as u8 - 1; 32].into(), &Default::default(), InitKind::Full);
+			System::reset_events();
+			System::initialize(&n, &[n as u8 - 1; 32].into(), &Default::default());
 
 			System::finalize();
 		}
@@ -465,20 +582,10 @@ fn events_not_emitted_during_genesis() {
 }
 
 #[test]
-fn ensure_one_of_works() {
-	fn ensure_root_or_signed(o: RawOrigin<u64>) -> Result<Either<(), u64>, Origin> {
-		EnsureOneOf::<u64, EnsureRoot<u64>, EnsureSigned<u64>>::try_origin(o.into())
-	}
-
-	assert_eq!(ensure_root_or_signed(RawOrigin::Root).unwrap(), Either::Left(()));
-	assert_eq!(ensure_root_or_signed(RawOrigin::Signed(0)).unwrap(), Either::Right(0));
-	assert!(ensure_root_or_signed(RawOrigin::None).is_err());
-}
-
-#[test]
 fn extrinsics_root_is_calculated_correctly() {
 	new_test_ext().execute_with(|| {
-		System::initialize(&1, &[0u8; 32].into(), &Default::default(), InitKind::Full);
+		System::reset_events();
+		System::initialize(&1, &[0u8; 32].into(), &Default::default());
 		System::note_finished_initialize();
 		System::note_extrinsic(vec![1]);
 		System::note_applied_extrinsic(&Ok(().into()), Default::default());
@@ -495,8 +602,32 @@ fn extrinsics_root_is_calculated_correctly() {
 #[test]
 fn runtime_updated_digest_emitted_when_heap_pages_changed() {
 	new_test_ext().execute_with(|| {
-		System::initialize(&1, &[0u8; 32].into(), &Default::default(), InitKind::Full);
+		System::reset_events();
+		System::initialize(&1, &[0u8; 32].into(), &Default::default());
 		System::set_heap_pages(RawOrigin::Root.into(), 5).unwrap();
 		assert_runtime_updated_digest(1);
 	});
+}
+
+#[test]
+fn ensure_signed_stuff_works() {
+	struct Members;
+	impl SortedMembers<u64> for Members {
+		fn sorted_members() -> Vec<u64> {
+			(0..10).collect()
+		}
+	}
+
+	let signed_origin = Origin::signed(0u64);
+	assert_ok!(EnsureSigned::try_origin(signed_origin.clone()));
+	assert_ok!(EnsureSignedBy::<Members, _>::try_origin(signed_origin));
+
+	#[cfg(feature = "runtime-benchmarks")]
+	{
+		let successful_origin: Origin = EnsureSigned::successful_origin();
+		assert_ok!(EnsureSigned::try_origin(successful_origin));
+
+		let successful_origin: Origin = EnsureSignedBy::<Members, _>::successful_origin();
+		assert_ok!(EnsureSignedBy::<Members, _>::try_origin(successful_origin));
+	}
 }

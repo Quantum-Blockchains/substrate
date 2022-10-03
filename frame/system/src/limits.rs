@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -217,7 +217,7 @@ impl BlockWeights {
 	/// Verifies correctness of this `BlockWeights` object.
 	pub fn validate(self) -> ValidationResult {
 		fn or_max(w: Option<Weight>) -> Weight {
-			w.unwrap_or_else(|| Weight::max_value())
+			w.unwrap_or_else(Weight::max_value)
 		}
 		let mut error = ValidationErrors::default();
 
@@ -246,7 +246,7 @@ impl BlockWeights {
 			);
 			// Max extrinsic should not be 0
 			error_assert!(
-				weights.max_extrinsic.unwrap_or_else(|| Weight::max_value()) > 0,
+				weights.max_extrinsic.unwrap_or_else(Weight::max_value) > 0,
 				&mut error,
 				"[{:?}] {:?} (max_extrinsic) must not be 0. Check base cost and average initialization cost.",
 				class, weights.max_extrinsic,
@@ -369,7 +369,7 @@ impl BlockWeightsBuilder {
 	///
 	/// This is to make sure that extrinsics don't stay forever in the pool,
 	/// because they could seamingly fit the block (since they are below `max_block`),
-	/// but the cost of calling `on_initialize` alway prevents them from being included.
+	/// but the cost of calling `on_initialize` always prevents them from being included.
 	pub fn avg_block_initialization(mut self, init_cost: Perbill) -> Self {
 		self.init_cost = Some(init_cost);
 		self

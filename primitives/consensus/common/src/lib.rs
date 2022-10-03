@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2018-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2018-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,13 +26,13 @@ use std::{sync::Arc, time::Duration};
 use futures::prelude::*;
 use sp_runtime::{
 	generic::BlockId,
-	traits::{Block as BlockT, DigestFor, HashFor, NumberFor},
+	traits::{Block as BlockT, HashFor},
+	Digest,
 };
 use sp_state_machine::StorageProof;
 
 pub mod block_validation;
 pub mod error;
-pub mod evaluation;
 mod select_chain;
 
 pub use self::error::Error;
@@ -97,7 +97,7 @@ pub trait Environment<B: BlockT> {
 		+ Unpin
 		+ 'static;
 	/// Error which can occur upon creation.
-	type Error: From<Error> + std::fmt::Debug + 'static;
+	type Error: From<Error> + std::error::Error + 'static;
 
 	/// Initialize the proposal logic on top of a specific header. Provide
 	/// the authorities at that header.
@@ -111,8 +111,7 @@ pub struct Proposal<Block: BlockT, Transaction, Proof> {
 	/// Proof that was recorded while building the block.
 	pub proof: Proof,
 	/// The storage changes while building this block.
-	pub storage_changes:
-		sp_state_machine::StorageChanges<Transaction, HashFor<Block>, NumberFor<Block>>,
+	pub storage_changes: sp_state_machine::StorageChanges<Transaction, HashFor<Block>>,
 }
 
 /// Error that is returned when [`ProofRecording`] requested to record a proof,
@@ -169,7 +168,7 @@ impl ProofRecording for EnableProofRecording {
 	const ENABLED: bool = true;
 
 	fn into_proof(proof: Option<StorageProof>) -> Result<Self::Proof, NoProofRecorded> {
-		proof.ok_or_else(|| NoProofRecorded)
+		proof.ok_or(NoProofRecorded)
 	}
 }
 
@@ -191,7 +190,7 @@ mod private {
 /// Proposers are generic over bits of "consensus data" which are engine-specific.
 pub trait Proposer<B: BlockT> {
 	/// Error type which can occur when proposing or evaluating.
-	type Error: From<Error> + std::fmt::Debug + 'static;
+	type Error: From<Error> + std::error::Error + 'static;
 	/// The transaction type used by the backend.
 	type Transaction: Default + Send + 'static;
 	/// Future that resolves to a committed proposal with an optional proof.
@@ -224,7 +223,7 @@ pub trait Proposer<B: BlockT> {
 	fn propose(
 		self,
 		inherent_data: InherentData,
-		inherent_digests: DigestFor<B>,
+		inherent_digests: Digest,
 		max_duration: Duration,
 		block_size_limit: Option<usize>,
 	) -> Self::Proposal;
@@ -237,10 +236,10 @@ pub trait Proposer<B: BlockT> {
 pub trait SyncOracle {
 	/// Whether the synchronization service is undergoing major sync.
 	/// Returns true if so.
-	fn is_major_syncing(&mut self) -> bool;
+	fn is_major_syncing(&self) -> bool;
 	/// Whether the synchronization service is offline.
 	/// Returns true if so.
-	fn is_offline(&mut self) -> bool;
+	fn is_offline(&self) -> bool;
 }
 
 /// A synchronization oracle for when there is no network.
@@ -248,10 +247,10 @@ pub trait SyncOracle {
 pub struct NoNetwork;
 
 impl SyncOracle for NoNetwork {
-	fn is_major_syncing(&mut self) -> bool {
+	fn is_major_syncing(&self) -> bool {
 		false
 	}
-	fn is_offline(&mut self) -> bool {
+	fn is_offline(&self) -> bool {
 		false
 	}
 }
@@ -259,14 +258,14 @@ impl SyncOracle for NoNetwork {
 impl<T> SyncOracle for Arc<T>
 where
 	T: ?Sized,
-	for<'r> &'r T: SyncOracle,
+	T: SyncOracle,
 {
-	fn is_major_syncing(&mut self) -> bool {
-		<&T>::is_major_syncing(&mut &**self)
+	fn is_major_syncing(&self) -> bool {
+		T::is_major_syncing(self)
 	}
 
-	fn is_offline(&mut self) -> bool {
-		<&T>::is_offline(&mut &**self)
+	fn is_offline(&self) -> bool {
+		T::is_offline(self)
 	}
 }
 
@@ -326,13 +325,4 @@ impl<Block: BlockT> CanAuthorWith<Block> for NeverCanAuthor {
 	fn can_author_with(&self, _: &BlockId<Block>) -> Result<(), String> {
 		Err("Authoring is always disabled.".to_string())
 	}
-}
-
-/// A type from which a slot duration can be obtained.
-pub trait SlotData {
-	/// Gets the slot duration.
-	fn slot_duration(&self) -> sp_std::time::Duration;
-
-	/// The static slot key
-	const SLOT_KEY: &'static [u8];
 }

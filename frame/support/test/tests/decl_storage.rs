@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -797,7 +797,7 @@ mod test_append_and_len {
 		TestExternalities::default().execute_with(|| {
 			let key = JustVec::hashed_key();
 			// Set it to some invalid value.
-			frame_support::storage::unhashed::put_raw(&key, &*b"1");
+			frame_support::storage::unhashed::put_raw(&key, b"1");
 			assert!(JustVec::get().is_empty());
 			assert_eq!(frame_support::storage::unhashed::get_raw(&key), Some(b"1".to_vec()));
 

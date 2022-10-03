@@ -1,6 +1,6 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2019-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -35,15 +35,14 @@
 
 #![warn(missing_docs)]
 
-use std::{collections::HashSet, fmt, marker::PhantomData, sync::Arc};
+use std::{fmt, marker::PhantomData, sync::Arc};
 
 use futures::{
 	future::{ready, Future},
 	prelude::*,
 };
-use log::{debug, warn};
 use parking_lot::Mutex;
-use sc_network::{ExHashT, NetworkService, NetworkStateInfo, PeerId};
+use sc_network_common::service::{NetworkPeers, NetworkStateInfo};
 use sp_api::{ApiExt, ProvideRuntimeApi};
 use sp_core::{offchain, traits::SpawnNamed, ExecutionContext};
 use sp_runtime::{
@@ -57,28 +56,20 @@ mod api;
 pub use api::Db as OffchainDb;
 pub use sp_offchain::{OffchainWorkerApi, STORAGE_PREFIX};
 
+const LOG_TARGET: &str = "offchain-worker";
+
 /// NetworkProvider provides [`OffchainWorkers`] with all necessary hooks into the
 /// underlying Substrate networking.
-pub trait NetworkProvider: NetworkStateInfo {
-	/// Set the authorized peers.
-	fn set_authorized_peers(&self, peers: HashSet<PeerId>);
+pub trait NetworkProvider: NetworkStateInfo + NetworkPeers {}
 
-	/// Set the authorized only flag.
-	fn set_authorized_only(&self, reserved_only: bool);
-}
+impl<T> NetworkProvider for T where T: NetworkStateInfo + NetworkPeers {}
 
-impl<B, H> NetworkProvider for NetworkService<B, H>
-where
-	B: traits::Block + 'static,
-	H: ExHashT,
-{
-	fn set_authorized_peers(&self, peers: HashSet<PeerId>) {
-		self.set_authorized_peers(peers)
-	}
-
-	fn set_authorized_only(&self, reserved_only: bool) {
-		self.set_authorized_only(reserved_only)
-	}
+/// Options for [`OffchainWorkers`]
+pub struct OffchainWorkerOptions {
+	/// Enable http requests from offchain workers?
+	///
+	/// If not enabled, any http request will panic.
+	pub enable_http_requests: bool,
 }
 
 /// An offchain workers manager.
@@ -86,13 +77,18 @@ pub struct OffchainWorkers<Client, Block: traits::Block> {
 	client: Arc<Client>,
 	_block: PhantomData<Block>,
 	thread_pool: Mutex<ThreadPool>,
-	shared_client: api::SharedClient,
+	shared_http_client: api::SharedClient,
+	enable_http: bool,
 }
 
 impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
-	/// Creates new `OffchainWorkers`.
+	/// Creates new [`OffchainWorkers`].
 	pub fn new(client: Arc<Client>) -> Self {
-		let shared_client = api::SharedClient::new();
+		Self::new_with_options(client, OffchainWorkerOptions { enable_http_requests: true })
+	}
+
+	/// Creates new [`OffchainWorkers`] using the given `options`.
+	pub fn new_with_options(client: Arc<Client>, options: OffchainWorkerOptions) -> Self {
 		Self {
 			client,
 			_block: PhantomData,
@@ -100,7 +96,8 @@ impl<Client, Block: traits::Block> OffchainWorkers<Client, Block> {
 				"offchain-worker".into(),
 				num_cpus::get(),
 			)),
-			shared_client,
+			shared_http_client: api::SharedClient::new(),
+			enable_http: options.enable_http_requests,
 		}
 	}
 }
@@ -135,23 +132,37 @@ where
 			err => {
 				let help =
 					"Consider turning off offchain workers if they are not part of your runtime.";
-				log::error!("Unsupported Offchain Worker API version: {:?}. {}.", err, help);
+				tracing::error!(
+					target: LOG_TARGET,
+					"Unsupported Offchain Worker API version: {:?}. {}.",
+					err,
+					help
+				);
 				0
 			},
 		};
-		debug!("Checking offchain workers at {:?}: version:{}", at, version);
-		if version > 0 {
+		tracing::debug!(
+			target: LOG_TARGET,
+			"Checking offchain workers at {:?}: version:{}",
+			at,
+			version
+		);
+		let process = (version > 0).then(|| {
 			let (api, runner) =
-				api::AsyncApi::new(network_provider, is_validator, self.shared_client.clone());
-			debug!("Spawning offchain workers at {:?}", at);
+				api::AsyncApi::new(network_provider, is_validator, self.shared_http_client.clone());
+			tracing::debug!(target: LOG_TARGET, "Spawning offchain workers at {:?}", at);
 			let header = header.clone();
 			let client = self.client.clone();
+
+			let mut capabilities = offchain::Capabilities::all();
+
+			capabilities.set(offchain::Capabilities::HTTP, self.enable_http);
 			self.spawn_worker(move || {
 				let runtime = client.runtime_api();
 				let api = Box::new(api);
-				debug!("Running offchain workers at {:?}", at);
-				let context =
-					ExecutionContext::OffchainCall(Some((api, offchain::Capabilities::all())));
+				tracing::debug!(target: LOG_TARGET, "Running offchain workers at {:?}", at);
+
+				let context = ExecutionContext::OffchainCall(Some((api, capabilities)));
 				let run = if version == 2 {
 					runtime.offchain_worker_with_context(&at, context, &header)
 				} else {
@@ -163,12 +174,20 @@ where
 					)
 				};
 				if let Err(e) = run {
-					log::error!("Error running offchain workers at {:?}: {:?}", at, e);
+					tracing::error!(
+						target: LOG_TARGET,
+						"Error running offchain workers at {:?}: {}",
+						at,
+						e
+					);
 				}
 			});
-			futures::future::Either::Left(runner.process())
-		} else {
-			futures::future::Either::Right(futures::future::ready(()))
+
+			runner.process()
+		});
+
+		async move {
+			futures::future::OptionFuture::from(process).await;
 		}
 	}
 
@@ -205,13 +224,14 @@ pub async fn notification_future<Client, Block, Spawner>(
 			if n.is_new_best {
 				spawner.spawn(
 					"offchain-on-block",
+					Some("offchain-worker"),
 					offchain
 						.on_block_imported(&n.header, network_provider.clone(), is_validator)
 						.boxed(),
 				);
 			} else {
-				log::debug!(
-					target: "sc_offchain",
+				tracing::debug!(
+					target: LOG_TARGET,
 					"Skipping offchain workers for non-canon block: {:?}",
 					n.header,
 				)
@@ -228,11 +248,11 @@ mod tests {
 	use futures::executor::block_on;
 	use sc_block_builder::BlockBuilderProvider as _;
 	use sc_client_api::Backend as _;
-	use sc_network::{Multiaddr, PeerId};
+	use sc_network::{Multiaddr, PeerId, ReputationChange};
 	use sc_transaction_pool::{BasicPool, FullChainApi};
 	use sc_transaction_pool_api::{InPoolTransaction, TransactionPool};
 	use sp_consensus::BlockOrigin;
-	use std::sync::Arc;
+	use std::{borrow::Cow, collections::HashSet, sync::Arc};
 	use substrate_test_runtime_client::{
 		runtime::Block, ClientBlockImportExt, DefaultTestClientBuilderExt, TestClient,
 		TestClientBuilderExt,
@@ -250,13 +270,81 @@ mod tests {
 		}
 	}
 
-	impl NetworkProvider for TestNetwork {
+	impl NetworkPeers for TestNetwork {
 		fn set_authorized_peers(&self, _peers: HashSet<PeerId>) {
-			unimplemented!()
+			unimplemented!();
 		}
 
 		fn set_authorized_only(&self, _reserved_only: bool) {
-			unimplemented!()
+			unimplemented!();
+		}
+
+		fn add_known_address(&self, _peer_id: PeerId, _addr: Multiaddr) {
+			unimplemented!();
+		}
+
+		fn report_peer(&self, _who: PeerId, _cost_benefit: ReputationChange) {
+			unimplemented!();
+		}
+
+		fn disconnect_peer(&self, _who: PeerId, _protocol: Cow<'static, str>) {
+			unimplemented!();
+		}
+
+		fn accept_unreserved_peers(&self) {
+			unimplemented!();
+		}
+
+		fn deny_unreserved_peers(&self) {
+			unimplemented!();
+		}
+
+		fn add_reserved_peer(&self, _peer: String) -> Result<(), String> {
+			unimplemented!();
+		}
+
+		fn remove_reserved_peer(&self, _peer_id: PeerId) {
+			unimplemented!();
+		}
+
+		fn set_reserved_peers(
+			&self,
+			_protocol: Cow<'static, str>,
+			_peers: HashSet<Multiaddr>,
+		) -> Result<(), String> {
+			unimplemented!();
+		}
+
+		fn add_peers_to_reserved_set(
+			&self,
+			_protocol: Cow<'static, str>,
+			_peers: HashSet<Multiaddr>,
+		) -> Result<(), String> {
+			unimplemented!();
+		}
+
+		fn remove_peers_from_reserved_set(
+			&self,
+			_protocol: Cow<'static, str>,
+			_peers: Vec<PeerId>,
+		) {
+			unimplemented!();
+		}
+
+		fn add_to_peers_set(
+			&self,
+			_protocol: Cow<'static, str>,
+			_peers: HashSet<Multiaddr>,
+		) -> Result<(), String> {
+			unimplemented!();
+		}
+
+		fn remove_from_peers_set(&self, _protocol: Cow<'static, str>, _peers: Vec<PeerId>) {
+			unimplemented!();
+		}
+
+		fn sync_num_connected(&self) -> usize {
+			unimplemented!();
 		}
 	}
 
