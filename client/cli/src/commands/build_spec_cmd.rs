@@ -65,6 +65,9 @@ impl BuildSpecCmd {
 
 		if spec.boot_nodes().is_empty() && !self.disable_default_bootnode {
 			let keys = network_config.node_key.into_keypair()?;
+			let pre_shared_key = network_config.node_psk_key.into_pre_share_key()?;
+			println!("Pre shared key: {:?}", pre_shared_key);
+			log::info!("LOG Pre shared key: {:?}", pre_shared_key);
 			let peer_id = keys.public().to_peer_id();
 			let addr = MultiaddrWithPeerId {
 				multiaddr: build_multiaddr![Ip4([127, 0, 0, 1]), Tcp(30333u16)],

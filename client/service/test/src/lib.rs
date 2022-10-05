@@ -208,6 +208,7 @@ fn node_config<
 		format!("Node {}", index),
 		"network/test/0.1",
 		Default::default(),
+		Default::default(),
 		None,
 	);
 

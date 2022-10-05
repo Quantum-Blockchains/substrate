@@ -565,7 +565,7 @@ fn ensure_listen_addresses_consistent_with_transport_memory() {
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		transport: config::TransportConfig::MemoryOnly,
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -576,7 +576,7 @@ fn ensure_listen_addresses_consistent_with_transport_not_memory() {
 
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -593,7 +593,7 @@ fn ensure_boot_node_addresses_consistent_with_transport_memory() {
 		listen_addresses: vec![listen_addr.clone()],
 		transport: config::TransportConfig::MemoryOnly,
 		boot_nodes: vec![boot_node],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -609,7 +609,7 @@ fn ensure_boot_node_addresses_consistent_with_transport_not_memory() {
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		boot_nodes: vec![boot_node],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -629,7 +629,7 @@ fn ensure_reserved_node_addresses_consistent_with_transport_memory() {
 			reserved_nodes: vec![reserved_node],
 			..Default::default()
 		},
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -648,7 +648,7 @@ fn ensure_reserved_node_addresses_consistent_with_transport_not_memory() {
 			reserved_nodes: vec![reserved_node],
 			..Default::default()
 		},
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -662,7 +662,7 @@ fn ensure_public_addresses_consistent_with_transport_memory() {
 		listen_addresses: vec![listen_addr.clone()],
 		transport: config::TransportConfig::MemoryOnly,
 		public_addresses: vec![public_address],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }
 
@@ -675,6 +675,6 @@ fn ensure_public_addresses_consistent_with_transport_not_memory() {
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		public_addresses: vec![public_address],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), None)
+		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
 	});
 }

@@ -39,6 +39,7 @@ use libp2p::{
 	identity::{ed25519, Keypair},
 	multiaddr, Multiaddr, PeerId,
 };
+use libp2p::pnet::PreSharedKey;
 use prometheus_endpoint::Registry;
 use sc_consensus::ImportQueue;
 use sc_network_common::sync::ChainSync;
@@ -396,6 +397,8 @@ pub struct NetworkConfiguration {
 	pub boot_nodes: Vec<MultiaddrWithPeerId>,
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
+	/// The node key configuration, which determines the node's network identity keypair.
+	pub node_psk_key: NodePreShareKeyConfig,
 	/// List of request-response protocols that the node supports.
 	pub request_response_protocols: Vec<RequestResponseConfig>,
 	/// Configuration for the default set of nodes used for block syncing and transactions.
@@ -460,6 +463,7 @@ impl NetworkConfiguration {
 		node_name: SN,
 		client_version: SV,
 		node_key: NodeKeyConfig,
+		node_psk_key: NodePreShareKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
 		let default_peers_set = SetConfig::default();
@@ -469,6 +473,7 @@ impl NetworkConfiguration {
 			public_addresses: Vec::new(),
 			boot_nodes: Vec::new(),
 			node_key,
+			node_psk_key,
 			request_response_protocols: Vec::new(),
 			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
 			default_peers_set,
@@ -490,7 +495,7 @@ impl NetworkConfiguration {
 	/// testing)
 	pub fn new_local() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
@@ -505,7 +510,7 @@ impl NetworkConfiguration {
 	/// testing)
 	pub fn new_memory() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
@@ -639,6 +644,83 @@ impl NonReservedPeerMode {
 			"accept" => Some(Self::Accept),
 			"deny" => Some(Self::Deny),
 			_ => None,
+		}
+	}
+}
+
+///Doc
+#[derive(Clone, Debug)]
+pub enum NodePreShareKeyConfig {
+	/// A Ed25519 secret key configuration.
+	PRESHAREDKEY(PreSharedKeySecret),
+}
+
+/// The options for obtaining a Ed25519 secret key.
+pub type PSKey = PreSharedKeySecret;
+
+///Doc
+#[derive(Clone)]
+pub enum PreSharedKeySecret {
+	///Doc
+	File(PathBuf),
+	///Doc
+	New,
+}
+
+impl Default for NodePreShareKeyConfig {
+	fn default() -> NodePreShareKeyConfig {
+		Self::PRESHAREDKEY(PreSharedKeySecret::New)
+	}
+}
+
+impl fmt::Debug for PreSharedKeySecret {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			Self::File(path) => f.debug_tuple("PSKSecret::File").field(path).finish(),
+			Self::New => f.debug_tuple("PSKSecret::New").finish(),
+		}
+	}
+}
+
+impl NodePreShareKeyConfig {
+	/// Evaluate a `NodeKeyConfig` to obtain an identity `Keypair`:
+	///
+	///  * If the secret is configured as input, the corresponding keypair is returned.
+	///
+	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
+	///    a new secret is generated and stored. In either case, the keypair obtained from the
+	///    secret is returned.
+	///
+	///  * If the secret is configured to be new, it is generated and the corresponding keypair is
+	///    returned.
+	pub fn into_pre_share_key(self) -> io::Result<PreSharedKey> {
+		use NodePreShareKeyConfig::*;
+		match self {
+			PRESHAREDKEY(PreSharedKeySecret::File(f)) => {
+				match std::fs::read(&f){
+					Ok(pre_shared_key_bytes) => {
+						if (pre_shared_key_bytes.len() != 32) {
+							// Err(std::io::Error::new(io::ErrorKind::InvalidData, io::ErrorKind::InvalidData));
+							log::info!("Plochaja dlina: {}", pre_shared_key_bytes.len());
+						}
+						let mut data: [u8; 32] = [0;32];
+						for i in 0..32 {
+							data[i] = pre_shared_key_bytes[i];
+						}
+						Ok(PreSharedKey::new(data))
+					},
+					Err(e) => {
+						Err(std::io::Error::new(io::ErrorKind::InvalidData, e))
+					}
+				}
+			},
+			PRESHAREDKEY(PreSharedKeySecret::New) => {
+				Ok(
+				PreSharedKey::new(
+					[24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
+					133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215]
+				))
+			}
 		}
 	}
 }

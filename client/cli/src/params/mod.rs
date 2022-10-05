@@ -24,6 +24,7 @@ mod offchain_worker_params;
 mod pruning_params;
 mod shared_params;
 mod transaction_pool_params;
+mod node_psk_key_params;
 
 use crate::arg_enums::{CryptoScheme, OutputType};
 use clap::Args;
@@ -37,7 +38,7 @@ use std::{fmt::Debug, str::FromStr};
 pub use crate::params::{
 	database_params::*, import_params::*, keystore_params::*, network_params::*,
 	node_key_params::*, offchain_worker_params::*, pruning_params::*, shared_params::*,
-	transaction_pool_params::*,
+	transaction_pool_params::*, node_psk_key_params::*,
 };
 
 /// Wrapper type of `String` that holds an unsigned integer of arbitrary size, formatted as a

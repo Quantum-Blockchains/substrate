@@ -780,7 +780,7 @@ where
 		let listen_addr = build_multiaddr![Memory(rand::random::<u64>())];
 
 		let mut network_config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None);
 		network_config.sync_mode = config.sync_mode;
 		network_config.transport = TransportConfig::MemoryOnly;
 		network_config.listen_addresses = vec![listen_addr.clone()];

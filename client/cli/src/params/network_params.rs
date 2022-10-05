@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{arg_enums::SyncMode, params::node_key_params::NodeKeyParams};
+use crate::{arg_enums::SyncMode, params::node_key_params::NodeKeyParams, params::node_psk_key_params::NodePreSharedKeyParams};
 use clap::Args;
 use sc_network::{
 	config::{
-		NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, SetConfig, TransportConfig,
+		NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, SetConfig, TransportConfig, NodePreShareKeyConfig
 	},
 	multiaddr::Protocol,
 };
@@ -111,6 +111,10 @@ pub struct NetworkParams {
 	#[clap(flatten)]
 	pub node_key_params: NodeKeyParams,
 
+	#[allow(missing_docs)]
+	#[clap(flatten)]
+	pub node_psk_key_params: NodePreSharedKeyParams,
+
 	/// Enable peer discovery on local networks.
 	///
 	/// By default this option is `true` for `--dev` or when the chain type is
@@ -158,6 +162,7 @@ impl NetworkParams {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
+		node_psk_key: NodePreShareKeyConfig,
 		default_listen_port: u16,
 	) -> NetworkConfiguration {
 		let port = self.port.unwrap_or(default_listen_port);
@@ -227,6 +232,7 @@ impl NetworkParams {
 			extra_sets: Vec::new(),
 			request_response_protocols: Vec::new(),
 			node_key,
+			node_psk_key,
 			node_name: node_name.to_string(),
 			client_version: client_id.to_string(),
 			transport: TransportConfig::Normal {
