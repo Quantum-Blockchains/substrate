@@ -116,6 +116,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		self.network_params().map(|x| &x.node_key_params)
 	}
 
+	/// Get the NodePreSharedKeyParams for this object.
 	fn node_psk_key_params(&self) -> Option<&NodePreSharedKeyParams> {
 		self.network_params().map(|x| &x.node_psk_key_params)
 	}
@@ -466,9 +467,13 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			.unwrap_or_else(|| Ok(Default::default()))
 	}
 
-	fn node_pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<NodePreShareKeyConfig> {
+	/// Get the node pre shared key from the current object
+	///
+	/// By default this is retrieved from `NodePreSharedKeyParams` if it is available. Otherwise its
+	//// `NodePreSharedKeyConfig::default()`.
+	fn node_pre_shared_key(&self) -> Result<NodePreShareKeyConfig> {
 		self.node_psk_key_params()
-			.map(|x| x.node_pre_shared_key(net_config_dir))
+			.map(|x| x.node_pre_shared_key())
 			.unwrap_or_else(|| Ok(Default::default()))
 	}
 
@@ -520,7 +525,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
-		let node_pre_shared_key = self.node_pre_shared_key(&net_config_dir)?;
+		let node_pre_shared_key = self.node_pre_shared_key()?;
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();

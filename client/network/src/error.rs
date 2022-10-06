@@ -67,6 +67,14 @@ pub enum Error {
 		/// Name of the protocol registered multiple times.
 		protocol: Cow<'static, str>,
 	},
+
+	/// Pre shared key length in file is not equal to 32 bytes.
+	#[error("Invalid length of pre shared key. Length: {len}")]
+	InvalidLengthOfPreSharedKey {
+		/// Length of data in file.
+		len: usize,
+	},
+
 }
 
 // Make `Debug` use the `Display` implementation.

@@ -31,7 +31,7 @@ pub use sc_network_common::{
 
 pub use libp2p::{build_multiaddr, core::PublicKey, identity};
 
-use crate::ExHashT;
+use crate::{ExHashT, error};
 
 use core::{fmt, iter};
 use futures::future;
@@ -662,14 +662,16 @@ pub type PSKey = PreSharedKeySecret;
 #[derive(Clone)]
 pub enum PreSharedKeySecret {
 	///Doc
+	Rpc(std::net::SocketAddr),
+	///Doc
 	File(PathBuf),
 	///Doc
-	New,
+	Hard,
 }
 
 impl Default for NodePreShareKeyConfig {
 	fn default() -> NodePreShareKeyConfig {
-		Self::PRESHAREDKEY(PreSharedKeySecret::New)
+		Self::PRESHAREDKEY(PreSharedKeySecret::Hard)
 	}
 }
 
@@ -677,52 +679,82 @@ impl fmt::Debug for PreSharedKeySecret {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Self::File(path) => f.debug_tuple("PSKSecret::File").field(path).finish(),
-			Self::New => f.debug_tuple("PSKSecret::New").finish(),
+			Self::Hard => f.debug_tuple("PSKSecret::New").finish(),
+			Self::Rpc(url) => f.debug_tuple("PSKSecret::Rpc").field(url).finish(),
 		}
 	}
 }
 
 impl NodePreShareKeyConfig {
-	/// Evaluate a `NodeKeyConfig` to obtain an identity `Keypair`:
-	///
-	///  * If the secret is configured as input, the corresponding keypair is returned.
+	/// Evaluate a `NodePreSharedKeyConfig` to obtain an identity `pre shared key`:
 	///
 	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
-	///    a new secret is generated and stored. In either case, the keypair obtained from the
-	///    secret is returned.
-	///
-	///  * If the secret is configured to be new, it is generated and the corresponding keypair is
-	///    returned.
+	///    return error.
+	/// * If an rpc endpoint is set to request a pre-shared key, then the request is sent to the given address. 
+	///   If the address is not correct, we return an error.
 	pub fn into_pre_share_key(self) -> io::Result<PreSharedKey> {
 		use NodePreShareKeyConfig::*;
 		match self {
-			PRESHAREDKEY(PreSharedKeySecret::File(f)) => {
-				match std::fs::read(&f){
-					Ok(pre_shared_key_bytes) => {
-						if (pre_shared_key_bytes.len() != 32) {
-							// Err(std::io::Error::new(io::ErrorKind::InvalidData, io::ErrorKind::InvalidData));
-							log::info!("Plochaja dlina: {}", pre_shared_key_bytes.len());
-						}
-						let mut data: [u8; 32] = [0;32];
-						for i in 0..32 {
-							data[i] = pre_shared_key_bytes[i];
-						}
-						Ok(PreSharedKey::new(data))
-					},
-					Err(e) => {
-						Err(std::io::Error::new(io::ErrorKind::InvalidData, e))
-					}
-				}
-			},
-			PRESHAREDKEY(PreSharedKeySecret::New) => {
+			PRESHAREDKEY(PreSharedKeySecret::Hard) => {
 				Ok(
 				PreSharedKey::new(
 					[24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
 					133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215]
 				))
-			}
+			},
+			PRESHAREDKEY(PreSharedKeySecret::Rpc(url)) => {
+				log::info!("Endpoint for requesting a pre shared key: {}", url.to_string());
+
+				//TODO Get pre-shared key via RPC
+
+				Ok(
+				PreSharedKey::new(
+					[24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
+					133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215]
+				))
+			},
+			PRESHAREDKEY(PreSharedKeySecret::File(f)) => get_pre_shared_key(
+				f, 
+				|b| match String::from_utf8(b.to_vec()).ok().and_then(|s| {
+					if s.len() == 64 {
+						hex::decode(&s).ok()
+					} else {
+						None
+					}
+				}) {
+					Some(s) => if s.len() == 32 {
+							let mut data: [u8; 32] = [0;32];
+							for i in 0..32 {
+								data[i] = s[i];
+							}
+							Ok(PreSharedKey::new(data))
+						} else {
+							Err(std::io::Error::new( io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: s.len()}))
+						},
+					_ => if b.len() == 32 {
+							Ok(PreSharedKey::new(b.try_into().expect("Invalid length.")))
+						} else {
+							Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: b.len()}))
+						},
+				}
+			)
 		}
 	}
+}
+
+/// Load a secret key from a file, if it exists, or generate a
+/// new secret key and write it to that file. In either case,
+/// the secret key is returned.
+fn get_pre_shared_key<P, F, E>(file: P, parse: F) -> io::Result<PreSharedKey>
+where
+	P: AsRef<Path>,
+	F: for<'r> FnOnce(&'r mut [u8]) -> Result<PreSharedKey, E>,
+	E: Error + Send + Sync + 'static,
+{
+	std::fs::read(&file)
+		.and_then(|mut sk_bytes| {
+			parse(&mut sk_bytes).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+		})
 }
 
 /// The configuration of a node's secret key, describing the type of key

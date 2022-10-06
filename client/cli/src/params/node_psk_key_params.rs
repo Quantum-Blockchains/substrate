@@ -17,19 +17,18 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use clap::Args;
-use sc_network::config::{NodePreShareKeyConfig};
-// use sp_core::H256;
-use std::{path::PathBuf};
-// use libp2p::pnet::PreSharedKey;
+use sc_network::config::NodePreShareKeyConfig;
+use std::{path::PathBuf, str::FromStr};
 
 use crate::{error};
-
-const PRE_SHARED_KEY_FILE: &str = "pre_shared_key";
 
 /// Parameters used to create the `NodePreSharedKeyConfig`, which determines the pre shared key
 /// used for libp2p networking.
 #[derive(Debug, Clone, Args)]
 pub struct NodePreSharedKeyParams {
+	/// Endpoint for requesting a pre shared key.
+	#[clap(long, value_name = "URL")]
+	pub rpc_addr_for_pre_shared_key: Option<String>,
     /// The file from which to read the secret pre shared key to use for libp2p networking.
 	#[clap(long, value_name = "FILE")]
 	pub node_pre_shared_key_file: Option<PathBuf>,
@@ -38,120 +37,83 @@ pub struct NodePreSharedKeyParams {
 impl NodePreSharedKeyParams {
 	/// Create a `NodePreSharedKeyConfig` from the given `NodePreSharedKeyParams` in the context
 	/// of an optional network config storage directory.
-	pub fn node_pre_shared_key(&self, net_config_dir: &PathBuf) -> error::Result<NodePreShareKeyConfig> {
-        let secret =
-		    sc_network::config::PreSharedKeySecret::File(
-			    self.node_pre_shared_key_file
-				.clone()
-				.unwrap_or_else(|| net_config_dir.join(PRE_SHARED_KEY_FILE)),
-			);
-        Ok(NodePreShareKeyConfig::PRESHAREDKEY(secret))
+	pub fn node_pre_shared_key(&self) -> error::Result<NodePreShareKeyConfig> {
+		if let Some(rpc_endpoint_for_pre_shared_key) = self.rpc_addr_for_pre_shared_key.clone() {
+			Ok(
+				NodePreShareKeyConfig::PRESHAREDKEY(
+					sc_network::config::PreSharedKeySecret::Rpc(
+						parse_url(&rpc_endpoint_for_pre_shared_key)?
+					)
+				)
+			)
+		} else if let Some(node_pre_shared_key_file) = self.node_pre_shared_key_file.clone() {
+			Ok(
+				NodePreShareKeyConfig::PRESHAREDKEY(
+					sc_network::config::PreSharedKeySecret::File(node_pre_shared_key_file)
+				)
+			)
+		} else {
+			Err(
+				error::Error::from(
+					"One of the arguments must be present: --rpc-addr-for-pre-shared-key or --node-pre-shared-key-file"
+				)
+			)
+		}
 	}
 }
 
-// // Create an error caused by an invalid node key argument.
-// fn invalid_pre_shared_key(e: impl std::fmt::Display) -> error::Error {
-// 	error::Error::Input(format!("Invalid pre-shared key: {}", e))
-// }
+/// Create an error caused by an invalid node key argument.
+fn invalid_url(e: impl std::fmt::Display) -> error::Error {
+	error::Error::Input(format!("Invalid url: {}", e))
+}
 
-//// Parse a Ed25519 secret key from a hex string into a `sc_network::Secret`.
-// fn parse_pre_shared_key(hex: &str) -> error::Result<sc_network::config::Ed25519Secret> {
-// 	H256::from_str(hex).map_err(invalid_node_key).and_then(|bytes| {
-// 		ed25519::SecretKey::from_bytes(bytes)
-// 			.map(sc_network::config::Secret::Input)
-// 			.map_err(invalid_node_key)
-// 	})
-// }
+/// Parse a Ed25519 secret key from a hex string into a `sc_network::Secret`.
+fn parse_url(url: &str) -> error::Result<std::net::SocketAddr> {
+		std::net::SocketAddr::from_str(url)
+			.map_err(invalid_url)
+	
+}
 
-// #[cfg(test)]
-// mod tests {
-// 	use super::*;
-// 	use clap::ArgEnum;
-// 	use sc_network::config::identity::{ed25519, Keypair};
-// 	use std::fs;
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use std::fs;
+	use libp2p::pnet::PreSharedKey;
 
-// 	#[test]
-// 	fn test_node_key_config_input() {
-// 		fn secret_input(net_config_dir: &PathBuf) -> error::Result<()> {
-// 			NodeKeyType::value_variants().iter().try_for_each(|t| {
-// 				let node_key_type = *t;
-// 				let sk = match node_key_type {
-// 					NodeKeyType::Ed25519 => ed25519::SecretKey::generate().as_ref().to_vec(),
-// 				};
-// 				let params = NodeKeyParams {
-// 					node_key_type,
-// 					node_key: Some(format!("{:x}", H256::from_slice(sk.as_ref()))),
-// 					node_key_file: None,
-// 				};
-// 				params.node_key(net_config_dir).and_then(|c| match c {
-// 					NodeKeyConfig::Ed25519(sc_network::config::Secret::Input(ref ski))
-// 						if node_key_type == NodeKeyType::Ed25519 && &sk[..] == ski.as_ref() =>
-// 						Ok(()),
-// 					_ => Err(error::Error::Input("Unexpected node key config".into())),
-// 				})
-// 			})
-// 		}
+	#[test]
+	fn test_node_key_config_file() {
+		fn check_key(file: PathBuf, key: &PreSharedKey) {
+			let params = NodePreSharedKeyParams {
+				node_pre_shared_key_file: Some(file),
+				rpc_addr_for_pre_shared_key: None
+			};
 
-// 		assert!(secret_input(&PathBuf::from_str("x").unwrap()).is_ok());
-// 	}
+			let node_pre_shared_key = params
+				.node_pre_shared_key()
+				.expect("Creates node key config")
+				.into_pre_share_key()
+				.expect("Creates node key pair");
 
-// 	#[test]
-// 	fn test_node_key_config_file() {
-// 		fn check_key(file: PathBuf, key: &ed25519::SecretKey) {
-// 			let params = NodeKeyParams {
-// 				node_key_type: NodeKeyType::Ed25519,
-// 				node_key: None,
-// 				node_key_file: Some(file),
-// 			};
+			if &node_pre_shared_key == key {
 
-// 			let node_key = params
-// 				.node_key(&PathBuf::from("not-used"))
-// 				.expect("Creates node key config")
-// 				.into_keypair()
-// 				.expect("Creates node key pair");
+			} else {
+				panic!("Invalid key");
+			}
+		}
 
-// 			match node_key {
-// 				Keypair::Ed25519(ref pair) if pair.secret().as_ref() == key.as_ref() => {},
-// 				_ => panic!("Invalid key"),
-// 			}
-// 		}
+		let tmp = tempfile::Builder::new().prefix("alice").tempdir().expect("Creates tempfile");
+		let file = tmp.path().join("mysecret").to_path_buf();
+		let key_bytes: [u8;32] = [24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
+		133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215];
+		let key = PreSharedKey::new(
+			key_bytes
+		);
 
-// 		let tmp = tempfile::Builder::new().prefix("alice").tempdir().expect("Creates tempfile");
-// 		let file = tmp.path().join("mysecret").to_path_buf();
-// 		let key = ed25519::SecretKey::generate();
+		fs::write(&file, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
+		check_key(file.clone(), &key);
 
-// 		fs::write(&file, hex::encode(key.as_ref())).expect("Writes secret key");
-// 		check_key(file.clone(), &key);
+		fs::write(&file, key_bytes).expect("Writes pre shared key");
+		check_key(file.clone(), &key);
+	}
 
-// 		fs::write(&file, &key).expect("Writes secret key");
-// 		check_key(file.clone(), &key);
-// 	}
-
-// 	#[test]
-// 	fn test_node_key_config_default() {
-// 		fn with_def_params<F>(f: F) -> error::Result<()>
-// 		where
-// 			F: Fn(NodeKeyParams) -> error::Result<()>,
-// 		{
-// 			NodeKeyType::value_variants().iter().try_for_each(|t| {
-// 				let node_key_type = *t;
-// 				f(NodeKeyParams { node_key_type, node_key: None, node_key_file: None })
-// 			})
-// 		}
-
-// 		fn some_config_dir(net_config_dir: &PathBuf) -> error::Result<()> {
-// 			with_def_params(|params| {
-// 				let dir = PathBuf::from(net_config_dir.clone());
-// 				let typ = params.node_key_type;
-// 				params.node_key(net_config_dir).and_then(move |c| match c {
-// 					NodeKeyConfig::Ed25519(sc_network::config::Secret::File(ref f))
-// 						if typ == NodeKeyType::Ed25519 && f == &dir.join(NODE_KEY_ED25519_FILE) =>
-// 						Ok(()),
-// 					_ => Err(error::Error::Input("Unexpected node key config".into())),
-// 				})
-// 			})
-// 		}
-
-// 		assert!(some_config_dir(&PathBuf::from_str("x").unwrap()).is_ok());
-// 	}
-// }
+}
