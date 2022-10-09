@@ -17,61 +17,36 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use clap::Args;
-use sc_network::config::NodePreShareKeyConfig;
-use std::{path::PathBuf, str::FromStr};
+use sc_network::config::PreShareKeyConfig;
+use std::path::PathBuf;
 
 use crate::{error};
 
-/// Parameters used to create the `NodePreSharedKeyConfig`, which determines the pre shared key
+const PRE_SHARED_KEY_FILE: &str = "pre_shared_key";
+
+/// Parameters used to create the `PreSharedKeyConfig`, which determines the pre shared key
 /// used for libp2p networking.
 #[derive(Debug, Clone, Args)]
-pub struct NodePreSharedKeyParams {
-	/// Endpoint for requesting a pre shared key.
-	#[clap(long, value_name = "URL")]
-	pub rpc_addr_for_pre_shared_key: Option<String>,
-    /// The file from which to read the secret pre shared key to use for libp2p networking.
+pub struct PreSharedKeyParams {
+	/// Path to file with pre-shared key.
 	#[clap(long, value_name = "FILE")]
-	pub node_pre_shared_key_file: Option<PathBuf>,
+	pub psk_key_file: Option<PathBuf>,
 }
 
-impl NodePreSharedKeyParams {
-	/// Create a `NodePreSharedKeyConfig` from the given `NodePreSharedKeyParams` in the context
+impl PreSharedKeyParams {
+	/// Create a `PreSharedKeyConfig` from the given `PreSharedKeyParams` in the context
 	/// of an optional network config storage directory.
-	pub fn node_pre_shared_key(&self) -> error::Result<NodePreShareKeyConfig> {
-		if let Some(rpc_endpoint_for_pre_shared_key) = self.rpc_addr_for_pre_shared_key.clone() {
-			Ok(
-				NodePreShareKeyConfig::PRESHAREDKEY(
-					sc_network::config::PreSharedKeySecret::Rpc(
-						parse_url(&rpc_endpoint_for_pre_shared_key)?
+	pub fn pre_shared_key(&self, net_config_dir: &PathBuf) -> error::Result<PreShareKeyConfig> {
+		Ok(
+			PreShareKeyConfig::PRESHAREDKEY(
+				sc_network::config::PreSharedKeySecret::File(
+						self.psk_key_file
+						.clone()
+						.unwrap_or_else(|| net_config_dir.join(PRE_SHARED_KEY_FILE)),
 					)
 				)
 			)
-		} else if let Some(node_pre_shared_key_file) = self.node_pre_shared_key_file.clone() {
-			Ok(
-				NodePreShareKeyConfig::PRESHAREDKEY(
-					sc_network::config::PreSharedKeySecret::File(node_pre_shared_key_file)
-				)
-			)
-		} else {
-			Err(
-				error::Error::from(
-					"One of the arguments must be present: --rpc-addr-for-pre-shared-key or --node-pre-shared-key-file"
-				)
-			)
-		}
 	}
-}
-
-/// Create an error caused by an invalid node key argument.
-fn invalid_url(e: impl std::fmt::Display) -> error::Error {
-	error::Error::Input(format!("Invalid url: {}", e))
-}
-
-/// Parse a Ed25519 secret key from a hex string into a `sc_network::Secret`.
-fn parse_url(url: &str) -> error::Result<std::net::SocketAddr> {
-		std::net::SocketAddr::from_str(url)
-			.map_err(invalid_url)
-	
 }
 
 #[cfg(test)]
@@ -83,18 +58,17 @@ mod tests {
 	#[test]
 	fn test_node_key_config_file() {
 		fn check_key(file: PathBuf, key: &PreSharedKey) {
-			let params = NodePreSharedKeyParams {
-				node_pre_shared_key_file: Some(file),
-				rpc_addr_for_pre_shared_key: None
+			let params = PreSharedKeyParams {
+				psk_key_file: Some(file)
 			};
 
-			let node_pre_shared_key = params
-				.node_pre_shared_key()
+			let pre_shared_key = params
+				.pre_shared_key(&PathBuf::from("not-used"))
 				.expect("Creates node key config")
 				.into_pre_share_key()
 				.expect("Creates node key pair");
 
-			if &node_pre_shared_key == key {
+			if &pre_shared_key == key {
 
 			} else {
 				panic!("Invalid key");

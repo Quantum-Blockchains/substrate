@@ -155,7 +155,7 @@ where
 		let local_public = local_identity.public();
 		let local_peer_id = local_public.to_peer_id();
 
-		let pre_shared_key = params.network_config.node_psk_key.clone().into_pre_share_key()?;
+		let pre_shared_key = params.network_config.psk_key.clone().into_pre_share_key()?;
 		log::info!("Pre-Shared key: {:?}", pre_shared_key.to_string());
 
 		params.network_config.boot_nodes = params

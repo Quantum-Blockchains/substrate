@@ -20,7 +20,7 @@
 
 use crate::{
 	arg_enums::Database, error::Result, DatabaseParams, ImportParams, KeystoreParams,
-	NetworkParams, NodeKeyParams, OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli, NodePreSharedKeyParams,
+	NetworkParams, NodeKeyParams, OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli, PreSharedKeyParams,
 };
 use log::warn;
 use names::{Generator, Name};
@@ -29,7 +29,7 @@ use sc_service::{
 	config::{
 		BasePath, Configuration, DatabaseSource, KeystoreConfig, NetworkConfiguration,
 		NodeKeyConfig, OffchainWorkerConfig, PrometheusConfig, PruningMode, Role, RpcMethods,
-		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod, NodePreShareKeyConfig
+		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod, PreShareKeyConfig
 	},
 	BlocksPruning, ChainSpec, TracingReceiver,
 };
@@ -117,8 +117,8 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	}
 
 	/// Get the NodePreSharedKeyParams for this object.
-	fn node_psk_key_params(&self) -> Option<&NodePreSharedKeyParams> {
-		self.network_params().map(|x| &x.node_psk_key_params)
+	fn psk_key_params(&self) -> Option<&PreSharedKeyParams> {
+		self.network_params().map(|x| &x.psk_key_params)
 	}
 
 	/// Get the DatabaseParams for this object
@@ -168,7 +168,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		node_psk_key: NodePreShareKeyConfig,
+		node_psk_key: PreShareKeyConfig,
 		default_listen_port: u16,
 	) -> Result<NetworkConfiguration> {
 		Ok(if let Some(network_params) = self.network_params() {
@@ -469,11 +469,11 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 
 	/// Get the node pre shared key from the current object
 	///
-	/// By default this is retrieved from `NodePreSharedKeyParams` if it is available. Otherwise its
-	//// `NodePreSharedKeyConfig::default()`.
-	fn node_pre_shared_key(&self) -> Result<NodePreShareKeyConfig> {
-		self.node_psk_key_params()
-			.map(|x| x.node_pre_shared_key())
+	/// By default this is retrieved from `PreSharedKeyParams` if it is available. Otherwise its
+	/// `NodePreSharedKeyConfig::default()`.
+	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreShareKeyConfig> {
+		self.psk_key_params()
+			.map(|x| x.pre_shared_key(net_config_dir))
 			.unwrap_or_else(|| Ok(Default::default()))
 	}
 
@@ -525,7 +525,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
-		let node_pre_shared_key = self.node_pre_shared_key()?;
+		let node_pre_shared_key = self.pre_shared_key(&net_config_dir)?;
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();
