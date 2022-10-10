@@ -452,6 +452,9 @@ pub struct NetworkConfiguration {
 	/// a modification of the way the implementation works. Different nodes with different
 	/// configured values remain compatible with each other.
 	pub yamux_window_size: Option<u32>,
+
+	#[allow(missing_docs)]
+	pub qkd_addr: Vec<String>,
 }
 
 impl NetworkConfiguration {
@@ -483,6 +486,7 @@ impl NetworkConfiguration {
 			kademlia_disjoint_query_paths: false,
 			yamux_window_size: None,
 			ipfs_server: false,
+			qkd_addr: Vec::default()
 		}
 	}
 
