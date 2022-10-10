@@ -154,6 +154,10 @@ pub struct NetworkParams {
 		verbatim_doc_comment
 	)]
 	pub sync: SyncMode,
+
+	#[allow(missing_docs)]
+	#[clap(long, value_name = "QKD_ADDR", multiple_values(true))]
+	pub qkd_addr: Vec<String>,
 }
 
 impl NetworkParams {
@@ -254,6 +258,7 @@ impl NetworkParams {
 			yamux_window_size: None,
 			ipfs_server: self.ipfs_server,
 			sync_mode: self.sync.into(),
+			qkd_addr: self.qkd_addr.clone(),
 		}
 	}
 }
