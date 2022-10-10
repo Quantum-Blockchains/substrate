@@ -26,14 +26,14 @@ use jsonrpsee::{
 	core::{async_trait, error::Error as JsonRpseeError, JsonValue, RpcResult},
 	types::error::{CallError, ErrorCode, ErrorObject},
 };
-use sc_rpc_api::DenyUnsafe;
+use sc_rpc_api::{DenyUnsafe};
 use sc_tracing::logging;
 use sc_utils::mpsc::TracingUnboundedSender;
 use sp_runtime::traits::{self, Header as HeaderT};
 
 use self::error::Result;
 
-pub use self::helpers::{Health, NodeRole, PeerInfo, SyncState, SystemInfo};
+pub use self::helpers::{Health, NodeRole, PeerInfo, SyncState, SystemInfo, PskInfo};
 pub use sc_rpc_api::system::*;
 
 /// System API implementation
@@ -49,6 +49,9 @@ pub enum Request<B: traits::Block> {
 	Health(oneshot::Sender<Health>),
 	/// Must return the base58-encoded local `PeerId`.
 	LocalPeerId(oneshot::Sender<String>),
+	// TODO doc
+	/// doc
+	PreSharedKey(oneshot::Sender<PskInfo>),
 	/// Must return the string representation of the addresses we listen on, including the
 	/// trailing `/p2p/`.
 	LocalListenAddresses(oneshot::Sender<Vec<String>>),
@@ -113,6 +116,12 @@ impl<B: traits::Block> SystemApiServer<B::Hash, <B::Header as HeaderT>::Number> 
 	async fn system_local_peer_id(&self) -> RpcResult<String> {
 		let (tx, rx) = oneshot::channel();
 		let _ = self.send_back.unbounded_send(Request::LocalPeerId(tx));
+		rx.await.map_err(|e| JsonRpseeError::to_call_error(e))
+	}
+
+	async fn system_pre_shared_key(&self) -> RpcResult<PskInfo> {
+		let (tx, rx) = oneshot::channel();
+		let _ = self.send_back.unbounded_send(Request::PreSharedKey(tx));
 		rx.await.map_err(|e| JsonRpseeError::to_call_error(e))
 	}
 

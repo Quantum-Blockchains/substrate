@@ -54,7 +54,7 @@ use libp2p::{
 		AddressScore, ConnectionError, ConnectionLimits, DialError, NetworkBehaviour,
 		PendingConnectionError, Swarm, SwarmBuilder, SwarmEvent,
 	},
-	Multiaddr, PeerId,
+	Multiaddr, PeerId, pnet::PreSharedKey,
 };
 use log::{debug, error, info, trace, warn};
 use metrics::{Histogram, HistogramVec, MetricSources, Metrics};
@@ -114,6 +114,9 @@ pub struct NetworkService<B: BlockT + 'static, H: ExHashT> {
 	local_peer_id: PeerId,
 	/// The `KeyPair` that defines the `PeerId` of the local node.
 	local_identity: Keypair,
+	// TODO doc
+	/// doc
+	pre_shared_key: PreSharedKey,
 	/// Bandwidth logging system. Can be queried to know the average bandwidth consumed.
 	bandwidth: Arc<transport::BandwidthSinks>,
 	/// Peerset manager (PSM); manages the reputation of nodes and indicates the network which
@@ -158,7 +161,7 @@ where
 
 		// TODO Check pre-shered key
 
-		params.network_config.psk_key.clone().into_pre_share_key()?;
+		let pre_shared_key = params.network_config.psk_key.clone().into_pre_share_key()?;
 
 		params.network_config.boot_nodes = params
 			.network_config
@@ -475,6 +478,7 @@ where
 			peerset: peerset_handle,
 			local_peer_id,
 			local_identity,
+			pre_shared_key,
 			to_worker,
 			peers_notifications_sinks: peers_notifications_sinks.clone(),
 			notifications_sizes_metric: metrics
@@ -602,6 +606,12 @@ where
 	/// Returns the local `PeerId`.
 	pub fn local_peer_id(&self) -> &PeerId {
 		Swarm::<Behaviour<B, Client>>::local_peer_id(&self.network_service)
+	}
+
+	// TODO doc
+	/// doc
+	pub fn pre_shared_key(&self) -> &PreSharedKey {
+		&self.service.pre_shared_key
 	}
 
 	/// Returns the list of addresses we are listening on.

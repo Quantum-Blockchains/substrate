@@ -206,6 +206,19 @@ async fn build_network_future<
 					sc_rpc::system::Request::LocalPeerId(sender) => {
 						let _ = sender.send(network.local_peer_id().to_base58());
 					},
+					sc_rpc::system::Request::PreSharedKey(sender) => {
+
+						let psk_string = network.pre_shared_key().to_string();
+						let split = psk_string.split("\n");
+						let vec = split.collect::<Vec<&str>>();
+
+						// todo encrypt pre-shared key
+						
+						let _ = sender.send(sc_rpc::system::PskInfo { 
+							pre_shared_key: vec[2].to_string(),
+							qkd_uuid: 32
+						});
+					},
 					sc_rpc::system::Request::LocalListenAddresses(sender) => {
 						let peer_id = (*network.local_peer_id()).into();
 						let p2p_proto_suffix = sc_network::multiaddr::Protocol::P2p(peer_id);

@@ -23,6 +23,7 @@ use jsonrpsee::{
 	proc_macros::rpc,
 };
 
+use self::helpers::PskInfo;
 pub use self::helpers::{Health, NodeRole, PeerInfo, SyncState, SystemInfo};
 
 pub mod error;
@@ -62,6 +63,11 @@ pub trait SystemApi<Hash, Number> {
 	/// Returns the base58-encoded PeerId of the node.
 	#[method(name = "system_localPeerId")]
 	async fn system_local_peer_id(&self) -> RpcResult<String>;
+
+	// TODO doc
+	/// doc
+	#[method(name = "system_preSharedKey")]
+	async fn system_pre_shared_key(&self) -> RpcResult<PskInfo>;
 
 	/// Returns the multi-addresses that the local node is listening on
 	///

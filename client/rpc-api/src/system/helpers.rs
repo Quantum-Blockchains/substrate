@@ -37,6 +37,19 @@ pub struct SystemInfo {
 	pub chain_type: ChainType,
 }
 
+// todo doc
+/// doc
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PskInfo {
+	// todo doc
+	/// doc
+	pub pre_shared_key: String,
+	// todo doc
+	/// doc
+	pub qkd_uuid: u32,
+}
+
 /// Health struct returned by the RPC
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

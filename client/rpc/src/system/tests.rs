@@ -67,6 +67,13 @@ fn api<T: Into<Option<Status>>>(sync: T) -> RpcModule<System<Block>> {
 					let _ =
 						sender.send("QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV".to_string());
 				},
+				Request::PreSharedKey(sender) => {
+					let _ =
+						sender.send(PskInfo {
+							pre_shared_key: "18617dff4efef20450dd5eafc060fd85faacca13d95ace3bda0be32e4694fcd7".to_string(),
+							qkd_uuid: 1
+						});
+				},
 				Request::LocalListenAddresses(sender) => {
 					let _ = sender.send(vec![
 						"/ip4/198.51.100.19/tcp/30333/p2p/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV".to_string(),
