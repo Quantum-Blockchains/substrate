@@ -56,8 +56,8 @@ mod tests {
 	use libp2p::pnet::PreSharedKey;
 
 	#[test]
-	fn test_node_key_config_file() {
-		fn check_key(file: PathBuf, key: &PreSharedKey) {
+	fn test_pre_shared_key_config_file() {
+		fn check_pre_shared_key(file: PathBuf, key: &PreSharedKey) {
 			let params = PreSharedKeyParams {
 				psk_key_file: Some(file)
 			};
@@ -84,10 +84,10 @@ mod tests {
 		);
 
 		fs::write(&file, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
-		check_key(file.clone(), &key);
+		check_pre_shared_key(file.clone(), &key);
 
 		fs::write(&file, key_bytes).expect("Writes pre shared key");
-		check_key(file.clone(), &key);
+		check_pre_shared_key(file.clone(), &key);
 	}
 
 }

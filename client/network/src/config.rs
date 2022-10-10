@@ -274,7 +274,7 @@ pub fn parse_str_rpc_addr(rpc_addr_str: &str) -> Result<(PeerId, std::net::Socke
 /// Rpc address of a node with peer is.
 /// 
 /// # Format
-/// /198.51.100.19:30333/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV
+/// /127.0.0.1:8000/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV
 /// 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
@@ -462,7 +462,7 @@ pub struct NetworkConfiguration {
 	/// List of initial node addresses
 	pub boot_nodes: Vec<MultiaddrWithPeerId>,
 	/// Endpoints for requesting a pre shared key.
-	pub listen_rpc: Vec<RpcAddrWithPeerId>,
+	pub external_nodes_rpc: Vec<RpcAddrWithPeerId>,
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
 	/// The node key configuration, which determines the node's network identity keypair.
@@ -531,7 +531,7 @@ impl NetworkConfiguration {
 		node_name: SN,
 		client_version: SV,
 		node_key: NodeKeyConfig,
-		node_psk_key: PreShareKeyConfig,
+		psk_key: PreShareKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
 		let default_peers_set = SetConfig::default();
@@ -540,9 +540,9 @@ impl NetworkConfiguration {
 			listen_addresses: Vec::new(),
 			public_addresses: Vec::new(),
 			boot_nodes: Vec::new(),
-			listen_rpc: Vec::new(),
+			external_nodes_rpc: Vec::new(),
 			node_key,
-			psk_key: node_psk_key,
+			psk_key,
 			request_response_protocols: Vec::new(),
 			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
 			default_peers_set,
@@ -560,6 +560,9 @@ impl NetworkConfiguration {
 		}
 	}
 
+
+
+
 	/// Create new default configuration for localhost-only connection with random port (useful for
 	/// testing)
 	pub fn new_local() -> NetworkConfiguration {
@@ -567,9 +570,9 @@ impl NetworkConfiguration {
 			NetworkConfiguration::new(
 				"test-node",
 				 "test-client",
-				  Default::default(), 
 				  Default::default(),
-				   None
+				  Default::default(),
+				   None,
 				);
 
 		config.listen_addresses =
@@ -585,7 +588,12 @@ impl NetworkConfiguration {
 	/// testing)
 	pub fn new_memory() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None);
+			NetworkConfiguration::new(
+				"test-node", 
+				"test-client", 
+				Default::default(), 
+				Default::default(),
+				None);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
@@ -730,7 +738,7 @@ pub enum PreShareKeyConfig {
 	PRESHAREDKEY(PreSharedKeySecret),
 }
 
-/// The options for obtaining a Ed25519 secret key.
+/// The options for obtaining a pre-shared key.
 pub type PSKey = PreSharedKeySecret;
 
 ///Doc
@@ -738,13 +746,15 @@ pub type PSKey = PreSharedKeySecret;
 pub enum PreSharedKeySecret {
 	/// Read the pre-shared key from a file.
 	File(PathBuf),
-	///Doc
-	Hard,
 }
 
 impl Default for PreShareKeyConfig {
 	fn default() -> PreShareKeyConfig {
-		Self::PRESHAREDKEY(PreSharedKeySecret::Hard)
+		let path = PathBuf::from("not-used");
+		let key_bytes: [u8;32] = [24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
+		133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215];
+		fs::write(&path, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
+		PreShareKeyConfig::PRESHAREDKEY(PreSharedKeySecret::File(path))
 	}
 }
 
@@ -752,7 +762,6 @@ impl fmt::Debug for PreSharedKeySecret {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Self::File(path) => f.debug_tuple("PSKSecret::File").field(path).finish(),
-			Self::Hard => f.debug_tuple("PSKSecret::Hard").finish(),
 		}
 	}
 }
@@ -765,53 +774,43 @@ impl PreShareKeyConfig {
 	pub fn into_pre_share_key(self) -> io::Result<PreSharedKey> {
 		use PreShareKeyConfig::*;
 		match self {
-			PRESHAREDKEY(PreSharedKeySecret::Hard) => {
-				Ok(
-				PreSharedKey::new(
-					[24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
-					133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215]
-				))
-			},
-			PRESHAREDKEY(PreSharedKeySecret::File(f)) => get_pre_shared_key(
-					f, 
-					|b| match String::from_utf8(b.to_vec()).ok().and_then(|s| {
-						if s.len() == 64 {
-							hex::decode(&s).ok()
-						} else {
-							None
-						}
-					})
-				 	{
-						Some(s) => if s.len() == 32 {
+			PRESHAREDKEY(PreSharedKeySecret::File(f)) => {
+				match std::fs::read(f) {
+					Ok(_data) => {
+						match _data.len() {
+							32 => {
 								let mut data: [u8; 32] = [0;32];
 								for i in 0..32 {
-									data[i] = s[i];
+									data[i] = _data[i];
 								}
 								Ok(PreSharedKey::new(data))
-							} else {
-								Err(std::io::Error::new( io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: s.len()}))
 							},
-						_ => if b.len() == 32 {
-								Ok(PreSharedKey::new(b.try_into().expect("Invalid length.")))
-							} else {
-								Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: b.len()}))
+							64 => {
+								match hex::decode(_data.clone()) {
+									Ok(_d) => {
+										let mut data: [u8; 32] = [0;32];
+										for i in 0..32 {
+											data[i] = _d[i];
+										}
+										Ok(PreSharedKey::new(data))
+									},
+									Err(_err) => {
+										Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::HexError(_err)))
+									}
+								}
 							},
+							_ => {
+								Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: _data.len()}))
+							}
+						}
+					},
+					Err(_err) => {
+						Err(_err)
 					}
-				)
+				}
+			}
 		}
 	}
-}
-
-fn get_pre_shared_key<P, F, E>(file: P, parse: F) -> io::Result<PreSharedKey>
-where
-	P: AsRef<Path>,
-	F: for<'r> FnOnce(&'r mut [u8]) -> Result<PreSharedKey, E>,
-	E: Error + Send + Sync + 'static,
-{
-	std::fs::read(&file)
-		.and_then(|mut sk_bytes| {
-			parse(&mut sk_bytes).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
-		})	
 }
 
 /// The configuration of a node's secret key, describing the type of key

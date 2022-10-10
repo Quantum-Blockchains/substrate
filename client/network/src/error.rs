@@ -75,6 +75,9 @@ pub enum Error {
 		len: usize,
 	},
 
+	/// Hex error
+	#[error(transparent)]
+	HexError(#[from] hex::FromHexError),
 }
 
 // Make `Debug` use the `Display` implementation.

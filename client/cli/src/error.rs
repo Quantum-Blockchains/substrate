@@ -78,6 +78,9 @@ pub enum Error {
 
 	#[error(transparent)]
 	GlobalLoggerError(#[from] sc_tracing::logging::Error),
+
+	#[error("Pre-shared key error")]
+	PreSharedKeyError(),
 }
 
 impl From<&str> for Error {

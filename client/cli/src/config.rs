@@ -19,7 +19,7 @@
 //! Configuration trait for a CLI based on substrate
 
 use crate::{
-	arg_enums::Database, error::Result, DatabaseParams, ImportParams, KeystoreParams,
+	arg_enums::Database, error::{Result, self} , DatabaseParams, ImportParams, KeystoreParams,
 	NetworkParams, NodeKeyParams, OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli, PreSharedKeyParams,
 };
 use log::warn;
@@ -116,7 +116,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		self.network_params().map(|x| &x.node_key_params)
 	}
 
-	/// Get the NodePreSharedKeyParams for this object.
+	/// Get the PreSharedKeyParams for this object.
 	fn psk_key_params(&self) -> Option<&PreSharedKeyParams> {
 		self.network_params().map(|x| &x.psk_key_params)
 	}
@@ -168,7 +168,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		node_psk_key: PreShareKeyConfig,
+		psk_key: PreShareKeyConfig,
 		default_listen_port: u16,
 	) -> Result<NetworkConfiguration> {
 		Ok(if let Some(network_params) = self.network_params() {
@@ -180,11 +180,11 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id,
 				node_name,
 				node_key,
-				node_psk_key,
+				psk_key,
 				default_listen_port,
 			)
 		} else {
-			NetworkConfiguration::new(node_name, client_id, node_key, node_psk_key, Some(net_config_dir))
+			NetworkConfiguration::new(node_name, client_id, node_key, psk_key, Some(net_config_dir))
 		})
 	}
 
@@ -470,11 +470,11 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// Get the node pre shared key from the current object
 	///
 	/// By default this is retrieved from `PreSharedKeyParams` if it is available. Otherwise its
-	/// `NodePreSharedKeyConfig::default()`.
+	/// `PreSharedKeyConfig::default()`.
 	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreShareKeyConfig> {
 		self.psk_key_params()
 			.map(|x| x.pre_shared_key(net_config_dir))
-			.unwrap_or_else(|| Ok(Default::default()))
+			.unwrap_or_else(|| Err(error::Error::PreSharedKeyError()))
 	}
 
 	/// Get maximum runtime instances
@@ -525,7 +525,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
-		let node_pre_shared_key = self.pre_shared_key(&net_config_dir)?;
+		let pre_shared_key = self.pre_shared_key(&net_config_dir)?;
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();
@@ -546,7 +546,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id.as_str(),
 				self.node_name()?.as_str(),
 				node_key,
-				node_pre_shared_key,
+				pre_shared_key,
 				DCV::p2p_listen_port(),
 			)?,
 			keystore_remote,

@@ -42,9 +42,9 @@ pub struct NetworkParams {
 	#[clap(long, value_name = "ADDR", multiple_values(true))]
 	pub reserved_nodes: Vec<MultiaddrWithPeerId>,
 
-	/// Endpoints for requesting a pre shared key.
+	/// Endpoints for requestings RPC.
 	#[clap(long, value_name = "ADDR", multiple_values(true))]
-	pub listen_rpc: Vec<RpcAddrWithPeerId>,
+	pub external_nodes_rpc: Vec<RpcAddrWithPeerId>,
 
 	/// Whether to only synchronize the chain with reserved nodes.
 	///
@@ -167,7 +167,7 @@ impl NetworkParams {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		node_psk_key: PreShareKeyConfig,
+		psk_key: PreShareKeyConfig,
 		default_listen_port: u16,
 	) -> NetworkConfiguration {
 		let port = self.port.unwrap_or(default_listen_port);
@@ -203,7 +203,7 @@ impl NetworkParams {
 		let mut boot_nodes = chain_spec.boot_nodes().to_vec();
 		boot_nodes.extend(self.bootnodes.clone());
 
-		let listen_rpc = self.listen_rpc.clone();
+		let external_nodes_rpc = self.external_nodes_rpc.clone();
 
 		let chain_type = chain_spec.chain_type();
 		// Activate if the user explicitly requested local discovery, `--dev` is given or the
@@ -222,7 +222,7 @@ impl NetworkParams {
 
 		NetworkConfiguration {
 			boot_nodes,
-			listen_rpc,
+			external_nodes_rpc,
 			net_config_path,
 			default_peers_set: SetConfig {
 				in_peers: self.in_peers + self.in_peers_light,
@@ -240,7 +240,7 @@ impl NetworkParams {
 			extra_sets: Vec::new(),
 			request_response_protocols: Vec::new(),
 			node_key,
-			psk_key: node_psk_key,
+			psk_key,
 			node_name: node_name.to_string(),
 			client_version: client_id.to_string(),
 			transport: TransportConfig::Normal {
