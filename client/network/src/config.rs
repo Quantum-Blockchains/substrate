@@ -525,7 +525,7 @@ pub struct NetworkConfiguration {
 	pub yamux_window_size: Option<u32>,
 
 	#[allow(missing_docs)]
-	pub qkd_addr: Vec<String>,
+	pub qkd_addr: Vec<MultiaddrWithPeerId>,
 }
 
 impl NetworkConfiguration {
