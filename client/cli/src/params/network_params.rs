@@ -20,7 +20,7 @@ use crate::{arg_enums::SyncMode, params::node_key_params::NodeKeyParams, params:
 use clap::Args;
 use sc_network::{
 	config::{
-		NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, SetConfig, TransportConfig, PreShareKeyConfig
+		NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, SetConfig, TransportConfig, PreSharedKeyConfig
 	},
 	multiaddr::Protocol,
 };
@@ -167,7 +167,7 @@ impl NetworkParams {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		pre_shared_key: PreShareKeyConfig,
+		pre_shared_key: PreSharedKeyConfig,
 		default_listen_port: u16,
 	) -> NetworkConfiguration {
 		let port = self.port.unwrap_or(default_listen_port);

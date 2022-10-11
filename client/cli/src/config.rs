@@ -29,7 +29,7 @@ use sc_service::{
 	config::{
 		BasePath, Configuration, DatabaseSource, KeystoreConfig, NetworkConfiguration,
 		NodeKeyConfig, OffchainWorkerConfig, PrometheusConfig, PruningMode, Role, RpcMethods,
-		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod, PreShareKeyConfig
+		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod, PreSharedKeyConfig
 	},
 	BlocksPruning, ChainSpec, TracingReceiver,
 };
@@ -168,7 +168,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		pre_shared_key: PreShareKeyConfig,
+		pre_shared_key: PreSharedKeyConfig,
 		default_listen_port: u16,
 	) -> Result<NetworkConfiguration> {
 		Ok(if let Some(network_params) = self.network_params() {
@@ -460,21 +460,22 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// Get the node key from the current object
 	///
 	/// By default this is retrieved from `NodeKeyParams` if it is available. Otherwise its
-	/// `NodeKeyConfig::default()`.
+	/// `NodeKeyConfig::default()`..
 	fn node_key(&self, net_config_dir: &PathBuf) -> Result<NodeKeyConfig> {
 		self.node_key_params()
 			.map(|x| x.node_key(net_config_dir))
 			.unwrap_or_else(|| Ok(Default::default()))
 	}
 
-	/// Get the node pre shared key from the current object
+	/// Get the pre shared key from the current object
 	///
-	/// By default this is retrieved from `PreSharedKeyParams` if it is available. Otherwise its
-	/// `PreSharedKeyConfig::default()`.
-	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreShareKeyConfig> {
+	/// By default this is retrieved from `PreSharedKeyParams` if it is available.
+	/// Otherwise its
+	/// `PreSharedKeyKeyConfig::default()`..
+	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> PreSharedKeyConfig {
 		self.psk_params()
 			.map(|x| x.pre_shared_key(net_config_dir))
-			.unwrap_or_else(|| Err(error::Error::PreSharedKeyError()))
+			.unwrap_or_else(|| PreSharedKeyConfig { pre_shared_key: sc_network::config::PreSharedKeySecret::File(PathBuf::from(net_config_dir.join("pre_shared_key")))})
 	}
 
 	/// Get maximum runtime instances
@@ -525,7 +526,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
-		let pre_shared_key = self.pre_shared_key(&net_config_dir)?;
+		let pre_shared_key = self.pre_shared_key(&net_config_dir);
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();

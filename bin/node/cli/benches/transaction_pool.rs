@@ -37,6 +37,8 @@ use sp_core::{crypto::Pair, sr25519};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::BlockId, OpaqueExtrinsic};
 use tokio::runtime::Handle;
+use sc_network::config::{PreSharedKeyConfig, PreSharedKeySecret};
+use std::path::PathBuf;
 
 fn new_node(tokio_handle: Handle) -> node_cli::service::NewFullBase {
 	let base_path = BasePath::new_temp_dir().expect("Creates base path");
@@ -46,7 +48,7 @@ fn new_node(tokio_handle: Handle) -> node_cli::service::NewFullBase {
 		Sr25519Keyring::Alice.to_seed(),
 		"network/test/0.1",
 		Default::default(),
-		Default::default(),
+		PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
 		None,
 	);
 

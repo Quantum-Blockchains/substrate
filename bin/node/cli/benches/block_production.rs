@@ -33,6 +33,7 @@ use sc_service::{
 	},
 	BasePath, Configuration, Role,
 };
+use sc_network::config::{PreSharedKeyConfig, PreSharedKeySecret};
 use sp_blockchain::{ApplyExtrinsicFailed::Validity, Error::ApplyExtrinsicFailed};
 use sp_consensus::BlockOrigin;
 use sp_keyring::Sr25519Keyring;
@@ -42,6 +43,7 @@ use sp_runtime::{
 	AccountId32, MultiAddress, OpaqueExtrinsic,
 };
 use tokio::runtime::Handle;
+use std::path::PathBuf;
 
 fn new_node(tokio_handle: Handle) -> node_cli::service::NewFullBase {
 	let base_path = BasePath::new_temp_dir()
@@ -52,7 +54,7 @@ fn new_node(tokio_handle: Handle) -> node_cli::service::NewFullBase {
 		Sr25519Keyring::Alice.to_seed(),
 		"network/test/0.1",
 		Default::default(),
-		Default::default(),
+		PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
 		None,
 	);
 

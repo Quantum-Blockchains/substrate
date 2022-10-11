@@ -465,8 +465,8 @@ pub struct NetworkConfiguration {
 	pub external_nodes_rpc: Vec<RpcAddrWithPeerId>,
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
-	/// The node key configuration, which determines the node's network identity keypair.
-	pub pre_shared_key: PreShareKeyConfig,
+	/// The pre-shared key configuration, which determines the pre-shard key.
+	pub pre_shared_key: PreSharedKeyConfig,
 	/// List of request-response protocols that the node supports.
 	pub request_response_protocols: Vec<RequestResponseConfig>,
 	/// Configuration for the default set of nodes used for block syncing and transactions.
@@ -531,7 +531,7 @@ impl NetworkConfiguration {
 		node_name: SN,
 		client_version: SV,
 		node_key: NodeKeyConfig,
-		pre_shared_key: PreShareKeyConfig,
+		pre_shared_key: PreSharedKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
 		let default_peers_set = SetConfig::default();
@@ -569,10 +569,10 @@ impl NetworkConfiguration {
 		let mut config =
 			NetworkConfiguration::new(
 				"test-node",
-				 "test-client",
-				  Default::default(),
-				  Default::default(),
-				   None,
+				"test-client",
+			    Default::default(),
+		       	PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))},
+				None,
 				);
 
 		config.listen_addresses =
@@ -592,7 +592,7 @@ impl NetworkConfiguration {
 				"test-node", 
 				"test-client", 
 				Default::default(), 
-				Default::default(),
+				PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))},
 				None);
 
 		config.listen_addresses =
@@ -731,32 +731,39 @@ impl NonReservedPeerMode {
 	}
 }
 
-///Doc
+/// The configuration of a pre-shared key, describing how it is obtained.
+/// A pre-shared key is the result of
+/// the evaluation of the pre-shared key configuration.
+// #[derive(Clone, Debug)]
+// pub enum PreShareKeyConfig {
+// 	/// A pre-shared key configuration.
+// 	PRESHAREDKEY(PreSharedKeySecret),
+// }
+
 #[derive(Clone, Debug)]
-pub enum PreShareKeyConfig {
-	/// A pre-shared key configuration.
-	PRESHAREDKEY(PreSharedKeySecret),
+pub struct PreSharedKeyConfig {
+	pub pre_shared_key: PreSharedKeySecret
 }
 
 /// The options for obtaining a pre-shared key.
 pub type PSKey = PreSharedKeySecret;
 
-///Doc
+/// The configuration options for obtaining a pre-shared key.
 #[derive(Clone)]
 pub enum PreSharedKeySecret {
 	/// Read the pre-shared key from a file.
 	File(PathBuf),
 }
 
-impl Default for PreShareKeyConfig {
-	fn default() -> PreShareKeyConfig {
-		let path = PathBuf::from("not-used");
-		let key_bytes: [u8;32] = [24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
-		133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215];
-		fs::write(&path, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
-		PreShareKeyConfig::PRESHAREDKEY(PreSharedKeySecret::File(path))
-	}
-}
+// impl Default for PreShareKeyConfig {
+// 	fn default() -> PreShareKeyConfig {
+// 		let path = PathBuf::from("./psk");
+// 		let key_bytes: [u8;32] = [24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
+// 		133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215];
+// 		fs::write(&path, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
+// 		PreShareKeyConfig{ pre_shared_key: PreSharedKeySecret::File(path) }
+// 	}
+// }
 
 impl fmt::Debug for PreSharedKeySecret {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -766,25 +773,17 @@ impl fmt::Debug for PreSharedKeySecret {
 	}
 }
 
-impl PreShareKeyConfig {
-	/// Evaluate a `PreSharedKeyConfig` to obtain an identity `pre shared key`:
+impl PreSharedKeyConfig {
+	/// Evaluate a `PreSharedKeyConfig` to obtain an pre shared key:
 	///
 	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
 	///    return error.
 	pub fn into_pre_share_key(self) -> io::Result<PreSharedKey> {
-		use PreShareKeyConfig::*;
-		match self {
-			PRESHAREDKEY(PreSharedKeySecret::File(f)) => {
+		match self.pre_shared_key {
+			PreSharedKeySecret::File(f) => {
 				match std::fs::read(f) {
 					Ok(_data) => {
 						match _data.len() {
-							32 => {
-								let mut data: [u8; 32] = [0;32];
-								for i in 0..32 {
-									data[i] = _data[i];
-								}
-								Ok(PreSharedKey::new(data))
-							},
 							64 => {
 								match hex::decode(_data.clone()) {
 									Ok(_d) => {

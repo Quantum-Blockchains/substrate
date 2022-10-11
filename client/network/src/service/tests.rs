@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{config::{self}, NetworkService, NetworkWorker};
+use crate::{config::{self}, NetworkService, NetworkWorker };
 
 use futures::prelude::*;
 use libp2p::PeerId;
@@ -34,7 +34,7 @@ use sp_consensus::block_validation::DefaultBlockAnnounceValidator;
 use sp_runtime::traits::{Block as BlockT, Header as _};
 use std::{borrow::Cow, sync::Arc, time::Duration};
 use substrate_test_runtime_client::{TestClientBuilder, TestClientBuilderExt as _};
-
+use std::path::PathBuf;
 
 type TestNetworkService = NetworkService<
 	substrate_test_runtime_client::runtime::Block,
@@ -570,7 +570,7 @@ fn ensure_listen_addresses_consistent_with_transport_memory() {
 			"test-node", 
 			"test-client", 
 			Default::default(), 
-			Default::default(), 
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) }, 
 			None)
 	});
 }
@@ -586,7 +586,7 @@ fn ensure_listen_addresses_consistent_with_transport_not_memory() {
 			"test-node", 
 			"test-client", 
 			Default::default(), 
-			Default::default(), 
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) }, 
 			None)
 	});
 }
@@ -604,7 +604,13 @@ fn ensure_boot_node_addresses_consistent_with_transport_memory() {
 		listen_addresses: vec![listen_addr.clone()],
 		transport: config::TransportConfig::MemoryOnly,
 		boot_nodes: vec![boot_node],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
+		..config::NetworkConfiguration::new(
+			"test-node",
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+			None
+		)
 	});
 }
 
@@ -620,8 +626,13 @@ fn ensure_boot_node_addresses_consistent_with_transport_not_memory() {
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		boot_nodes: vec![boot_node],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
-	});
+		..config::NetworkConfiguration::new(
+			"test-node",
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+			None	
+		)});
 }
 
 #[test]
@@ -640,7 +651,13 @@ fn ensure_reserved_node_addresses_consistent_with_transport_memory() {
 			reserved_nodes: vec![reserved_node],
 			..Default::default()
 		},
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
+		..config::NetworkConfiguration::new(
+			"test-node", 
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+			None
+		)
 	});
 }
 
@@ -659,7 +676,13 @@ fn ensure_reserved_node_addresses_consistent_with_transport_not_memory() {
 			reserved_nodes: vec![reserved_node],
 			..Default::default()
 		},
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
+		..config::NetworkConfiguration::new(
+			"test-node",
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+			None
+		)
 	});
 }
 
@@ -673,7 +696,12 @@ fn ensure_public_addresses_consistent_with_transport_memory() {
 		listen_addresses: vec![listen_addr.clone()],
 		transport: config::TransportConfig::MemoryOnly,
 		public_addresses: vec![public_address],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
+		..config::NetworkConfiguration::new("test-node",
+		"test-client",
+		Default::default(),
+		config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+		None
+	)
 	});
 }
 
@@ -686,6 +714,12 @@ fn ensure_public_addresses_consistent_with_transport_not_memory() {
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		public_addresses: vec![public_address],
-		..config::NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None)
+		..config::NetworkConfiguration::new(
+			"test-node",
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+			None
+		)
 	});
 }

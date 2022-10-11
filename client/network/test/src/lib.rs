@@ -30,6 +30,7 @@ use std::{
 	sync::Arc,
 	task::{Context as FutureContext, Poll},
 	time::Duration,
+	path::PathBuf,
 };
 
 use async_std::future::timeout;
@@ -52,7 +53,7 @@ pub use sc_network::config::EmptyTransactionPool;
 use sc_network::{
 	config::{
 		MultiaddrWithPeerId, NetworkConfiguration, NonDefaultSetConfig, NonReservedPeerMode, Role,
-		SyncMode, TransportConfig,
+		SyncMode, TransportConfig, PreSharedKeyConfig, PreSharedKeySecret
 	},
 	Multiaddr, NetworkService, NetworkWorker,
 };
@@ -780,7 +781,12 @@ where
 		let listen_addr = build_multiaddr![Memory(rand::random::<u64>())];
 
 		let mut network_config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), Default::default(), None);
+			NetworkConfiguration::new(
+				"test-node",
+				"test-client",
+				Default::default(),
+				PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
+				None);
 		network_config.sync_mode = config.sync_mode;
 		network_config.transport = TransportConfig::MemoryOnly;
 		network_config.listen_addresses = vec![listen_addr.clone()];

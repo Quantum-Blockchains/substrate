@@ -17,10 +17,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use clap::Args;
-use sc_network::config::PreShareKeyConfig;
+use sc_network::config::PreSharedKeyConfig;
 use std::path::PathBuf;
-
-use crate::{error};
 
 const PRE_SHARED_KEY_FILE: &str = "pre_shared_key";
 
@@ -36,16 +34,14 @@ pub struct PreSharedKeyParams {
 impl PreSharedKeyParams {
 	/// Create a `PreSharedKeyConfig` from the given `PreSharedKeyParams` in the context
 	/// of an optional network config storage directory.
-	pub fn pre_shared_key(&self, net_config_dir: &PathBuf) -> error::Result<PreShareKeyConfig> {
-		Ok(
-			PreShareKeyConfig::PRESHAREDKEY(
-				sc_network::config::PreSharedKeySecret::File(
-						self.psk_file
-						.clone()
-						.unwrap_or_else(|| net_config_dir.join(PRE_SHARED_KEY_FILE)),
-					)
+	pub fn pre_shared_key(&self, net_config_dir: &PathBuf) -> PreSharedKeyConfig {
+		PreSharedKeyConfig {
+			pre_shared_key: sc_network::config::PreSharedKeySecret::File(
+					self.psk_file
+					.clone()
+					.unwrap_or_else(|| net_config_dir.join(PRE_SHARED_KEY_FILE)),
 				)
-			)
+		}
 	}
 }
 
@@ -64,7 +60,7 @@ mod tests {
 
 			let pre_shared_key = params
 				.pre_shared_key(&PathBuf::from("not-used"))
-				.expect("Creates node key config")
+				// .expect("Creates node key config")
 				.into_pre_share_key()
 				.expect("Creates node key pair");
 
