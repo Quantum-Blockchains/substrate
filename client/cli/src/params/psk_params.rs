@@ -30,7 +30,7 @@ const PRE_SHARED_KEY_FILE: &str = "pre_shared_key";
 pub struct PreSharedKeyParams {
 	/// Path to file with pre-shared key.
 	#[clap(long, value_name = "FILE")]
-	pub psk_key_file: Option<PathBuf>,
+	pub psk_file: Option<PathBuf>,
 }
 
 impl PreSharedKeyParams {
@@ -40,7 +40,7 @@ impl PreSharedKeyParams {
 		Ok(
 			PreShareKeyConfig::PRESHAREDKEY(
 				sc_network::config::PreSharedKeySecret::File(
-						self.psk_key_file
+						self.psk_file
 						.clone()
 						.unwrap_or_else(|| net_config_dir.join(PRE_SHARED_KEY_FILE)),
 					)
@@ -59,7 +59,7 @@ mod tests {
 	fn test_pre_shared_key_config_file() {
 		fn check_pre_shared_key(file: PathBuf, key: &PreSharedKey) {
 			let params = PreSharedKeyParams {
-				psk_key_file: Some(file)
+				psk_file: Some(file)
 			};
 
 			let pre_shared_key = params

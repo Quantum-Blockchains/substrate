@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{arg_enums::SyncMode, params::node_key_params::NodeKeyParams, params::psk_key_params::PreSharedKeyParams};
+use crate::{arg_enums::SyncMode, params::node_key_params::NodeKeyParams, params::psk_params::PreSharedKeyParams};
 use clap::Args;
 use sc_network::{
 	config::{
@@ -118,7 +118,7 @@ pub struct NetworkParams {
 
 	#[allow(missing_docs)]
 	#[clap(flatten)]
-	pub psk_key_params: PreSharedKeyParams,
+	pub psk_params: PreSharedKeyParams,
 
 	/// Enable peer discovery on local networks.
 	///
@@ -167,7 +167,7 @@ impl NetworkParams {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		psk_key: PreShareKeyConfig,
+		pre_shared_key: PreShareKeyConfig,
 		default_listen_port: u16,
 	) -> NetworkConfiguration {
 		let port = self.port.unwrap_or(default_listen_port);
@@ -240,7 +240,7 @@ impl NetworkParams {
 			extra_sets: Vec::new(),
 			request_response_protocols: Vec::new(),
 			node_key,
-			psk_key,
+			pre_shared_key,
 			node_name: node_name.to_string(),
 			client_version: client_id.to_string(),
 			transport: TransportConfig::Normal {

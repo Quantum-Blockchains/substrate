@@ -158,7 +158,7 @@ where
 
 		// TODO Check pre-shered key
 
-		params.network_config.psk_key.clone().into_pre_share_key()?;
+		params.network_config.pre_shared_key.clone().into_pre_share_key()?;
 
 		params.network_config.boot_nodes = params
 			.network_config

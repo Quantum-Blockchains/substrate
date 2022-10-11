@@ -117,8 +117,8 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	}
 
 	/// Get the PreSharedKeyParams for this object.
-	fn psk_key_params(&self) -> Option<&PreSharedKeyParams> {
-		self.network_params().map(|x| &x.psk_key_params)
+	fn psk_params(&self) -> Option<&PreSharedKeyParams> {
+		self.network_params().map(|x| &x.psk_params)
 	}
 
 	/// Get the DatabaseParams for this object
@@ -168,7 +168,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		psk_key: PreShareKeyConfig,
+		pre_shared_key: PreShareKeyConfig,
 		default_listen_port: u16,
 	) -> Result<NetworkConfiguration> {
 		Ok(if let Some(network_params) = self.network_params() {
@@ -180,11 +180,11 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id,
 				node_name,
 				node_key,
-				psk_key,
+				pre_shared_key,
 				default_listen_port,
 			)
 		} else {
-			NetworkConfiguration::new(node_name, client_id, node_key, psk_key, Some(net_config_dir))
+			NetworkConfiguration::new(node_name, client_id, node_key, pre_shared_key, Some(net_config_dir))
 		})
 	}
 
@@ -472,7 +472,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// By default this is retrieved from `PreSharedKeyParams` if it is available. Otherwise its
 	/// `PreSharedKeyConfig::default()`.
 	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreShareKeyConfig> {
-		self.psk_key_params()
+		self.psk_params()
 			.map(|x| x.pre_shared_key(net_config_dir))
 			.unwrap_or_else(|| Err(error::Error::PreSharedKeyError()))
 	}

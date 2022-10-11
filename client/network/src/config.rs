@@ -466,7 +466,7 @@ pub struct NetworkConfiguration {
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
 	/// The node key configuration, which determines the node's network identity keypair.
-	pub psk_key: PreShareKeyConfig,
+	pub pre_shared_key: PreShareKeyConfig,
 	/// List of request-response protocols that the node supports.
 	pub request_response_protocols: Vec<RequestResponseConfig>,
 	/// Configuration for the default set of nodes used for block syncing and transactions.
@@ -531,7 +531,7 @@ impl NetworkConfiguration {
 		node_name: SN,
 		client_version: SV,
 		node_key: NodeKeyConfig,
-		psk_key: PreShareKeyConfig,
+		pre_shared_key: PreShareKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
 		let default_peers_set = SetConfig::default();
@@ -542,7 +542,7 @@ impl NetworkConfiguration {
 			boot_nodes: Vec::new(),
 			external_nodes_rpc: Vec::new(),
 			node_key,
-			psk_key,
+			pre_shared_key,
 			request_response_protocols: Vec::new(),
 			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
 			default_peers_set,
