@@ -460,7 +460,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// Get the node key from the current object
 	///
 	/// By default this is retrieved from `NodeKeyParams` if it is available. Otherwise its
-	/// `NodeKeyConfig::default()`..
+	/// `NodeKeyConfig::default()`.
 	fn node_key(&self, net_config_dir: &PathBuf) -> Result<NodeKeyConfig> {
 		self.node_key_params()
 			.map(|x| x.node_key(net_config_dir))
@@ -470,8 +470,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// Get the pre shared key from the current object
 	///
 	/// By default this is retrieved from `PreSharedKeyParams` if it is available.
-	/// Otherwise its
-	/// `PreSharedKeyKeyConfig::default()`..
 	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> PreSharedKeyConfig {
 		self.psk_params()
 			.map(|x| x.pre_shared_key(net_config_dir))

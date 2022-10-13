@@ -60,7 +60,7 @@ mod tests {
 
 			let pre_shared_key = params
 				.pre_shared_key(&PathBuf::from("not-used"))
-				// .expect("Creates node key config")
+				.expect("Creates node key config")
 				.into_pre_share_key()
 				.expect("Creates node key pair");
 

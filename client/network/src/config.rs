@@ -731,15 +731,6 @@ impl NonReservedPeerMode {
 	}
 }
 
-/// The configuration of a pre-shared key, describing how it is obtained.
-/// A pre-shared key is the result of
-/// the evaluation of the pre-shared key configuration.
-// #[derive(Clone, Debug)]
-// pub enum PreShareKeyConfig {
-// 	/// A pre-shared key configuration.
-// 	PRESHAREDKEY(PreSharedKeySecret),
-// }
-
 #[derive(Clone, Debug)]
 pub struct PreSharedKeyConfig {
 	pub pre_shared_key: PreSharedKeySecret
@@ -754,16 +745,6 @@ pub enum PreSharedKeySecret {
 	/// Read the pre-shared key from a file.
 	File(PathBuf),
 }
-
-// impl Default for PreShareKeyConfig {
-// 	fn default() -> PreShareKeyConfig {
-// 		let path = PathBuf::from("./psk");
-// 		let key_bytes: [u8;32] = [24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
-// 		133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215];
-// 		fs::write(&path, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
-// 		PreShareKeyConfig{ pre_shared_key: PreSharedKeySecret::File(path) }
-// 	}
-// }
 
 impl fmt::Debug for PreSharedKeySecret {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
