@@ -155,6 +155,11 @@ where
 		let local_public = local_identity.public();
 		let local_peer_id = local_public.to_peer_id();
 
+
+		// TODO Check pre-shered key
+
+		params.network_config.pre_shared_key.clone().into_pre_share_key()?;
+
 		params.network_config.boot_nodes = params
 			.network_config
 			.boot_nodes

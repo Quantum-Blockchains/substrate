@@ -31,7 +31,7 @@ pub use sc_network_common::{
 
 pub use libp2p::{build_multiaddr, core::PublicKey, identity};
 
-use crate::ExHashT;
+use crate::{ExHashT, error};
 
 use core::{fmt, iter};
 use futures::future;
@@ -39,6 +39,7 @@ use libp2p::{
 	identity::{ed25519, Keypair},
 	multiaddr, Multiaddr, PeerId,
 };
+use libp2p::pnet::PreSharedKey;
 use prometheus_endpoint::Registry;
 use sc_consensus::ImportQueue;
 use sc_network_common::sync::ChainSync;
@@ -254,6 +255,64 @@ pub fn parse_addr(mut addr: Multiaddr) -> Result<(PeerId, Multiaddr), ParseErr> 
 	Ok((who, addr))
 }
 
+/// Splits a RpcAddress into a SocketAddr and PeerId.
+pub fn parse_str_rpc_addr(rpc_addr_str: &str) -> Result<(PeerId, std::net::SocketAddr), ParseErr> {
+	use regex::Regex;
+	
+	let rpc_addr_regex = Regex::new(r"^/([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,5}/[a-zA-z0-9]{40,}$").unwrap();
+    if rpc_addr_regex.is_match(rpc_addr_str) {
+        let split = rpc_addr_str.split("/");
+        let vec: Vec<&str> = split.collect();
+		let who = PeerId::from_str(vec[2]).map_err(|_| ParseErr::InvalidPeerId)?;
+		let addr_rpc = std::net::SocketAddr::from_str(vec[1]).map_err(|_| ParseErr::InvalidRpcAddr)?;
+		Ok((who, addr_rpc))
+    } else {
+		Err(ParseErr::InvalidRpcAddrWithPeerId)
+	}
+}
+
+/// Rpc address of a node with peer is.
+/// 
+/// # Format
+/// /127.0.0.1:8000/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV
+/// 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+#[serde(try_from = "String", into = "String")]
+pub struct RpcAddrWithPeerId {
+	/// Address Rpc of the node.
+	pub rpc_addr: std::net::SocketAddr,
+	/// Its identity.
+	pub peer_id: PeerId,
+}
+
+impl fmt::Display for RpcAddrWithPeerId {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		fmt::Display::fmt(&self, f)
+	}
+}
+
+impl FromStr for RpcAddrWithPeerId {
+	type Err = ParseErr;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		let (peer_id, rpc_addr) = parse_str_rpc_addr(s)?;
+		Ok(Self { rpc_addr, peer_id })
+	}
+}
+
+impl From<RpcAddrWithPeerId> for String {
+	fn from(ma: RpcAddrWithPeerId) -> String {
+		format!("{}", ma)
+	}
+}
+
+impl TryFrom<String> for RpcAddrWithPeerId {
+	type Error = ParseErr;
+	fn try_from(string: String) -> Result<Self, Self::Error> {
+		string.parse()
+	}
+}
+
 /// Address of a node, including its identity.
 ///
 /// This struct represents a decoded version of a multiaddress that ends with `/p2p/<peerid>`.
@@ -321,6 +380,10 @@ pub enum ParseErr {
 	InvalidPeerId,
 	/// The peer ID is missing from the address.
 	PeerIdMissing,
+	/// Address of the node Rpc is invalid.
+	InvalidRpcAddr,
+	/// Address Rpc with peer id is invalid.
+	InvalidRpcAddrWithPeerId,
 }
 
 impl fmt::Display for ParseErr {
@@ -329,6 +392,8 @@ impl fmt::Display for ParseErr {
 			Self::MultiaddrParse(err) => write!(f, "{}", err),
 			Self::InvalidPeerId => write!(f, "Peer id at the end of the address is invalid"),
 			Self::PeerIdMissing => write!(f, "Peer id is missing from the address"),
+			Self::InvalidRpcAddr => write!(f, "RPC address is not correct."),
+			Self::InvalidRpcAddrWithPeerId => write!(f, "RPC address with peer id is not correct."),
 		}
 	}
 }
@@ -339,6 +404,8 @@ impl std::error::Error for ParseErr {
 			Self::MultiaddrParse(err) => Some(err),
 			Self::InvalidPeerId => None,
 			Self::PeerIdMissing => None,
+			Self::InvalidRpcAddr => None,
+			Self::InvalidRpcAddrWithPeerId => None,
 		}
 	}
 }
@@ -394,8 +461,12 @@ pub struct NetworkConfiguration {
 	pub public_addresses: Vec<Multiaddr>,
 	/// List of initial node addresses
 	pub boot_nodes: Vec<MultiaddrWithPeerId>,
+	/// Endpoints for requesting a pre shared key.
+	pub external_nodes_rpc: Vec<RpcAddrWithPeerId>,
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
+	/// The pre-shared key configuration, which determines the pre-shard key.
+	pub pre_shared_key: PreSharedKeyConfig,
 	/// List of request-response protocols that the node supports.
 	pub request_response_protocols: Vec<RequestResponseConfig>,
 	/// Configuration for the default set of nodes used for block syncing and transactions.
@@ -460,6 +531,7 @@ impl NetworkConfiguration {
 		node_name: SN,
 		client_version: SV,
 		node_key: NodeKeyConfig,
+		pre_shared_key: PreSharedKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
 		let default_peers_set = SetConfig::default();
@@ -468,7 +540,9 @@ impl NetworkConfiguration {
 			listen_addresses: Vec::new(),
 			public_addresses: Vec::new(),
 			boot_nodes: Vec::new(),
+			external_nodes_rpc: Vec::new(),
 			node_key,
+			pre_shared_key,
 			request_response_protocols: Vec::new(),
 			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
 			default_peers_set,
@@ -486,11 +560,20 @@ impl NetworkConfiguration {
 		}
 	}
 
+
+
+
 	/// Create new default configuration for localhost-only connection with random port (useful for
 	/// testing)
 	pub fn new_local() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new(
+				"test-node",
+				"test-client",
+			    Default::default(),
+		       	PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))},
+				None,
+				);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
@@ -505,7 +588,12 @@ impl NetworkConfiguration {
 	/// testing)
 	pub fn new_memory() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new(
+				"test-node", 
+				"test-client", 
+				Default::default(), 
+				PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))},
+				None);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
@@ -639,6 +727,68 @@ impl NonReservedPeerMode {
 			"accept" => Some(Self::Accept),
 			"deny" => Some(Self::Deny),
 			_ => None,
+		}
+	}
+}
+
+#[derive(Clone, Debug)]
+pub struct PreSharedKeyConfig {
+	pub pre_shared_key: PreSharedKeySecret
+}
+
+/// The options for obtaining a pre-shared key.
+pub type PSKey = PreSharedKeySecret;
+
+/// The configuration options for obtaining a pre-shared key.
+#[derive(Clone)]
+pub enum PreSharedKeySecret {
+	/// Read the pre-shared key from a file.
+	File(PathBuf),
+}
+
+impl fmt::Debug for PreSharedKeySecret {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			Self::File(path) => f.debug_tuple("PSKSecret::File").field(path).finish(),
+		}
+	}
+}
+
+impl PreSharedKeyConfig {
+	/// Evaluate a `PreSharedKeyConfig` to obtain an pre shared key:
+	///
+	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
+	///    return error.
+	pub fn into_pre_share_key(self) -> io::Result<PreSharedKey> {
+		match self.pre_shared_key {
+			PreSharedKeySecret::File(f) => {
+				match std::fs::read(f) {
+					Ok(_data) => {
+						match _data.len() {
+							64 => {
+								match hex::decode(_data.clone()) {
+									Ok(_d) => {
+										let mut data: [u8; 32] = [0;32];
+										for i in 0..32 {
+											data[i] = _d[i];
+										}
+										Ok(PreSharedKey::new(data))
+									},
+									Err(_err) => {
+										Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::HexError(_err)))
+									}
+								}
+							},
+							_ => {
+								Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: _data.len()}))
+							}
+						}
+					},
+					Err(_err) => {
+						Err(_err)
+					}
+				}
+			}
 		}
 	}
 }

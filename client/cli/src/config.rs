@@ -19,8 +19,8 @@
 //! Configuration trait for a CLI based on substrate
 
 use crate::{
-	arg_enums::Database, error::Result, DatabaseParams, ImportParams, KeystoreParams,
-	NetworkParams, NodeKeyParams, OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli,
+	arg_enums::Database, error::{Result, self} , DatabaseParams, ImportParams, KeystoreParams,
+	NetworkParams, NodeKeyParams, OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli, PreSharedKeyParams,
 };
 use log::warn;
 use names::{Generator, Name};
@@ -29,7 +29,7 @@ use sc_service::{
 	config::{
 		BasePath, Configuration, DatabaseSource, KeystoreConfig, NetworkConfiguration,
 		NodeKeyConfig, OffchainWorkerConfig, PrometheusConfig, PruningMode, Role, RpcMethods,
-		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod,
+		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod, PreSharedKeyConfig
 	},
 	BlocksPruning, ChainSpec, TracingReceiver,
 };
@@ -116,6 +116,11 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		self.network_params().map(|x| &x.node_key_params)
 	}
 
+	/// Get the PreSharedKeyParams for this object.
+	fn psk_params(&self) -> Option<&PreSharedKeyParams> {
+		self.network_params().map(|x| &x.psk_params)
+	}
+
 	/// Get the DatabaseParams for this object
 	fn database_params(&self) -> Option<&DatabaseParams> {
 		self.import_params().map(|x| &x.database_params)
@@ -163,6 +168,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
+		pre_shared_key: PreSharedKeyConfig,
 		default_listen_port: u16,
 	) -> Result<NetworkConfiguration> {
 		Ok(if let Some(network_params) = self.network_params() {
@@ -174,10 +180,11 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id,
 				node_name,
 				node_key,
+				pre_shared_key,
 				default_listen_port,
 			)
 		} else {
-			NetworkConfiguration::new(node_name, client_id, node_key, Some(net_config_dir))
+			NetworkConfiguration::new(node_name, client_id, node_key, pre_shared_key, Some(net_config_dir))
 		})
 	}
 
@@ -460,7 +467,16 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			.unwrap_or_else(|| Ok(Default::default()))
 	}
 
-	/// Get maximum runtime instances
+	/// Get the pre shared key from the current object
+	///
+	/// By default this is retrieved from `PreSharedKeyParams` if it is available.
+	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreSharedKeyConfig> {
+		self.psk_params()
+			.map(|x| Ok(x.pre_shared_key(net_config_dir)))
+			.unwrap_or_else(|| Err(error::Error::PreSharedKeyError))
+	}
+
+	/// Get maximum runtime instancess
 	///
 	/// By default this is `None`.
 	fn max_runtime_instances(&self) -> Result<Option<usize>> {
@@ -508,6 +524,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
+		let pre_shared_key = self.pre_shared_key(&net_config_dir)?;
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();
@@ -528,6 +545,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id.as_str(),
 				self.node_name()?.as_str(),
 				node_key,
+				pre_shared_key,
 				DCV::p2p_listen_port(),
 			)?,
 			keystore_remote,

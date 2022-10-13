@@ -58,6 +58,7 @@ sp-blockchain = { version = "4.0.0-dev", path = "../../primitives/blockchain" }
 sp-consensus = { version = "0.10.0-dev", path = "../../primitives/consensus/common" }
 sp-core = { version = "6.0.0", path = "../../primitives/core" }
 sp-runtime = { version = "6.0.0", path = "../../primitives/runtime" }
+regex = "1.6.0"
 
 [dev-dependencies]
 assert_matches = "1.3"

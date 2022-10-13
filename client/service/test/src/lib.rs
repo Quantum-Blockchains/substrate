@@ -23,7 +23,7 @@ use log::{debug, info};
 use parking_lot::Mutex;
 use sc_client_api::{Backend, CallExecutor};
 use sc_network::{
-	config::{NetworkConfiguration, TransportConfig},
+	config::{NetworkConfiguration, TransportConfig, PreSharedKeyConfig, PreSharedKeySecret},
 	multiaddr, Multiaddr,
 };
 use sc_network_common::service::{NetworkBlock, NetworkPeers, NetworkStateInfo};
@@ -37,7 +37,7 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::BlockId;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::traits::Block as BlockT;
-use std::{iter, net::Ipv4Addr, pin::Pin, sync::Arc, task::Context, time::Duration};
+use std::{iter, net::Ipv4Addr, pin::Pin, sync::Arc, task::Context, time::Duration, path::PathBuf};
 use tempfile::TempDir;
 use tokio::{runtime::Runtime, time};
 
@@ -208,6 +208,7 @@ fn node_config<
 		format!("Node {}", index),
 		"network/test/0.1",
 		Default::default(),
+		PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
 		None,
 	);
 

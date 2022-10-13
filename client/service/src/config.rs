@@ -26,7 +26,7 @@ pub use sc_executor::WasmtimeInstantiationStrategy;
 pub use sc_network::{
 	config::{
 		MultiaddrWithPeerId, NetworkConfiguration, NodeKeyConfig, NonDefaultSetConfig, Role,
-		SetConfig, TransportConfig,
+		SetConfig, TransportConfig, PreSharedKeyConfig
 	},
 	Multiaddr,
 };
