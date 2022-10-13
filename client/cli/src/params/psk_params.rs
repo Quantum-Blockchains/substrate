@@ -80,9 +80,6 @@ mod tests {
 
 		fs::write(&file, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
 		check_pre_shared_key(file.clone(), &key);
-
-		// fs::write(&file, key_bytes).expect("Writes pre shared key");
-		// check_pre_shared_key(file.clone(), &key);
 	}
 
 }
