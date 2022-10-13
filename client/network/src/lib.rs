@@ -261,7 +261,7 @@ pub mod network_state;
 pub mod transactions;
 
 #[doc(inline)]
-pub use libp2p::{multiaddr, Multiaddr, PeerId};
+pub use libp2p::{multiaddr, Multiaddr, PeerId, pnet::PreSharedKey};
 pub use protocol::PeerInfo;
 pub use sc_network_common::{
 	protocol::event::{DhtEvent, Event, ObservedRole},
