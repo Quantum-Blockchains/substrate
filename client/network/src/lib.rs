@@ -256,7 +256,7 @@ pub mod config;
 pub mod network_state;
 
 #[doc(inline)]
-pub use libp2p::{multiaddr, Multiaddr, PeerId};
+pub use libp2p::{multiaddr, Multiaddr, PeerId, pnet::PreSharedKey};
 pub use protocol::PeerInfo;
 pub use sc_network_common::{
 	protocol::{
