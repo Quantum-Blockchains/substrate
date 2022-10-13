@@ -470,13 +470,13 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// Get the pre shared key from the current object
 	///
 	/// By default this is retrieved from `PreSharedKeyParams` if it is available.
-	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> PreSharedKeyConfig {
+	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreSharedKeyConfig> {
 		self.psk_params()
-			.map(|x| x.pre_shared_key(net_config_dir))
-			.unwrap_or_else(|| PreSharedKeyConfig { pre_shared_key: sc_network::config::PreSharedKeySecret::File(PathBuf::from(net_config_dir.join("pre_shared_key")))})
+			.map(|x| Ok(x.pre_shared_key(net_config_dir)))
+			.unwrap_or_else(|| Err(error::Error::PreSharedKeyError))
 	}
 
-	/// Get maximum runtime instances
+	/// Get maximum runtime instancess
 	///
 	/// By default this is `None`.
 	fn max_runtime_instances(&self) -> Result<Option<usize>> {
@@ -524,7 +524,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
-		let pre_shared_key = self.pre_shared_key(&net_config_dir);
+		let pre_shared_key = self.pre_shared_key(&net_config_dir)?;
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();
