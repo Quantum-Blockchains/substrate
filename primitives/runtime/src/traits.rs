@@ -89,6 +89,13 @@ impl IdentifyAccount for sp_core::ecdsa::Public {
 	}
 }
 
+impl IdentifyAccount for sp_core::dilithium2::Public {
+	type AccountId = Self;
+	fn into_account(self) -> Self {
+		self
+	}
+}
+
 /// Means of signature verification.
 pub trait Verify {
 	/// Type of the signer.
