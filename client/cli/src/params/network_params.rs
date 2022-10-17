@@ -157,7 +157,7 @@ pub struct NetworkParams {
 
 	#[allow(missing_docs)]
 	#[clap(long, value_name = "QKD_ADDR", multiple_values(true))]
-	pub qkd_addr: Vec<MultiaddrWithPeerId>,
+	pub qkd_addr: Vec<RpcAddrWithPeerId>,
 }
 
 impl NetworkParams {

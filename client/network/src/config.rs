@@ -258,7 +258,7 @@ pub fn parse_addr(mut addr: Multiaddr) -> Result<(PeerId, Multiaddr), ParseErr> 
 /// Splits a RpcAddress into a SocketAddr and PeerId.
 pub fn parse_str_rpc_addr(rpc_addr_str: &str) -> Result<(PeerId, std::net::SocketAddr), ParseErr> {
 	use regex::Regex;
-	
+
 	let rpc_addr_regex = Regex::new(r"^/([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,5}/[a-zA-z0-9]{40,}$").unwrap();
     if rpc_addr_regex.is_match(rpc_addr_str) {
         let split = rpc_addr_str.split("/");
@@ -272,10 +272,10 @@ pub fn parse_str_rpc_addr(rpc_addr_str: &str) -> Result<(PeerId, std::net::Socke
 }
 
 /// Rpc address of a node with peer is.
-/// 
+///
 /// # Format
 /// /127.0.0.1:8000/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV
-/// 
+///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
 pub struct RpcAddrWithPeerId {
@@ -525,7 +525,7 @@ pub struct NetworkConfiguration {
 	pub yamux_window_size: Option<u32>,
 
 	#[allow(missing_docs)]
-	pub qkd_addr: Vec<MultiaddrWithPeerId>,
+	pub qkd_addr: Vec<RpcAddrWithPeerId>,
 }
 
 impl NetworkConfiguration {
@@ -593,9 +593,9 @@ impl NetworkConfiguration {
 	pub fn new_memory() -> NetworkConfiguration {
 		let mut config =
 			NetworkConfiguration::new(
-				"test-node", 
-				"test-client", 
-				Default::default(), 
+				"test-node",
+				"test-client",
+				Default::default(),
 				PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))},
 				None);
 
