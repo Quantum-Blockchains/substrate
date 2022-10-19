@@ -256,26 +256,38 @@ pub fn parse_addr(mut addr: Multiaddr) -> Result<(PeerId, Multiaddr), ParseErr> 
 }
 
 /// Splits a string address into a SocketAddr, PeerId and QkdAddress.
-pub fn parse_str_gen_addr(rpc_addr_str: &str) -> Result<(PeerId, std::net::SocketAddr, url::Url), ParseErr> {
+pub fn parse_str_gen_addr(gen_addr_str: &str) -> Result<(PeerId, std::net::SocketAddr, Option<String>), ParseErr> {
 	use regex::Regex;
 
-	let gen_addr_regex = Regex::new(r"^https?://([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,5}(/[a-zA-Z0-9]+){0,5}/[a-zA-z0-9]{40,}$").unwrap();
-    if gen_addr_regex.is_match(rpc_addr_str) {
-        let split = rpc_addr_str.split("/");
-        let vec: Vec<&str> = split.collect();
-		// structure of this address is as so:
-		// http(s)://127.0.0.1/path/to/alice/peerId
-		// so because of a path that may differ in length we take those elements
-		// from either side of the vec
-		let who = PeerId::from_str(vec[vec.len()-1]).map_err(|_| ParseErr::InvalidPeerId)?;
-		let addr_rpc = std::net::SocketAddr::from_str(vec[2]).map_err(|_| ParseErr::InvalidRpcAddr)?;
-		let mut qkd_addr: String = String::new();
-		for i in 0..vec.len() - 1 {
-			qkd_addr.push_str(vec[i]);
-			qkd_addr.push_str("/");
+	let gen_addr_regex = Regex::new(r"^(http:/)?/([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,5}(/[a-zA-Z0-9]+){0,5}/[a-zA-z0-9]{40,}$").map_err(|_| ParseErr::InvalidRegex)?;
+    if gen_addr_regex.is_match(gen_addr_str) {
+        let split_addr = gen_addr_str.split("/");
+        let sections: Vec<&str> = split_addr.collect();
+		// now we need to consider 2 options - address for QKD and address for RPC - we will determine that by the first section
+		return match sections[0] {
+			"http:" => {
+				let peer_id = PeerId::from_str(sections[sections.len()-1]).map_err(|_| ParseErr::InvalidPeerId)?;
+				let host = std::net::SocketAddr::from_str(sections[2]).map_err(|_| ParseErr::InvalidRpcAddr)?;
+				let mut path: String = String::new();
+				for i in 3..sections.len() - 1 {
+					path.push_str("/");
+					path.push_str(sections[i]);
+				}
+
+				Ok((peer_id, host, Some(path)))
+			},
+
+			"" => {
+				let peer_id = PeerId::from_str(sections[2]).map_err(|_| ParseErr::InvalidPeerId)?;
+				let host = std::net::SocketAddr::from_str(sections[1]).map_err(|_| ParseErr::InvalidRpcAddr)?;
+
+				Ok((peer_id, host, None))
+			},
+
+			_ => {
+				Err(ParseErr::InvalidGenAddrWithPeerId)
+			},
 		}
-		let url = url::Url::from_str(qkd_addr.as_str()).map_err(|err| ParseErr::InvalidQkdAddr)?;
-		Ok((who, addr_rpc, url))
     } else {
 		Err(ParseErr::InvalidGenAddrWithPeerId)
 	}
@@ -293,38 +305,38 @@ pub fn parse_str_gen_addr(rpc_addr_str: &str) -> Result<(PeerId, std::net::Socke
 ///
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
-pub struct GenAddrWithPeerId {
-	/// Address Rpc of the node.
-	pub rpc_addr: std::net::SocketAddr,
+pub struct AddrWithPeerId {
+	/// Host part.
+	pub host: std::net::SocketAddr,
+	/// Path part.
+	pub path: Option<String>,
 	/// Its identity.
 	pub peer_id: PeerId,
-	/// Address of QKD node
-	pub qkd_addr: url::Url,
 }
 
-impl fmt::Display for GenAddrWithPeerId {
+impl fmt::Display for AddrWithPeerId {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		fmt::Display::fmt(&self, f)
 	}
 }
 
-impl FromStr for GenAddrWithPeerId {
+impl FromStr for AddrWithPeerId {
 	type Err = ParseErr;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		let (peer_id, rpc_addr, qkd_addr) = parse_str_gen_addr(s)?;
+		let (peer_id, host, path) = parse_str_gen_addr(s)?;
 
-		Ok(Self { rpc_addr, peer_id, qkd_addr })
+		Ok(Self { host, path, peer_id })
 	}
 }
 
-impl From<GenAddrWithPeerId> for String {
-	fn from(ma: GenAddrWithPeerId) -> String {
+impl From<AddrWithPeerId> for String {
+	fn from(ma: AddrWithPeerId) -> String {
 		format!("{}", ma)
 	}
 }
 
-impl TryFrom<String> for GenAddrWithPeerId {
+impl TryFrom<String> for AddrWithPeerId {
 	type Error = ParseErr;
 	fn try_from(string: String) -> Result<Self, Self::Error> {
 		string.parse()
@@ -403,7 +415,9 @@ pub enum ParseErr {
 	/// Address Rpc with peer id is invalid.
 	InvalidGenAddrWithPeerId,
 	/// QKD address is invalid
-	InvalidQkdAddr
+	InvalidQkdAddr,
+	/// Regex couldn't be parsed
+	InvalidRegex,
 }
 
 impl fmt::Display for ParseErr {
@@ -415,6 +429,7 @@ impl fmt::Display for ParseErr {
 			Self::InvalidRpcAddr => write!(f, "RPC address is not correct."),
 			Self::InvalidGenAddrWithPeerId => write!(f, "RPC address with peer id is not correct."),
 			Self::InvalidQkdAddr => write!(f, "QKD address is invalid"),
+			Self::InvalidRegex => write!(f, "Provided regex is invalid")
 		}
 	}
 }
@@ -428,6 +443,7 @@ impl std::error::Error for ParseErr {
 			Self::InvalidRpcAddr => None,
 			Self::InvalidGenAddrWithPeerId => None,
 			Self::InvalidQkdAddr => None,
+			Self::InvalidRegex => None,
 		}
 	}
 }
@@ -484,7 +500,7 @@ pub struct NetworkConfiguration {
 	/// List of initial node addresses
 	pub boot_nodes: Vec<MultiaddrWithPeerId>,
 	/// Endpoints for requesting a pre shared key.
-	pub external_nodes_rpc: Vec<GenAddrWithPeerId>,
+	pub external_nodes_rpc: Vec<AddrWithPeerId>,
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
 	/// The pre-shared key configuration, which determines the pre-shard key.
@@ -546,8 +562,8 @@ pub struct NetworkConfiguration {
 	/// configured values remain compatible with each other.
 	pub yamux_window_size: Option<u32>,
 
-	#[allow(missing_docs)]
-	pub qkd_addr: Vec<GenAddrWithPeerId>,
+	/// QKD addresses that peer is connecting with.
+	pub qkd_addr: Vec<AddrWithPeerId>,
 }
 
 impl NetworkConfiguration {

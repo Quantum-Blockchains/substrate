@@ -8402,7 +8402,6 @@ dependencies = [
  "tempfile",
  "thiserror",
  "unsigned-varint",
- "url",
  "void",
  "zeroize",
 ]
