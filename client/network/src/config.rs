@@ -1015,4 +1015,24 @@ mod tests {
 		let kp2 = NodeKeyConfig::Ed25519(Secret::New).into_keypair().unwrap();
 		assert!(secret_bytes(&kp1) != secret_bytes(&kp2));
 	}
+
+	#[test]
+	fn test_parse_str_gen_addr() {
+		let valid_rpc_addr = "/127.0.0.1:8000/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV";
+		let valid_qkd_addr = "http://0.0.0.0:8000/path/to/alice/QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV";
+		let invalid_addr = "127.0.0.1"; // it needs to be of format similar to valid_rpc_addr or valid_qkd_addr
+
+		let (peer_id, host, path) = parse_str_gen_addr(valid_rpc_addr).unwrap();
+		assert_eq!(peer_id.to_string(), String::from("QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV"));
+		assert_eq!(host.to_string(), String::from("127.0.0.1:8000"));
+		assert_eq!(path, None);
+
+		let (peer_id, host, path) = parse_str_gen_addr(valid_qkd_addr).unwrap();
+		assert_eq!(peer_id.to_string(), String::from("QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV"));
+		assert_eq!(host.to_string(), String::from("0.0.0.0:8000"));
+		assert_eq!(path, Some(String::from("/path/to/alice")));
+
+		let err_result = parse_str_gen_addr(invalid_addr);
+		assert!(err_result.is_err());
+	}
 }
