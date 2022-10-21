@@ -29,7 +29,7 @@ use sc_service::{
 	ChainSpec, ChainType,
 };
 use std::{borrow::Cow, path::PathBuf};
-use sc_network::config::RpcAddrWithPeerId;
+use sc_network::config::AddrWithPeerId;
 
 /// Parameters used to create the network configuration.
 #[derive(Debug, Clone, Args)]
@@ -44,7 +44,7 @@ pub struct NetworkParams {
 
 	/// Endpoints for requestings RPC.
 	#[clap(long, value_name = "ADDR", multiple_values(true))]
-	pub external_nodes_rpc: Vec<RpcAddrWithPeerId>,
+	pub external_nodes_rpc: Vec<AddrWithPeerId>,
 
 	/// Whether to only synchronize the chain with reserved nodes.
 	///
@@ -154,6 +154,10 @@ pub struct NetworkParams {
 		verbatim_doc_comment
 	)]
 	pub sync: SyncMode,
+
+	/// QKD addresses that peer is connecting with.
+	#[clap(long, value_name = "QKD_ADDR", multiple_values(true))]
+	pub qkd_addr: Vec<AddrWithPeerId>,
 }
 
 impl NetworkParams {
@@ -254,6 +258,7 @@ impl NetworkParams {
 			yamux_window_size: None,
 			ipfs_server: self.ipfs_server,
 			sync_mode: self.sync.into(),
+			qkd_addr: self.qkd_addr.clone(),
 		}
 	}
 }
