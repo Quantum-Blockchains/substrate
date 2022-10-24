@@ -303,7 +303,7 @@ pub fn parse_str_gen_addr(gen_addr_str: &str) -> Result<(PeerId, std::net::Socke
 /// - rpc_addr: 127.0.0.1:8008
 /// - peer_id: QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV
 ///
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
 pub struct AddrWithPeerId {
 	/// Host part.
