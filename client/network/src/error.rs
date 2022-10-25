@@ -78,6 +78,10 @@ pub enum Error {
 	/// Hex error
 	#[error(transparent)]
 	HexError(#[from] hex::FromHexError),
+
+	// todo Doc and description
+	#[error("The node configuration did not provide an address to receive the pre-shared key.")]
+	NotFoundRpcAddresses,
 }
 
 // Make `Debug` use the `Display` implementation.

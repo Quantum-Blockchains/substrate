@@ -101,6 +101,11 @@ mod tests;
 
 pub use libp2p::identity::{error::DecodingError, Keypair, PublicKey};
 use sc_network_common::service::{NetworkBlock, NetworkRequest, NetworkTransaction};
+use jsonrpsee::{
+	core::client::{ClientT, self},
+	http_client::HttpClientBuilder,
+	rpc_params,
+};
 
 /// Substrate network service. Handles network IO and manages connectivity.
 pub struct NetworkService<B: BlockT + 'static, H: ExHashT> {
@@ -149,7 +154,7 @@ where
 	/// Returns a `NetworkWorker` that implements `Future` and must be regularly polled in order
 	/// for the network processing to advance. From it, you can extract a `NetworkService` using
 	/// `worker.service()`. The `NetworkService` can be shared through the codebase.
-	pub fn new(mut params: Params<B, H, Client>) -> Result<Self, Error> {
+	pub async fn new(mut params: Params<B, H, Client>) -> Result<Self, Error> {
 		// Private and public keys configuration.
 		let local_identity = params.network_config.node_key.clone().into_keypair()?;
 		let local_public = local_identity.public();
@@ -157,6 +162,68 @@ where
 
 
 		// TODO Check pre-shered key
+
+		match params.network_config.pre_shared_key.clone().into_pre_share_key() {
+			Ok(_) => {
+				log::info!("Found file with pre-shared key.");
+			},
+			Err(err) => {
+				log::info!("File with pre-shared key not found.");
+				let addresses = params.network_config.external_nodes_rpc.clone();
+				if addresses.is_empty() {
+					log::info!("The node configuration did not provide an address to receive the pre-shared key.");
+					return Err(Error::NotFoundRpcAddresses)
+				}
+				loop {
+					for addr in &addresses {
+						let url = addr.host.to_string();
+						// let client1 = 
+						match HttpClientBuilder::default().build(url) {
+							Ok(client) => {
+								log::info!(
+									"Request pre-shared key node with peer_id: {}, address RPC: {}",
+									addr.peer_id.to_string(),
+									addr.host.to_string(),
+								);
+								let params = rpc_params![local_peer_id.to_string()];
+								// let response: String = client.request("psk_getKey", params).await.map_err(|e| {
+									
+								// });
+
+								match client.request::<String>("psk_getKey", params).await {
+									Ok(response) => {
+										log::info!("Reponse: {:?}", response);
+									},
+									Err(_) => {
+										log::info!("Error. Node nie otwieczajet.");
+									}
+								};
+
+								// eer_id.parse::<PeerId>().m
+								// 	Ok(c: String) => {
+
+								// 	},
+								// 	Err(err) => {
+								// 		log::info!("Error. Node nie otwieczajet.");
+								// 	}
+								// }
+								//.map_err(|e| {
+								// 	log::info!("Error. Node nie otwieczajet.");
+								// })?;
+							
+								// log::info!("Reponse: {:?}", response);
+							},
+							Err(_) => {
+								// TODO
+								return Err(Error::NotFoundRpcAddresses)
+							}
+						};
+						
+						
+					}
+				}
+			}
+		}
 
 		params.network_config.pre_shared_key.clone().into_pre_share_key()?;
 
