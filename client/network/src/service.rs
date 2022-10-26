@@ -538,6 +538,7 @@ where
 					config_mem,
 					params.network_config.yamux_window_size,
 					yamux_maximum_buffer_size,
+					params.network_config.pre_shared_key.into_pre_share_key()?
 				)
 			};
 
@@ -894,6 +895,7 @@ where
 					config_mem,
 					params.network_config.yamux_window_size,
 					yamux_maximum_buffer_size,
+					params.network_config.pre_shared_key.into_pre_share_key()?
 				)
 			};
 
