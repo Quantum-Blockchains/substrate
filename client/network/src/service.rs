@@ -30,7 +30,7 @@
 use crate::{
 	behaviour::{self, Behaviour, BehaviourOut},
 	bitswap::Bitswap,
-	config::{parse_str_addr, Params, TransportConfig},
+	config::{parse_str_addr, Params, TransportConfig, AddrWithPeerId},
 	discovery::DiscoveryConfig,
 	error::Error,
 	network_state::{
@@ -106,6 +106,8 @@ use jsonrpsee::{
 	http_client::HttpClientBuilder,
 	rpc_params,
 };
+use serde::{Deserialize, Serialize};
+use base64::decode;
 
 /// Substrate network service. Handles network IO and manages connectivity.
 pub struct NetworkService<B: BlockT + 'static, H: ExHashT> {
@@ -137,6 +139,102 @@ pub struct NetworkService<B: BlockT + 'static, H: ExHashT> {
 	_marker: PhantomData<H>,
 }
 
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+pub struct QkdKey {
+    pub key_ID: String,
+    pub key: String,
+}
+
+#[derive(Deserialize)]
+pub struct QkdResponse {
+    pub keys: Vec<QkdKey>,
+}
+
+async fn get_pre_shared_key_rpc(rpc_addr: &AddrWithPeerId, qkd_addr: &AddrWithPeerId, local_peer_id: PeerId) -> Result<String, Error> {
+	let mut rpc_url = "http://".to_string();
+	rpc_url.push_str(&rpc_addr.host.to_string()); 
+
+	let client = match HttpClientBuilder::default().build(rpc_url.clone()) {
+		Ok(client) => client,
+		Err(_) => {
+			return Err(Error::BuildHttpClientForRpcError{url: rpc_url})
+		}
+	};
+
+	let params_rpc = rpc_params![local_peer_id.to_string()];
+
+	let response = match client.request::<QkdKey>("psk_getKey", params_rpc).await {
+		Ok(response) => response,
+		Err(err) => {
+			return Err(Error::GetPreSharedKeyError {
+				err: err.to_string()
+			})
+		}
+	};
+
+	let mut qkd_url = String::new();
+	qkd_url.push_str("http://");
+	qkd_url.push_str(&qkd_addr.host.to_string());
+	let path: String = qkd_addr.path.clone().unwrap();
+	qkd_url.push_str(&path);
+	qkd_url.push_str("/dec_keys?key_ID=");
+	qkd_url.push_str(&response.key_ID);
+		
+	let qkd_response = match reqwest::get(qkd_url).await {
+		Ok(qkd_response) => qkd_response,
+		Err(err) => {
+			return Err(Error::GetPreSharedKeyError {
+				err: err.to_string()
+			})
+		}
+	};
+
+	let body = match qkd_response.text().await {
+		Ok(b) => b,
+		Err(_) => {
+			return Err(Error::GetPreSharedKeyError{
+				err: "Convert QKD response to string failed.".to_string()}
+			)
+		}
+	};
+
+	let psk_key = match serde_json::from_str::<QkdResponse>(&body) {
+		Ok(psk_key) => psk_key,
+		Err(_) => {
+			return Err(Error::GetPreSharedKeyError {
+				err: "Parsing QKD response failed.".to_string()
+			})
+		}
+	};
+
+	let qkd_key_bytes = match decode(psk_key.keys[0].key.clone()) {
+		Ok(qkd_key_bytes) => qkd_key_bytes,
+		Err(_) => {
+			return Err(Error::GetPreSharedKeyError {
+				err: "Decode QKD key failed.".to_string()
+			})
+		}
+	};
+
+	let mut psk_bytes = match hex::decode(response.key.clone()) {
+		Ok(psk_bytes) => psk_bytes,
+		Err(_) => {
+			return Err(Error::GetPreSharedKeyError {
+				err: "Decode pre-shared key failed.".to_string()
+			})
+		}
+	};
+
+	for i in 0..32 {
+		psk_bytes[i] = qkd_key_bytes[i] ^ psk_bytes[i];
+	}
+									
+	let psk_string = hex::encode(psk_bytes.clone());
+
+	Ok(psk_string)
+}
+
 impl<B, H, Client> NetworkWorker<B, H, Client>
 where
 	B: BlockT + 'static,
@@ -148,7 +246,7 @@ where
 		+ Send
 		+ Sync
 		+ 'static,
-{
+{	
 	/// Creates the network service.
 	///
 	/// Returns a `NetworkWorker` that implements `Future` and must be regularly polled in order
@@ -159,71 +257,415 @@ where
 		let local_identity = params.network_config.node_key.clone().into_keypair()?;
 		let local_public = local_identity.public();
 		let local_peer_id = local_public.to_peer_id();
+	
+		loop {
+			match params.network_config.pre_shared_key.clone().into_pre_share_key() {
+				Ok(_) => {
+					log::info!("Found file with pre-shared key.");
+					break;
+				},
+				Err(_) => {
+					log::info!("File with pre-shared key not found.");
+					let addresses = params.network_config.external_nodes_rpc.clone();
+					if addresses.is_empty() {
+						return Err(Error::NotFoundRpcAddresses)
+					}
 
+					let qkd_addrs = params.network_config.qkd_addr.clone();
 
-		// TODO Check pre-shered key
+					'mainFor: for addr in &addresses {
+						for qkd_addr in &qkd_addrs {
+							if addr.peer_id == qkd_addr.peer_id {
+								match get_pre_shared_key_rpc(addr, qkd_addr, local_peer_id).await {
+									Ok(psk) => {
+										if !psk.is_empty() {
 
-		match params.network_config.pre_shared_key.clone().into_pre_share_key() {
-			Ok(_) => {
-				log::info!("Found file with pre-shared key.");
-			},
-			Err(err) => {
-				log::info!("File with pre-shared key not found.");
-				let addresses = params.network_config.external_nodes_rpc.clone();
-				if addresses.is_empty() {
-					log::info!("The node configuration did not provide an address to receive the pre-shared key.");
-					return Err(Error::NotFoundRpcAddresses)
-				}
-				loop {
-					for addr in &addresses {
-						let url = addr.host.to_string();
-						// let client1 = 
-						match HttpClientBuilder::default().build(url) {
-							Ok(client) => {
-								log::info!(
-									"Request pre-shared key node with peer_id: {}, address RPC: {}",
-									addr.peer_id.to_string(),
-									addr.host.to_string(),
-								);
-								let params = rpc_params![local_peer_id.to_string()];
-								// let response: String = client.request("psk_getKey", params).await.map_err(|e| {
-									
-								// });
+											log::info!(
+												"Request for a pre-shared key to a node with peer id: {:?}",
+												addr.peer_id.to_string(),
+											);
 
-								match client.request::<String>("psk_getKey", params).await {
-									Ok(response) => {
-										log::info!("Reponse: {:?}", response);
+											params.network_config.pre_shared_key.clone().write_psk_to_file(psk.as_bytes());
+
+											log::info!(
+												"The pre-shared key was sucessfully redone and writen to the file from the node with peer id: {:?}",
+												addr.peer_id.to_string(),
+											);
+
+											break 'mainFor;
+										}
 									},
-									Err(_) => {
-										log::info!("Error. Node nie otwieczajet.");
+									Err(err) => {
+										log::info!(
+											"Failed to get a common key from a node with a peer id: {:?}. Error: {:?}",
+											addr.peer_id.to_string(),
+											err
+										);
+										continue 'mainFor;
 									}
-								};
-
-								// eer_id.parse::<PeerId>().m
-								// 	Ok(c: String) => {
-
-								// 	},
-								// 	Err(err) => {
-								// 		log::info!("Error. Node nie otwieczajet.");
-								// 	}
-								// }
-								//.map_err(|e| {
-								// 	log::info!("Error. Node nie otwieczajet.");
-								// })?;
-							
-								// log::info!("Reponse: {:?}", response);
-							},
-							Err(_) => {
-								// TODO
-								return Err(Error::NotFoundRpcAddresses)
+								}
 							}
-						};
-						
-						
+						}
 					}
 				}
 			}
 		}
+
+		params.network_config.pre_shared_key.clone().into_pre_share_key()?;
+
+		params.network_config.boot_nodes = params
+			.network_config
+			.boot_nodes
+			.into_iter()
+			.filter(|boot_node| {
+				if boot_node.peer_id == local_peer_id {
+					warn!(
+						target: "sub-libp2p",
+						"Local peer ID used in bootnode, ignoring: {}",
+						boot_node,
+					);
+					false
+				} else {
+					true
+				}
+			})
+			.collect();
+		params.network_config.default_peers_set.reserved_nodes = params
+			.network_config
+			.default_peers_set
+			.reserved_nodes
+			.into_iter()
+			.filter(|reserved_node| {
+				if reserved_node.peer_id == local_peer_id {
+					warn!(
+						target: "sub-libp2p",
+						"Local peer ID used in reserved node, ignoring: {}",
+						reserved_node,
+					);
+					false
+				} else {
+					true
+				}
+			})
+			.collect();
+
+		// Ensure the listen addresses are consistent with the transport.
+		ensure_addresses_consistent_with_transport(
+			params.network_config.listen_addresses.iter(),
+			&params.network_config.transport,
+		)?;
+		ensure_addresses_consistent_with_transport(
+			params.network_config.boot_nodes.iter().map(|x| &x.multiaddr),
+			&params.network_config.transport,
+		)?;
+		ensure_addresses_consistent_with_transport(
+			params
+				.network_config
+				.default_peers_set
+				.reserved_nodes
+				.iter()
+				.map(|x| &x.multiaddr),
+			&params.network_config.transport,
+		)?;
+		for extra_set in &params.network_config.extra_sets {
+			ensure_addresses_consistent_with_transport(
+				extra_set.set_config.reserved_nodes.iter().map(|x| &x.multiaddr),
+				&params.network_config.transport,
+			)?;
+		}
+		ensure_addresses_consistent_with_transport(
+			params.network_config.public_addresses.iter(),
+			&params.network_config.transport,
+		)?;
+
+		let (to_worker, from_service) = tracing_unbounded("mpsc_network_worker");
+
+		if let Some(path) = &params.network_config.net_config_path {
+			fs::create_dir_all(path)?;
+		}
+
+		let transactions_handler_proto = transactions::TransactionsHandlerPrototype::new(
+			params.protocol_id.clone(),
+			params
+				.chain
+				.block_hash(0u32.into())
+				.ok()
+				.flatten()
+				.expect("Genesis block exists; qed"),
+			params.fork_id.clone(),
+		);
+		params
+			.network_config
+			.extra_sets
+			.insert(0, transactions_handler_proto.set_config());
+
+		info!(
+			target: "sub-libp2p",
+			"🏷  Local node identity is: {}",
+			local_peer_id.to_base58(),
+		);
+
+		let default_notif_handshake_message = Roles::from(&params.role).encode();
+
+		let (protocol, peerset_handle, mut known_addresses) = Protocol::new(
+			From::from(&params.role),
+			params.chain.clone(),
+			params.protocol_id.clone(),
+			&params.fork_id,
+			&params.network_config,
+			iter::once(Vec::new())
+				.chain(
+					(0..params.network_config.extra_sets.len() - 1)
+						.map(|_| default_notif_handshake_message.clone()),
+				)
+				.collect(),
+			params.metrics_registry.as_ref(),
+			params.chain_sync,
+		)?;
+
+		// List of multiaddresses that we know in the network.
+		let mut boot_node_ids = HashSet::new();
+
+		// Process the bootnodes.
+		for bootnode in params.network_config.boot_nodes.iter() {
+			boot_node_ids.insert(bootnode.peer_id);
+			known_addresses.push((bootnode.peer_id, bootnode.multiaddr.clone()));
+		}
+
+		let boot_node_ids = Arc::new(boot_node_ids);
+
+		// Check for duplicate bootnodes.
+		params.network_config.boot_nodes.iter().try_for_each(|bootnode| {
+			if let Some(other) = params
+				.network_config
+				.boot_nodes
+				.iter()
+				.filter(|o| o.multiaddr == bootnode.multiaddr)
+				.find(|o| o.peer_id != bootnode.peer_id)
+			{
+				Err(Error::DuplicateBootnode {
+					address: bootnode.multiaddr.clone(),
+					first_id: bootnode.peer_id,
+					second_id: other.peer_id,
+				})
+			} else {
+				Ok(())
+			}
+		})?;
+
+		let num_connected = Arc::new(AtomicUsize::new(0));
+		let is_major_syncing = Arc::new(AtomicBool::new(false));
+
+		// Build the swarm.
+		let (mut swarm, bandwidth): (Swarm<Behaviour<B, Client>>, _) = {
+			let user_agent = format!(
+				"{} ({})",
+				params.network_config.client_version, params.network_config.node_name
+			);
+
+			let discovery_config = {
+				let mut config = DiscoveryConfig::new(local_public.clone());
+				config.with_permanent_addresses(known_addresses);
+				config.discovery_limit(
+					u64::from(params.network_config.default_peers_set.out_peers) + 15,
+				);
+				config.add_protocol(params.protocol_id.clone());
+				config.with_dht_random_walk(params.network_config.enable_dht_random_walk);
+				config.allow_non_globals_in_dht(params.network_config.allow_non_globals_in_dht);
+				config.use_kademlia_disjoint_query_paths(
+					params.network_config.kademlia_disjoint_query_paths,
+				);
+
+				match params.network_config.transport {
+					TransportConfig::MemoryOnly => {
+						config.with_mdns(false);
+						config.allow_private_ipv4(false);
+					},
+					TransportConfig::Normal { enable_mdns, allow_private_ipv4, .. } => {
+						config.with_mdns(enable_mdns);
+						config.allow_private_ipv4(allow_private_ipv4);
+					},
+				}
+
+				config
+			};
+
+			let (transport, bandwidth) = {
+				let config_mem = match params.network_config.transport {
+					TransportConfig::MemoryOnly => true,
+					TransportConfig::Normal { .. } => false,
+				};
+
+				// The yamux buffer size limit is configured to be equal to the maximum frame size
+				// of all protocols. 10 bytes are added to each limit for the length prefix that
+				// is not included in the upper layer protocols limit but is still present in the
+				// yamux buffer. These 10 bytes correspond to the maximum size required to encode
+				// a variable-length-encoding 64bits number. In other words, we make the
+				// assumption that no notification larger than 2^64 will ever be sent.
+				let yamux_maximum_buffer_size = {
+					let requests_max = params
+						.network_config
+						.request_response_protocols
+						.iter()
+						.map(|cfg| usize::try_from(cfg.max_request_size).unwrap_or(usize::MAX));
+					let responses_max =
+						params.network_config.request_response_protocols.iter().map(|cfg| {
+							usize::try_from(cfg.max_response_size).unwrap_or(usize::MAX)
+						});
+					let notifs_max = params.network_config.extra_sets.iter().map(|cfg| {
+						usize::try_from(cfg.max_notification_size).unwrap_or(usize::MAX)
+					});
+
+					// A "default" max is added to cover all the other protocols: ping, identify,
+					// kademlia, block announces, and transactions.
+					let default_max = cmp::max(
+						1024 * 1024,
+						usize::try_from(protocol::BLOCK_ANNOUNCES_TRANSACTIONS_SUBSTREAM_SIZE)
+							.unwrap_or(usize::MAX),
+					);
+
+					iter::once(default_max)
+						.chain(requests_max)
+						.chain(responses_max)
+						.chain(notifs_max)
+						.max()
+						.expect("iterator known to always yield at least one element; qed")
+						.saturating_add(10)
+				};
+
+				transport::build_transport(
+					local_identity.clone(),
+					config_mem,
+					params.network_config.yamux_window_size,
+					yamux_maximum_buffer_size,
+				)
+			};
+
+			let behaviour = {
+				let bitswap = params.network_config.ipfs_server.then(|| Bitswap::new(params.chain));
+				let result = Behaviour::new(
+					protocol,
+					user_agent,
+					local_public,
+					discovery_config,
+					params.block_request_protocol_config,
+					params.state_request_protocol_config,
+					params.warp_sync_protocol_config,
+					bitswap,
+					params.light_client_request_protocol_config,
+					params.network_config.request_response_protocols,
+					peerset_handle.clone(),
+				);
+
+				match result {
+					Ok(b) => b,
+					Err(crate::request_responses::RegisterError::DuplicateProtocol(proto)) =>
+						return Err(Error::DuplicateRequestResponseProtocol { protocol: proto }),
+				}
+			};
+
+			let mut builder = SwarmBuilder::new(transport, behaviour, local_peer_id)
+				.connection_limits(
+					ConnectionLimits::default()
+						.with_max_established_per_peer(Some(crate::MAX_CONNECTIONS_PER_PEER as u32))
+						.with_max_established_incoming(Some(
+							crate::MAX_CONNECTIONS_ESTABLISHED_INCOMING,
+						)),
+				)
+				.substream_upgrade_protocol_override(upgrade::Version::V1Lazy)
+				.notify_handler_buffer_size(NonZeroUsize::new(32).expect("32 != 0; qed"))
+				.connection_event_buffer_size(1024)
+				.max_negotiating_inbound_streams(2048);
+			if let Some(spawner) = params.executor {
+				struct SpawnImpl<F>(F);
+				impl<F: Fn(Pin<Box<dyn Future<Output = ()> + Send>>)> Executor for SpawnImpl<F> {
+					fn exec(&self, f: Pin<Box<dyn Future<Output = ()> + Send>>) {
+						(self.0)(f)
+					}
+				}
+				builder = builder.executor(Box::new(SpawnImpl(spawner)));
+			}
+			(builder.build(), bandwidth)
+		};
+
+		// Initialize the metrics.
+		let metrics = match &params.metrics_registry {
+			Some(registry) => Some(metrics::register(
+				registry,
+				MetricSources {
+					bandwidth: bandwidth.clone(),
+					major_syncing: is_major_syncing.clone(),
+					connected_peers: num_connected.clone(),
+				},
+			)?),
+			None => None,
+		};
+
+		// Listen on multiaddresses.
+		for addr in &params.network_config.listen_addresses {
+			if let Err(err) = Swarm::<Behaviour<B, Client>>::listen_on(&mut swarm, addr.clone()) {
+				warn!(target: "sub-libp2p", "Can't listen on {} because: {:?}", addr, err)
+			}
+		}
+
+		// Add external addresses.
+		for addr in &params.network_config.public_addresses {
+			Swarm::<Behaviour<B, Client>>::add_external_address(
+				&mut swarm,
+				addr.clone(),
+				AddressScore::Infinite,
+			);
+		}
+
+		let external_addresses = Arc::new(Mutex::new(Vec::new()));
+		let peers_notifications_sinks = Arc::new(Mutex::new(HashMap::new()));
+
+		let service = Arc::new(NetworkService {
+			bandwidth,
+			external_addresses: external_addresses.clone(),
+			num_connected: num_connected.clone(),
+			is_major_syncing: is_major_syncing.clone(),
+			peerset: peerset_handle,
+			local_peer_id,
+			local_identity,
+			to_worker,
+			peers_notifications_sinks: peers_notifications_sinks.clone(),
+			notifications_sizes_metric: metrics
+				.as_ref()
+				.map(|metrics| metrics.notifications_sizes.clone()),
+			_marker: PhantomData,
+		});
+
+		let (tx_handler, tx_handler_controller) = transactions_handler_proto.build(
+			service.clone(),
+			params.transaction_pool,
+			params.metrics_registry.as_ref(),
+		)?;
+		(params.transactions_handler_executor)(tx_handler.run().boxed());
+
+		Ok(NetworkWorker {
+			external_addresses,
+			num_connected,
+			is_major_syncing,
+			network_service: swarm,
+			service,
+			import_queue: params.import_queue,
+			from_service,
+			event_streams: out_events::OutChannels::new(params.metrics_registry.as_ref())?,
+			peers_notifications_sinks,
+			tx_handler_controller,
+			metrics,
+			boot_node_ids,
+		})
+	}
+	
+	//TODO doc
+	/// doc
+	pub fn new_for_test(mut params: Params<B, H, Client>) -> Result<Self, Error> {
+		// Private and public keys configuration.
+		let local_identity = params.network_config.node_key.clone().into_keypair()?;
+		let local_public = local_identity.public();
+		let local_peer_id = local_public.to_peer_id();
 
 		params.network_config.pre_shared_key.clone().into_pre_share_key()?;
 

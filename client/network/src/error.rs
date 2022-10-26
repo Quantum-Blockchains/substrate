@@ -79,9 +79,23 @@ pub enum Error {
 	#[error(transparent)]
 	HexError(#[from] hex::FromHexError),
 
-	// todo Doc and description
+	/// No RPC addresses were found to retrieve the pre-shared key.
 	#[error("The node configuration did not provide an address to receive the pre-shared key.")]
 	NotFoundRpcAddresses,
+
+	/// Error building the http client.
+	#[error("Invalid url address. URL: `{url}`.")]
+	BuildHttpClientForRpcError {
+		/// The url address.
+		url: String,
+	},
+
+	/// Get pre-shared key error.
+	#[error("Get pre-shared key failed. Error: `{err}`.")]
+	GetPreSharedKeyError {
+		/// Error.
+		err: String,
+	},
 }
 
 // Make `Debug` use the `Display` implementation.
