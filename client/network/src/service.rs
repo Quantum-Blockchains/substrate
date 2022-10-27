@@ -264,8 +264,9 @@ where
 					log::info!("Found file with pre-shared key.");
 					break;
 				},
-				Err(_) => {
+				Err(err) => {
 					log::info!("File with pre-shared key not found.");
+					log::info!("Error: {:?}", err);
 					let addresses = params.network_config.external_nodes_rpc.clone();
 					if addresses.is_empty() {
 						return Err(Error::NotFoundRpcAddresses)
