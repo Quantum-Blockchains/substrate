@@ -264,8 +264,9 @@ where
 					log::info!("Found file with pre-shared key.");
 					break;
 				},
-				Err(_) => {
+				Err(err) => {
 					log::info!("File with pre-shared key not found.");
+					log::info!("Error: {:?}", err);
 					let addresses = params.network_config.external_nodes_rpc.clone();
 					if addresses.is_empty() {
 						return Err(Error::NotFoundRpcAddresses)
@@ -539,6 +540,7 @@ where
 					config_mem,
 					params.network_config.yamux_window_size,
 					yamux_maximum_buffer_size,
+					params.network_config.pre_shared_key.into_pre_share_key()?
 				)
 			};
 
@@ -895,6 +897,7 @@ where
 					config_mem,
 					params.network_config.yamux_window_size,
 					yamux_maximum_buffer_size,
+					params.network_config.pre_shared_key.into_pre_share_key()?
 				)
 			};
 
