@@ -306,6 +306,7 @@ where
 								}
 							}
 						}
+						log::info!("No QKD address is configured for the node with peer id {:?}", addr.peer_id.to_string());
 					}
 				}
 			}
