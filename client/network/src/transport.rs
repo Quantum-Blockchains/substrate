@@ -114,11 +114,6 @@ pub fn build_transport(
 		core::upgrade::SelectUpgrade::new(yamux_config, mplex_config)
 	};
 
-	// let psk = PreSharedKey::new([
-	// 	24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253, 133, 250, 172, 202, 19,
-	// 	217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215
-	// ]);
-
 	let transport = transport
 		.and_then(move |socket, _| PnetConfig::new(psk).handshake(socket))
 		.upgrade(upgrade::Version::V1Lazy)
