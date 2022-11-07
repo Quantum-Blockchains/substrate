@@ -20,5 +20,6 @@
 pub mod http;
 pub mod storage;
 pub mod storage_lock;
+pub mod file;
 
 pub use sp_core::offchain::*;
