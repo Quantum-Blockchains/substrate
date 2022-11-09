@@ -310,7 +310,7 @@ pub struct NewFullBase {
 }
 
 /// Creates a full service from the configuration.
-pub fn new_full_base(
+pub async fn new_full_base(
 	mut config: Configuration,
 	disable_hardware_benchmarks: bool,
 	with_startup_data: impl FnOnce(
@@ -364,7 +364,7 @@ pub fn new_full_base(
 			import_queue,
 			block_announce_validator_builder: None,
 			warp_sync: Some(warp_sync),
-		})?;
+		}).await?;
 
 	if config.offchain_worker.enabled {
 		sc_service::build_offchain_workers(
@@ -556,12 +556,12 @@ pub fn new_full_base(
 }
 
 /// Builds a new service for a full client.
-pub fn new_full(
+pub async fn new_full(
 	config: Configuration,
 	disable_hardware_benchmarks: bool,
 ) -> Result<TaskManager, ServiceError> {
 	new_full_base(config, disable_hardware_benchmarks, |_, _| ())
-		.map(|NewFullBase { task_manager, .. }| task_manager)
+		.await.map(|NewFullBase { task_manager, .. }| task_manager)
 }
 
 #[cfg(test)]

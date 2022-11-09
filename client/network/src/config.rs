@@ -797,6 +797,13 @@ impl fmt::Debug for PreSharedKeySecret {
 }
 
 impl PreSharedKeyConfig {
+	pub fn write_psk_to_file(self, sk_bytes: &[u8]) {
+		match self.pre_shared_key {
+			PreSharedKeySecret::File(f) => {
+				write_psk_file(f, sk_bytes);
+			},
+		}
+	}
 	/// Evaluate a `PreSharedKeyConfig` to obtain an pre shared key:
 	///
 	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
@@ -952,6 +959,15 @@ where
 	P: AsRef<Path>,
 {
 	let mut file = open_secret_file(&path)?;
+	file.write_all(sk_bytes)
+}
+
+/// Write pre-shared key bytes to a file.
+fn write_psk_file<P>(path: P, sk_bytes: &[u8]) -> io::Result<()>
+where
+	P: AsRef<Path>,
+{	
+	let mut file = fs::File::create(path)?;
 	file.write_all(sk_bytes)
 }
 

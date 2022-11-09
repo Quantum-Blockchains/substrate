@@ -714,8 +714,8 @@ pub struct BuildNetworkParams<'a, TBl: BlockT, TExPool, TImpQu, TCl> {
 }
 
 /// Build the network service, the network status sinks and an RPC sender.
-pub fn build_network<TBl, TExPool, TImpQu, TCl>(
-	params: BuildNetworkParams<TBl, TExPool, TImpQu, TCl>,
+pub async fn build_network<TBl, TExPool, TImpQu, TCl>(
+	params: BuildNetworkParams<'_,TBl, TExPool, TImpQu, TCl>,
 ) -> Result<
 	(
 		Arc<NetworkService<TBl, <TBl as BlockT>::Hash>>,
@@ -866,7 +866,7 @@ where
 	};
 
 	let has_bootnodes = !network_params.network_config.boot_nodes.is_empty();
-	let network_mut = sc_network::NetworkWorker::new(network_params)?;
+	let network_mut = sc_network::NetworkWorker::new(network_params).await?;
 	let network = network_mut.service().clone();
 
 	let (system_rpc_tx, system_rpc_rx) = tracing_unbounded("mpsc_system_rpc");

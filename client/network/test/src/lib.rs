@@ -875,7 +875,7 @@ where
 			Some(warp_sync),
 		)
 		.unwrap();
-		let network = NetworkWorker::new(sc_network::config::Params {
+		let network = NetworkWorker::new_for_test(sc_network::config::Params {
 			role: if config.is_authority { Role::Authority } else { Role::Full },
 			executor: None,
 			transactions_handler_executor: Box::new(|task| {
