@@ -800,7 +800,7 @@ impl PreSharedKeyConfig {
 	pub fn write_psk_to_file(self, sk_bytes: &[u8]) {
 		match self.pre_shared_key {
 			PreSharedKeySecret::File(f) => {
-				write_secret_file(f, sk_bytes);
+				write_psk_file(f, sk_bytes);
 			},
 		}
 	}
@@ -959,6 +959,15 @@ where
 	P: AsRef<Path>,
 {
 	let mut file = open_secret_file(&path)?;
+	file.write_all(sk_bytes)
+}
+
+/// Write pre-shared key bytes to a file.
+fn write_psk_file<P>(path: P, sk_bytes: &[u8]) -> io::Result<()>
+where
+	P: AsRef<Path>,
+{	
+	let mut file = fs::File::create(path)?;
 	file.write_all(sk_bytes)
 }
 
