@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-repo:
-    name: Build Rust repository
+    name: Build repository
     runs-on: ubuntu-latest
     env:
       CARGO_INCREMENTAL: 0
