@@ -70,7 +70,8 @@ fn sign<P: sp_core::Pair>(
 	message: Vec<u8>,
 ) -> error::Result<String> {
 	let pair = utils::pair_from_suri::<P>(suri, password)?;
-	Ok(hex::encode(pair.sign(&message)))
+	let sign = pair.sign(&message);
+	Ok(hex::encode(sign))
 }
 
 #[cfg(test)]
@@ -89,6 +90,22 @@ mod test {
 			&seed[2..],
 			"--password",
 			"12345",
+		]);
+		assert!(sign.run().is_ok());
+	}
+
+	#[test]
+	fn sign_with_dilithium2_scheme() {
+		let seed = "0xad1fb77243b536b90cfe5f0d351ab1b1ac40e3890b41dc64f766ee56340cfca5";
+
+		let sign = SignCmd::parse_from(&[
+			"sign",
+			"--suri",
+			seed,
+			"--message",
+			&seed[2..],
+			"--scheme",
+			"dilithium2",
 		]);
 		assert!(sign.run().is_ok());
 	}
