@@ -446,8 +446,10 @@ impl TraitPair for Pair {
 		Pair { public, secret }
 	}
 
-	fn from_seed_slice(_: &[u8]) -> Result<Self, SecretStringError> {
-		Ok(Self::from_seed(&Seed::default()))
+	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError> {
+		let mut s: [u8;32] = [0;32];
+		s.copy_from_slice(seed);
+		Ok(Self::from_seed(&s))
 	}
 	fn sign(&self, _: &[u8]) -> Self::Signature {
 		let sig_bytes: Vec<u8> = (0..2420).map(|_| { rand::random::<u8>() }).collect();
