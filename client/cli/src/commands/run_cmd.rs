@@ -130,6 +130,10 @@ pub struct RunCmd {
 	#[clap(long, value_name = "PORT")]
 	pub rpc_port: Option<u16>,
 
+	/// Specify runner port.
+	#[clap(long, value_name = "PORT")]
+	pub runner_port: Option<u16>,
+
 	/// Specify WebSockets RPC server TCP port.
 	#[clap(long, value_name = "PORT")]
 	pub ws_port: Option<u16>,
@@ -388,6 +392,10 @@ impl CliConfiguration for RunCmd {
 				chain_spec.id().into(),
 			))
 		})
+	}
+
+	fn runner_port(&self, default_listen_port: u16) -> Result<Option<u16>> {
+		Ok(Some(self.runner_port.unwrap_or(default_listen_port)))
 	}
 
 	fn disable_grandpa(&self) -> Result<bool> {

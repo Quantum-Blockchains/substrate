@@ -241,6 +241,7 @@ fn node_config<
 		wasm_method: sc_service::config::WasmExecutionMethod::Interpreted,
 		wasm_runtime_overrides: Default::default(),
 		execution_strategies: Default::default(),
+		runner_port: None,
 		rpc_http: None,
 		rpc_ipc: None,
 		rpc_ws: None,

@@ -64,6 +64,13 @@ pub trait DefaultConfigurationValues {
 		9944
 	}
 
+	/// Runner port
+	///
+	/// By default this is `8000`.
+	fn runner_listen_port() -> u16 {
+		8000
+	}
+
 	/// The port Substrate should listen on for http connections.
 	///
 	/// By default this is `9933`.
@@ -315,6 +322,13 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			.unwrap_or_default())
 	}
 
+	/// Get the runner port (`None` if disabled).
+	///
+	/// By default this is `None`.
+	fn runner_port(&self, _default_listen_port: u16) -> Result<Option<u16>> {
+		Ok(None)
+	}
+
 	/// Get the RPC HTTP address (`None` if disabled).
 	///
 	/// By default this is `None`.
@@ -558,6 +572,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			wasm_method: self.wasm_method()?,
 			wasm_runtime_overrides: self.wasm_runtime_overrides(),
 			execution_strategies: self.execution_strategies(is_dev, is_validator)?,
+			runner_port: self.runner_port(DCV::runner_listen_port())?,
 			rpc_http: self.rpc_http(DCV::rpc_http_listen_port())?,
 			rpc_ws: self.rpc_ws(DCV::rpc_ws_listen_port())?,
 			rpc_ipc: self.rpc_ipc()?,
