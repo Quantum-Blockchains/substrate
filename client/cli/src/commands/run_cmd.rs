@@ -394,8 +394,8 @@ impl CliConfiguration for RunCmd {
 		})
 	}
 
-	fn runner_port(&self, _default_listen_port: u16) -> Result<Option<u16>> {
-		Ok(self.runner_port.clone())
+	fn runner_port(&self, default_listen_port: u16) -> Result<Option<u16>> {
+		Ok(Some(self.runner_port.unwrap_or(default_listen_port)))
 	}
 
 	fn disable_grandpa(&self) -> Result<bool> {
