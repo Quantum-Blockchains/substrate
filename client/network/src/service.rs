@@ -80,7 +80,8 @@ use std::{
 	borrow::Cow,
 	cmp,
 	collections::{HashMap, HashSet},
-	fs, iter,
+	fs, fs::remove_file,
+	iter,
 	marker::PhantomData,
 	num::NonZeroUsize,
 	pin::Pin,
@@ -153,7 +154,7 @@ pub struct QkdResponse {
 
 async fn get_pre_shared_key_rpc(rpc_addr: &AddrWithPeerId, qkd_addr: &AddrWithPeerId, local_peer_id: PeerId) -> Result<String, Error> {
 	let mut rpc_url = "http://".to_string();
-	rpc_url.push_str(&rpc_addr.host.to_string()); 
+	rpc_url.push_str(&rpc_addr.host.to_string());
 
 	let client = match HttpClientBuilder::default().build(rpc_url.clone()) {
 		Ok(client) => client,
@@ -180,7 +181,7 @@ async fn get_pre_shared_key_rpc(rpc_addr: &AddrWithPeerId, qkd_addr: &AddrWithPe
 	qkd_url.push_str(&path);
 	qkd_url.push_str("/dec_keys?key_ID=");
 	qkd_url.push_str(&response.key_ID);
-		
+
 	let qkd_response = match reqwest::get(qkd_url).await {
 		Ok(qkd_response) => qkd_response,
 		Err(err) => {
@@ -229,7 +230,7 @@ async fn get_pre_shared_key_rpc(rpc_addr: &AddrWithPeerId, qkd_addr: &AddrWithPe
 	for i in 0..32 {
 		psk_bytes[i] = qkd_key_bytes[i] ^ psk_bytes[i];
 	}
-									
+
 	let psk_string = hex::encode(psk_bytes.clone());
 
 	Ok(psk_string)
@@ -246,7 +247,7 @@ where
 		+ Send
 		+ Sync
 		+ 'static,
-{	
+{
 	/// Creates the network service.
 	///
 	/// Returns a `NetworkWorker` that implements `Future` and must be regularly polled in order
@@ -257,61 +258,6 @@ where
 		let local_identity = params.network_config.node_key.clone().into_keypair()?;
 		let local_public = local_identity.public();
 		let local_peer_id = local_public.to_peer_id();
-	
-		loop {
-			match params.network_config.pre_shared_key.clone().into_pre_share_key() {
-				Ok(_) => {
-					log::info!("Found file with pre-shared key.");
-					break;
-				},
-				Err(err) => {
-					log::info!("File with pre-shared key not found.");
-					log::info!("Error: {:?}", err);
-					let addresses = params.network_config.external_nodes_rpc.clone();
-					if addresses.is_empty() {
-						return Err(Error::NotFoundRpcAddresses)
-					}
-
-					let qkd_addrs = params.network_config.qkd_addr.clone();
-
-					'mainFor: for addr in &addresses {
-						for qkd_addr in &qkd_addrs {
-							if addr.peer_id == qkd_addr.peer_id {
-								match get_pre_shared_key_rpc(addr, qkd_addr, local_peer_id).await {
-									Ok(psk) => {
-										if !psk.is_empty() {
-
-											log::info!(
-												"Request for a pre-shared key to a node with peer id: {:?}",
-												addr.peer_id.to_string(),
-											);
-
-											params.network_config.pre_shared_key.clone().write_psk_to_file(psk.as_bytes());
-
-											log::info!(
-												"The pre-shared key was sucessfully redone and writen to the file from the node with peer id: {:?}",
-												addr.peer_id.to_string(),
-											);
-
-											break 'mainFor;
-										}
-									},
-									Err(err) => {
-										log::info!(
-											"Failed to get a common key from a node with a peer id: {:?}. Error: {:?}",
-											addr.peer_id.to_string(),
-											err
-										);
-										continue 'mainFor;
-									}
-								}
-							}
-						}
-						log::info!("No QKD address is configured for the node with peer id {:?}", addr.peer_id.to_string());
-					}
-				}
-			}
-		}
 
 		params.network_config.pre_shared_key.clone().into_pre_share_key()?;
 
@@ -646,6 +592,14 @@ where
 		)?;
 		(params.transactions_handler_executor)(tx_handler.run().boxed());
 
+		// after loading psk we can delete it
+		let _result = match remove_file("psk") {
+			Err(err) => {
+				error!("Couldn't remove psk file: {:?}", err)
+			},
+			_ => {}
+		};
+
 		Ok(NetworkWorker {
 			external_addresses,
 			num_connected,
@@ -661,7 +615,7 @@ where
 			boot_node_ids,
 		})
 	}
-	
+
 	//TODO doc
 	/// doc
 	pub fn new_for_test(mut params: Params<B, H, Client>) -> Result<Self, Error> {
