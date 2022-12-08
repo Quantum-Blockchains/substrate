@@ -30,7 +30,7 @@
 use crate::{
 	behaviour::{self, Behaviour, BehaviourOut},
 	bitswap::Bitswap,
-	config::{parse_str_addr, Params, TransportConfig, AddrWithPeerId},
+	config::{parse_str_addr, Params, TransportConfig},
 	discovery::DiscoveryConfig,
 	error::Error,
 	network_state::{
@@ -102,13 +102,6 @@ mod tests;
 
 pub use libp2p::identity::{error::DecodingError, Keypair, PublicKey};
 use sc_network_common::service::{NetworkBlock, NetworkRequest, NetworkTransaction};
-use jsonrpsee::{
-	core::client::{ClientT, self},
-	http_client::HttpClientBuilder,
-	rpc_params,
-};
-use serde::{Deserialize, Serialize};
-use base64::decode;
 
 /// Substrate network service. Handles network IO and manages connectivity.
 pub struct NetworkService<B: BlockT + 'static, H: ExHashT> {
@@ -138,102 +131,6 @@ pub struct NetworkService<B: BlockT + 'static, H: ExHashT> {
 	/// Marker to pin the `H` generic. Serves no purpose except to not break backwards
 	/// compatibility.
 	_marker: PhantomData<H>,
-}
-
-#[allow(non_snake_case)]
-#[derive(Serialize, Deserialize)]
-pub struct QkdKey {
-    pub key_ID: String,
-    pub key: String,
-}
-
-#[derive(Deserialize)]
-pub struct QkdResponse {
-    pub keys: Vec<QkdKey>,
-}
-
-async fn get_pre_shared_key_rpc(rpc_addr: &AddrWithPeerId, qkd_addr: &AddrWithPeerId, local_peer_id: PeerId) -> Result<String, Error> {
-	let mut rpc_url = "http://".to_string();
-	rpc_url.push_str(&rpc_addr.host.to_string());
-
-	let client = match HttpClientBuilder::default().build(rpc_url.clone()) {
-		Ok(client) => client,
-		Err(_) => {
-			return Err(Error::BuildHttpClientForRpcError{url: rpc_url})
-		}
-	};
-
-	let params_rpc = rpc_params![local_peer_id.to_string()];
-
-	let response = match client.request::<QkdKey>("psk_getKey", params_rpc).await {
-		Ok(response) => response,
-		Err(err) => {
-			return Err(Error::GetPreSharedKeyError {
-				err: err.to_string()
-			})
-		}
-	};
-
-	let mut qkd_url = String::new();
-	qkd_url.push_str("http://");
-	qkd_url.push_str(&qkd_addr.host.to_string());
-	let path: String = qkd_addr.path.clone().unwrap();
-	qkd_url.push_str(&path);
-	qkd_url.push_str("/dec_keys?key_ID=");
-	qkd_url.push_str(&response.key_ID);
-
-	let qkd_response = match reqwest::get(qkd_url).await {
-		Ok(qkd_response) => qkd_response,
-		Err(err) => {
-			return Err(Error::GetPreSharedKeyError {
-				err: err.to_string()
-			})
-		}
-	};
-
-	let body = match qkd_response.text().await {
-		Ok(b) => b,
-		Err(_) => {
-			return Err(Error::GetPreSharedKeyError{
-				err: "Convert QKD response to string failed.".to_string()}
-			)
-		}
-	};
-
-	let psk_key = match serde_json::from_str::<QkdResponse>(&body) {
-		Ok(psk_key) => psk_key,
-		Err(_) => {
-			return Err(Error::GetPreSharedKeyError {
-				err: "Parsing QKD response failed.".to_string()
-			})
-		}
-	};
-
-	let qkd_key_bytes = match decode(psk_key.keys[0].key.clone()) {
-		Ok(qkd_key_bytes) => qkd_key_bytes,
-		Err(_) => {
-			return Err(Error::GetPreSharedKeyError {
-				err: "Decode QKD key failed.".to_string()
-			})
-		}
-	};
-
-	let mut psk_bytes = match hex::decode(response.key.clone()) {
-		Ok(psk_bytes) => psk_bytes,
-		Err(_) => {
-			return Err(Error::GetPreSharedKeyError {
-				err: "Decode pre-shared key failed.".to_string()
-			})
-		}
-	};
-
-	for i in 0..32 {
-		psk_bytes[i] = qkd_key_bytes[i] ^ psk_bytes[i];
-	}
-
-	let psk_string = hex::encode(psk_bytes.clone());
-
-	Ok(psk_string)
 }
 
 impl<B, H, Client> NetworkWorker<B, H, Client>
