@@ -431,17 +431,25 @@ impl TraitPair for Pair {
 		let seed = Seed::default();
 		Ok((Self::from_seed(&seed), Some(seed)))
 	}
-	fn from_seed(_: &Self::Seed) -> Self {
-		let public_bytes: Vec<u8> = (0..1312).map(|_| { rand::random::<u8>() }).collect();
-		let public = Public(<[u8; 1312]>::try_from(public_bytes.as_slice()).unwrap());
-		let secret_bytes: Vec<u8> = (0..2528).map(|_| { rand::random::<u8>() }).collect();
-		let secret = Secret(<[u8; 2528]>::try_from(secret_bytes.as_slice()).unwrap());
+	fn from_seed(seed: &Self::Seed) -> Self {
+		let mut public_bytes_array: [u8; 1312] = [0;1312];
+		for i in 0..41 {
+			public_bytes_array[i*32..i*32+32].copy_from_slice(seed.as_slice());
+		}
+		let mut secret_bytes_array: [u8; 2528] = [0;2528];
+		for i in 0..79 {
+			secret_bytes_array[i*32..i*32+32].copy_from_slice(seed.as_slice());
+		}
+		let public = Public(public_bytes_array);
+		let secret = Secret(secret_bytes_array);
 
 		Pair { public, secret }
 	}
 
-	fn from_seed_slice(_: &[u8]) -> Result<Self, SecretStringError> {
-		Ok(Self::from_seed(&Seed::default()))
+	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError> {
+		let mut s: [u8;32] = [0;32];
+		s.copy_from_slice(seed);
+		Ok(Self::from_seed(&s))
 	}
 	fn sign(&self, _: &[u8]) -> Self::Signature {
 		let sig_bytes: Vec<u8> = (0..2420).map(|_| { rand::random::<u8>() }).collect();
@@ -457,7 +465,10 @@ impl TraitPair for Pair {
 		self.public
 	}
 	fn to_raw_vec(&self) -> Vec<u8> {
-		Vec::new()
+		let mut vec_1 = self.secret.0.to_vec();
+		let mut vec_2 = self.public.0.to_vec();
+		vec_1.append(&mut vec_2);
+		vec_1
 	}
 }
 
