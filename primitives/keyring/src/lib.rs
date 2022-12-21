@@ -23,6 +23,9 @@ pub mod sr25519;
 /// Test account crypto for ed25519.
 pub mod ed25519;
 
+/// Test account crypto for dilithium2.
+pub mod dilithium2;
+
 /// Convenience export: Sr25519's Keyring is exposed as `AccountKeyring`,
 /// since it tends to be used for accounts (although it may also be used
 /// by authorities).
