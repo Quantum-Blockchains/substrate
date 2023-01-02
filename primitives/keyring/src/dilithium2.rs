@@ -192,6 +192,8 @@ mod tests {
 			b"I am Alice!",
 			&Keyring::Alice.public(),
 		));
+
+		// TODO JEQB-195 verify returning "false"
 		// assert!(!Pair::verify(
 		// 	&Keyring::Alice.sign(b"I am Alice!"),
 		// 	b"I am Bob!",
@@ -202,5 +204,15 @@ mod tests {
 		// 	b"I am Alice!",
 		// 	&Keyring::Bob.public(),
 		// ));
+	}
+
+	// TODO JEQB-196 account keys should be different
+	#[test]
+	#[ignore]
+	fn account_should_be_different() {
+		let alice = Keyring::Alice.public();
+		let bob = Keyring::Bob.public();
+
+		assert_eq!(alice, bob);
 	}
 }

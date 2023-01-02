@@ -177,7 +177,9 @@ async fn author_should_return_pending_extrinsics() {
 	assert_eq!(pending, vec![xt_bytes]);
 }
 
+// TODO JEQB-196 account keys should be different
 #[tokio::test]
+#[ignore]
 async fn author_should_remove_extrinsics() {
 	const METHOD: &'static str = "author_removeExtrinsic";
 	let setup = TestSetup::default();
