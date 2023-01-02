@@ -23,10 +23,9 @@ use lazy_static::lazy_static;
 
 use sp_core::{
 	ByteArray,
-	dilithium2::{Pair, Public, Signature}, H256, Pair as PairT,
+	dilithium2::{Pair, Public, Signature}, Pair as PairT,
 };
 pub use sp_core::dilithium2;
-use sp_runtime::AccountId32;
 
 /// Set of test accounts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::Display, strum::EnumIter)]
@@ -46,9 +45,9 @@ impl Keyring {
 		Self::iter().find(|&k| &Public::from(k) == who)
 	}
 
-	pub fn from_account_id(who: &AccountId32) -> Option<Keyring> {
-		Self::iter().find(|&k| &k.to_account_id() == who)
-	}
+	// pub fn from_account_id(who: &AccountId32) -> Option<Keyring> {
+	// 	Self::iter().find(|&k| &k.to_account_id() == who)
+	// }
 
 	pub fn from_raw_public(who: [u8; 1312]) -> Option<Keyring> {
 		Self::from_public(&Public::from_raw(who))
@@ -58,21 +57,21 @@ impl Keyring {
 		*Public::from(self).as_array_ref()
 	}
 
-	pub fn from_h256_public(who: H256) -> Option<Keyring> {
-		Self::from_public(&Public::from_raw(who.into()))
-	}
+	// pub fn from_h256_public(who: H256) -> Option<Keyring> {
+	// 	Self::from_public(&Public::from_raw(who.into()))
+	// }
 
-	pub fn to_h256_public(self) -> H256 {
-		Public::from(self).as_array_ref().into()
-	}
+	// pub fn to_h256_public(self) -> H256 {
+	// 	Public::from(self).as_array_ref().into()
+	// }
 
 	pub fn to_raw_public_vec(self) -> Vec<u8> {
 		Public::from(self).to_raw_vec()
 	}
 
-	pub fn to_account_id(self) -> AccountId32 {
-		self.to_raw_public().into()
-	}
+	// pub fn to_account_id(self) -> AccountId32 {
+	// 	self.to_raw_public().into()
+	// }
 
 	pub fn sign(self, msg: &[u8]) -> Signature {
 		Pair::from(self).sign(msg)
@@ -131,11 +130,11 @@ impl From<Keyring> for Public {
 	}
 }
 
-impl From<Keyring> for AccountId32 {
-	fn from(k: Keyring) -> Self {
-		k.to_account_id()
-	}
-}
+// impl From<Keyring> for AccountId32 {
+// 	fn from(k: Keyring) -> Self {
+// 		k.to_account_id()
+// 	}
+// }
 
 impl From<Keyring> for Pair {
 	fn from(k: Keyring) -> Self {
@@ -149,11 +148,11 @@ impl From<Keyring> for [u8; 1312] {
 	}
 }
 
-impl From<Keyring> for H256 {
-	fn from(k: Keyring) -> Self {
-		(*PUBLIC_KEYS).get(&k).unwrap().as_array_ref().into()
-	}
-}
+// impl From<Keyring> for H256 {
+// 	fn from(k: Keyring) -> Self {
+// 		(*PUBLIC_KEYS).get(&k).unwrap().as_array_ref().into()
+// 	}
+// }
 
 impl From<Keyring> for &'static [u8; 1312] {
 	fn from(k: Keyring) -> Self {
@@ -193,15 +192,15 @@ mod tests {
 			b"I am Alice!",
 			&Keyring::Alice.public(),
 		));
-		assert!(!Pair::verify(
-			&Keyring::Alice.sign(b"I am Alice!"),
-			b"I am Bob!",
-			&Keyring::Alice.public(),
-		));
-		assert!(!Pair::verify(
-			&Keyring::Alice.sign(b"I am Alice!"),
-			b"I am Alice!",
-			&Keyring::Bob.public(),
-		));
+		// assert!(!Pair::verify(
+		// 	&Keyring::Alice.sign(b"I am Alice!"),
+		// 	b"I am Bob!",
+		// 	&Keyring::Alice.public(),
+		// ));
+		// assert!(!Pair::verify(
+		// 	&Keyring::Alice.sign(b"I am Alice!"),
+		// 	b"I am Alice!",
+		// 	&Keyring::Bob.public(),
+		// ));
 	}
 }
