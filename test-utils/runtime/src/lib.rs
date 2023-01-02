@@ -165,7 +165,7 @@ impl TransferDH {
 		let signature = sp_keyring::AccountKeyringDH::from_public(&self.from)
 			.expect("Creates keyring from public key.")
 			.sign(&self.encode());
-		Extrinsic::Transfer { transfer: self, signature, exhaust_resources_when_not_first: false }
+		Extrinsic::TransferDH { transfer: self, signature, exhaust_resources_when_not_first: false }
 	}
 
 	/// Convert into a signed extrinsic, which will only end up included in the block
@@ -176,7 +176,7 @@ impl TransferDH {
 		let signature = sp_keyring::AccountKeyringDH::from_public(&self.from)
 			.expect("Creates keyring from public key.")
 			.sign(&self.encode());
-		Extrinsic::Transfer { transfer: self, signature, exhaust_resources_when_not_first: true }
+		Extrinsic::TransferDH { transfer: self, signature, exhaust_resources_when_not_first: true }
 	}
 }
 
@@ -188,6 +188,11 @@ pub enum Extrinsic {
 	Transfer {
 		transfer: Transfer,
 		signature: AccountSignature,
+		exhaust_resources_when_not_first: bool,
+	},
+	TransferDH {
+		transfer: TransferDH,
+		signature: AccountSignatureDH,
 		exhaust_resources_when_not_first: bool,
 	},
 	IncludeData(Vec<u8>),
@@ -231,6 +236,16 @@ impl BlindCheckable for Extrinsic {
 			Extrinsic::Transfer { transfer, signature, exhaust_resources_when_not_first } =>
 				if sp_runtime::verify_encoded_lazy(&signature, &transfer, &transfer.from) {
 					Ok(Extrinsic::Transfer {
+						transfer,
+						signature,
+						exhaust_resources_when_not_first,
+					})
+				} else {
+					Err(InvalidTransaction::BadProof.into())
+				},
+			Extrinsic::TransferDH { transfer, signature, exhaust_resources_when_not_first } =>
+				if sp_runtime::verify_encoded_lazy(&signature, &transfer, &transfer.from) {
+					Ok(Extrinsic::TransferDH {
 						transfer,
 						signature,
 						exhaust_resources_when_not_first,

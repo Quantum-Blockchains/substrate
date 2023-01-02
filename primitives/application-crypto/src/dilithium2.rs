@@ -15,13 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Sr25519 crypto types.
+//! Dilithium2 crypto types.
 
 use crate::{KeyTypeId, RuntimePublic};
 
 use sp_std::vec::Vec;
 
-pub use sp_core::sr25519::*;
+pub use sp_core::dilithium2::*;
 
 mod app {
 	use sp_core::testing::DILITHIUM2;

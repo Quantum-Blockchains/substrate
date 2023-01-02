@@ -40,12 +40,12 @@ use sp_keystore::testing::KeyStore;
 use std::sync::Arc;
 use substrate_test_runtime_client::{
 	self,
-	runtime::{Block, Extrinsic, SessionKeys, Transfer},
+	runtime::{Block, Extrinsic, SessionKeys, TransferDH},
 	AccountKeyringDH, Backend, Client, DefaultTestClientBuilderExt, TestClientBuilderExt,
 };
 
 fn uxt(sender: AccountKeyringDH, nonce: u64) -> Extrinsic {
-	let tx = Transfer {
+	let tx = TransferDH {
 		amount: Default::default(),
 		nonce,
 		from: sender.into(),
@@ -125,7 +125,7 @@ async fn author_should_watch_extrinsic() {
 
 	// Replace the extrinsic and observe the subscription is notified.
 	let (xt_replacement, xt_hash) = {
-		let tx = Transfer {
+		let tx = TransferDH {
 			amount: 5,
 			nonce: 0,
 			from: AccountKeyringDH::Alice.into(),
