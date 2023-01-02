@@ -306,6 +306,23 @@ impl Extrinsic {
 			_ => None,
 		}
 	}
+
+	/// Convert `&self` into `&TransferDH`.
+	///
+	/// Panics if this is no `TransferDH` extrinsic.
+	pub fn transfer_dh(&self) -> &TransferDH {
+		self.try_transfer_dh().expect("cannot convert to transfer ref")
+	}
+
+	/// Try to convert `&self` into `&TransferDH`.
+	///
+	/// Returns `None` if this is no `TransferDH` extrinsic.
+	pub fn try_transfer_dh(&self) -> Option<&TransferDH> {
+		match self {
+			Extrinsic::TransferDH { ref transfer, .. } => Some(transfer),
+			_ => None,
+		}
+	}
 }
 
 /// The signature type used by accounts/transactions.

@@ -18,7 +18,7 @@
 //! System manager: Handles all of the top-level stuff; executing block/transaction, setting code
 //! and depositing logs.
 
-use crate::{AccountId, AuthorityId, Block, BlockNumber, Digest, Extrinsic, Header, Transfer, H256 as Hash, TransferDH};
+use crate::{AccountId, AuthorityId, Block, BlockNumber, Digest, Extrinsic, Header, Transfer, H256 as Hash, TransferDH, AccountIdDH};
 use codec::{Decode, Encode, KeyedVec};
 use frame_support::{decl_module, decl_storage, storage};
 use frame_system::Config;
@@ -157,7 +157,7 @@ pub fn validate_transaction(utx: Extrinsic) -> TransactionValidity {
 		return InvalidTransaction::BadProof.into()
 	}
 
-	let tx = utx.transfer();
+	let tx = utx.transfer_dh();
 	let nonce_key = tx.from.to_keyed_vec(NONCE_OF);
 	let expected_nonce: u64 = storage::hashed::get_or(&blake2_256, &nonce_key, 0);
 	if tx.nonce < expected_nonce {
@@ -167,7 +167,7 @@ pub fn validate_transaction(utx: Extrinsic) -> TransactionValidity {
 		return InvalidTransaction::Future.into()
 	}
 
-	let encode = |from: &AccountId, nonce: u64| (from, nonce).encode();
+	let encode = |from: &AccountIdDH, nonce: u64| (from, nonce).encode();
 	let requires = if tx.nonce != expected_nonce && tx.nonce > 0 {
 		vec![encode(&tx.from, tx.nonce - 1)]
 	} else {
