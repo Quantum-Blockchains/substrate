@@ -33,7 +33,7 @@ pub use sp_consensus;
 pub use sp_keyring::{
 	ed25519::Keyring as Ed25519Keyring, sr25519::Keyring as Sr25519Keyring,
 	dilithium2::Keyring as Dilithium2Keyring,
-	AccountKeyring,
+	AccountKeyring, AccountKeyringDH
 };
 pub use sp_keystore::{SyncCryptoStore, SyncCryptoStorePtr};
 pub use sp_runtime::{Storage, StorageChild};

@@ -316,6 +316,26 @@ pub trait PassByInner: Sized {
 ///         Self(inner)
 ///     }
 /// }
+///
+/// struct TestDH([u8; 1312]);
+///
+/// impl PassBy for TestDH {
+///     type PassBy = Inner<Self, [u8; 1312]>;
+/// }
+///
+/// impl PassByInner for TestDH {
+///     type Inner = [u8; 1312];
+///
+///     fn into_inner(self) -> [u8; 1312] {
+///         self.0
+///     }
+///     fn inner(&self) -> &[u8; 1312] {
+///         &self.0
+///     }
+///     fn from_inner(inner: [u8; 1312]) -> Self {
+///         Self(inner)
+///     }
+/// }
 /// ```
 pub struct Inner<T: PassByInner<Inner = I>, I: RIType>(PhantomData<(T, I)>);
 

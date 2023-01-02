@@ -31,6 +31,12 @@ pub mod dilithium2;
 /// by authorities).
 pub use sr25519::Keyring as AccountKeyring;
 
+/// Convenience export: Dilithium2's Keyring is exposed as `AccountKeyringDH`,
+/// since it tends to be used for accounts (although it may also be used
+/// by authorities). `AccountKeyring` should be removed after switching to `AccountKeyringDH` in
+/// all places.
+pub use dilithium2::Keyring as AccountKeyringDH;
+
 pub use ed25519::Keyring as Ed25519Keyring;
 pub use sr25519::Keyring as Sr25519Keyring;
 pub use dilithium2::Keyring as Dilithium2Keyring;
