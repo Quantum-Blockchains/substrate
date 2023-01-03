@@ -51,7 +51,7 @@ pub mod prelude {
 		TestClientBuilder, WasmExecutionMethod,
 	};
 	// Keyring
-	pub use super::{AccountKeyring, Sr25519Keyring};
+	pub use super::{AccountKeyring, Sr25519Keyring, Dilithium2Keyring};
 }
 
 /// A unit struct which implements `NativeExecutionDispatch` feeding in the

@@ -45,16 +45,9 @@ use sp_core::{
 #[cfg(feature = "std")]
 use sp_keystore::{KeystoreExt, SyncCryptoStore};
 
-use sp_core::{
-	crypto::KeyTypeId,
-	ecdsa, ed25519,
-	offchain::{
-		HttpError, HttpRequestId, HttpRequestStatus, OpaqueNetworkState, StorageKind, Timestamp,
-	},
-	sr25519,
-	storage::StateVersion,
-	LogLevel, LogLevelFilter, OpaquePeerId, H256,
-};
+use sp_core::{crypto::KeyTypeId, ecdsa, ed25519, offchain::{
+	HttpError, HttpRequestId, HttpRequestStatus, OpaqueNetworkState, StorageKind, Timestamp,
+}, sr25519, storage::StateVersion, LogLevel, LogLevelFilter, OpaquePeerId, H256, dilithium2};
 
 #[cfg(feature = "std")]
 use sp_trie::{LayoutV0, LayoutV1, TrieConfiguration};
@@ -873,6 +866,59 @@ pub trait Crypto {
 	/// signature version.
 	fn sr25519_verify(sig: &sr25519::Signature, msg: &[u8], pubkey: &sr25519::Public) -> bool {
 		sr25519::Pair::verify_deprecated(sig, msg, pubkey)
+	}
+
+	/// Returns all `dilithium2` public keys for the given key id from the keystore.
+	fn dilithium2_public_keys(&mut self, id: KeyTypeId) -> Vec<dilithium2::Public> {
+		let keystore = &***self
+			.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!");
+		// TODO JEQB-194 implement dilithium keystore
+		// SyncCryptoStore::dilithium2_public_keys(keystore, id);
+		vec![]
+	}
+
+	/// Generate an `dilithium2` key for the given key type using an optional `seed` and
+	/// store it in the keystore.
+	///
+	/// The `seed` needs to be a valid utf8.
+	///
+	/// Returns the public key.
+	fn dilithium2_generate(&mut self, id: KeyTypeId, seed: Option<Vec<u8>>) -> dilithium2::Public {
+		let seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
+		let keystore = &***self
+			.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!");
+		// TODO JEQB-194 implement dilithium2 keystore
+		// SyncCryptoStore::dilithium2_generate_new(keystore, id, seed)
+		// 	.expect("`ed25519_generate` failed")
+		dilithium2::Public([1u8; 1312])
+	}
+
+	/// Sign the given `msg` with the `dilithium2` key that corresponds to the given public key and
+	/// key type in the keystore.
+	///
+	/// Returns the signature.
+	fn dilithium2_sign(
+		&mut self,
+		id: KeyTypeId,
+		pub_key: &dilithium2::Public,
+		msg: &[u8],
+	) -> Option<dilithium2::Signature> {
+		let keystore = &***self
+			.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!");
+		SyncCryptoStore::sign_with(keystore, id, &pub_key.into(), msg)
+			.ok()
+			.flatten()
+			.and_then(|sig| dilithium2::Signature::from_slice(&sig))
+	}
+
+	/// Verify `dilithium2` signature.
+	///
+	/// Returns `true` when the verification was successful.
+	fn dilithium2_verify(sig: &dilithium2::Signature, msg: &[u8], pub_key: &dilithium2::Public) -> bool {
+		dilithium2::Pair::verify(sig, msg, pub_key)
 	}
 
 	/// Returns all `ecdsa` public keys for the given key id from the keystore.
