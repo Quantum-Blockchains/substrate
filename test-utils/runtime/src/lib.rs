@@ -27,7 +27,7 @@ use codec::{Decode, Encode, Error, Input, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_std::{marker::PhantomData, prelude::*};
 
-use sp_application_crypto::{ecdsa, ed25519, sr25519, RuntimeAppPublic};
+use sp_application_crypto::{ecdsa, ed25519, sr25519, dilithium2, RuntimeAppPublic};
 use sp_core::{offchain::KeyTypeId, OpaqueMetadata, RuntimeDebug};
 use sp_trie::{trie_types::TrieDB, PrefixedMemoryDB, StorageProof};
 use trie_db::{Trie, TrieMut};
@@ -148,6 +148,39 @@ impl Transfer {
 	}
 }
 
+
+/// Calls in transactions with dilithium keys.
+#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
+pub struct TransferDH {
+	pub from: AccountIdDH,
+	pub to: AccountIdDH,
+	pub amount: u64,
+	pub nonce: u64,
+}
+
+impl TransferDH {
+	/// Convert into a signed extrinsic.
+	#[cfg(feature = "std")]
+	pub fn into_signed_tx(self) -> Extrinsic {
+		let signature = sp_keyring::AccountKeyringDH::from_public(&self.from)
+			.expect("Creates keyring from public key.")
+			.sign(&self.encode());
+		Extrinsic::TransferDH { transfer: self, signature, exhaust_resources_when_not_first: false }
+	}
+
+	/// Convert into a signed extrinsic, which will only end up included in the block
+	/// if it's the first transaction. Otherwise it will cause `ResourceExhaustion` error
+	/// which should be considered as block being full.
+	#[cfg(feature = "std")]
+	pub fn into_resources_exhausting_tx(self) -> Extrinsic {
+		let signature = sp_keyring::AccountKeyringDH::from_public(&self.from)
+			.expect("Creates keyring from public key.")
+			.sign(&self.encode());
+		Extrinsic::TransferDH { transfer: self, signature, exhaust_resources_when_not_first: true }
+	}
+}
+
+
 /// Extrinsic for test-runtime.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug)]
 pub enum Extrinsic {
@@ -155,6 +188,11 @@ pub enum Extrinsic {
 	Transfer {
 		transfer: Transfer,
 		signature: AccountSignature,
+		exhaust_resources_when_not_first: bool,
+	},
+	TransferDH {
+		transfer: TransferDH,
+		signature: AccountSignatureDH,
 		exhaust_resources_when_not_first: bool,
 	},
 	IncludeData(Vec<u8>),
@@ -198,6 +236,16 @@ impl BlindCheckable for Extrinsic {
 			Extrinsic::Transfer { transfer, signature, exhaust_resources_when_not_first } =>
 				if sp_runtime::verify_encoded_lazy(&signature, &transfer, &transfer.from) {
 					Ok(Extrinsic::Transfer {
+						transfer,
+						signature,
+						exhaust_resources_when_not_first,
+					})
+				} else {
+					Err(InvalidTransaction::BadProof.into())
+				},
+			Extrinsic::TransferDH { transfer, signature, exhaust_resources_when_not_first } =>
+				if sp_runtime::verify_encoded_lazy(&signature, &transfer, &transfer.from) {
+					Ok(Extrinsic::TransferDH {
 						transfer,
 						signature,
 						exhaust_resources_when_not_first,
@@ -258,12 +306,33 @@ impl Extrinsic {
 			_ => None,
 		}
 	}
+
+	/// Convert `&self` into `&TransferDH`.
+	///
+	/// Panics if this is no `TransferDH` extrinsic.
+	pub fn transfer_dh(&self) -> &TransferDH {
+		self.try_transfer_dh().expect("cannot convert to transfer ref")
+	}
+
+	/// Try to convert `&self` into `&TransferDH`.
+	///
+	/// Returns `None` if this is no `TransferDH` extrinsic.
+	pub fn try_transfer_dh(&self) -> Option<&TransferDH> {
+		match self {
+			Extrinsic::TransferDH { ref transfer, .. } => Some(transfer),
+			_ => None,
+		}
+	}
 }
 
 /// The signature type used by accounts/transactions.
 pub type AccountSignature = sr25519::Signature;
 /// An identifier for an account on this system.
 pub type AccountId = <AccountSignature as Verify>::Signer;
+/// The signature type used by accounts/transactions.
+pub type AccountSignatureDH = dilithium2::Signature;
+/// An identifier for an account on this system.
+pub type AccountIdDH = <AccountSignatureDH as Verify>::Signer;
 /// A simple hash type for all our hashing.
 pub type Hash = H256;
 /// The hashing algorithm used.

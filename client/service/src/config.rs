@@ -90,6 +90,8 @@ pub struct Configuration {
 	pub wasm_runtime_overrides: Option<PathBuf>,
 	/// Execution strategies.
 	pub execution_strategies: ExecutionStrategies,
+	/// Runner port. `None` if disabled.
+	pub runner_port: Option<u16>,
 	/// RPC over HTTP binding address. `None` if disabled.
 	pub rpc_http: Option<SocketAddr>,
 	/// RPC over Websockets binding address. `None` if disabled.

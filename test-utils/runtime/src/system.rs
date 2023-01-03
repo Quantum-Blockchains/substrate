@@ -18,9 +18,7 @@
 //! System manager: Handles all of the top-level stuff; executing block/transaction, setting code
 //! and depositing logs.
 
-use crate::{
-	AccountId, AuthorityId, Block, BlockNumber, Digest, Extrinsic, Header, Transfer, H256 as Hash,
-};
+use crate::{AccountId, AuthorityId, Block, BlockNumber, Digest, Extrinsic, Header, Transfer, H256 as Hash, TransferDH, AccountIdDH};
 use codec::{Decode, Encode, KeyedVec};
 use frame_support::{decl_module, decl_storage, storage};
 use frame_system::Config;
@@ -159,7 +157,7 @@ pub fn validate_transaction(utx: Extrinsic) -> TransactionValidity {
 		return InvalidTransaction::BadProof.into()
 	}
 
-	let tx = utx.transfer();
+	let tx = utx.transfer_dh();
 	let nonce_key = tx.from.to_keyed_vec(NONCE_OF);
 	let expected_nonce: u64 = storage::hashed::get_or(&blake2_256, &nonce_key, 0);
 	if tx.nonce < expected_nonce {
@@ -169,7 +167,7 @@ pub fn validate_transaction(utx: Extrinsic) -> TransactionValidity {
 		return InvalidTransaction::Future.into()
 	}
 
-	let encode = |from: &AccountId, nonce: u64| (from, nonce).encode();
+	let encode = |from: &AccountIdDH, nonce: u64| (from, nonce).encode();
 	let requires = if tx.nonce != expected_nonce && tx.nonce > 0 {
 		vec![encode(&tx.from, tx.nonce - 1)]
 	} else {
@@ -230,6 +228,10 @@ fn execute_transaction_backend(utx: &Extrinsic, extrinsic_index: u32) -> ApplyEx
 			if extrinsic_index != 0 =>
 			Err(InvalidTransaction::ExhaustsResources.into()),
 		Extrinsic::Transfer { ref transfer, .. } => execute_transfer_backend(transfer),
+		Extrinsic::TransferDH { exhaust_resources_when_not_first: true, .. }
+		if extrinsic_index != 0 =>
+			Err(InvalidTransaction::ExhaustsResources.into()),
+		Extrinsic::TransferDH { ref transfer, .. } => execute_transfer_backend_dh(transfer),
 		Extrinsic::AuthoritiesChange(ref new_auth) => execute_new_authorities_backend(new_auth),
 		Extrinsic::IncludeData(_) => Ok(Ok(())),
 		Extrinsic::StorageChange(key, value) =>
@@ -242,11 +244,37 @@ fn execute_transaction_backend(utx: &Extrinsic, extrinsic_index: u32) -> ApplyEx
 			sp_io::offchain_index::clear(key);
 			Ok(Ok(()))
 		},
-		Extrinsic::Store(data) => execute_store(data.clone()),
+		Extrinsic::Store(data) => execute_store(data.clone())
 	}
 }
 
 fn execute_transfer_backend(tx: &Transfer) -> ApplyExtrinsicResult {
+	// check nonce
+	let nonce_key = tx.from.to_keyed_vec(NONCE_OF);
+	let expected_nonce: u64 = storage::hashed::get_or(&blake2_256, &nonce_key, 0);
+	if tx.nonce != expected_nonce {
+		return Err(InvalidTransaction::Stale.into())
+	}
+
+	// increment nonce in storage
+	storage::hashed::put(&blake2_256, &nonce_key, &(expected_nonce + 1));
+
+	// check sender balance
+	let from_balance_key = tx.from.to_keyed_vec(BALANCE_OF);
+	let from_balance: u64 = storage::hashed::get_or(&blake2_256, &from_balance_key, 0);
+
+	// enact transfer
+	if tx.amount > from_balance {
+		return Err(InvalidTransaction::Payment.into())
+	}
+	let to_balance_key = tx.to.to_keyed_vec(BALANCE_OF);
+	let to_balance: u64 = storage::hashed::get_or(&blake2_256, &to_balance_key, 0);
+	storage::hashed::put(&blake2_256, &from_balance_key, &(from_balance - tx.amount));
+	storage::hashed::put(&blake2_256, &to_balance_key, &(to_balance + tx.amount));
+	Ok(Ok(()))
+}
+
+fn execute_transfer_backend_dh(tx: &TransferDH) -> ApplyExtrinsicResult {
 	// check nonce
 	let nonce_key = tx.from.to_keyed_vec(NONCE_OF);
 	let expected_nonce: u64 = storage::hashed::get_or(&blake2_256, &nonce_key, 0);

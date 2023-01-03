@@ -17,31 +17,31 @@
 
 //! Simple Dilithium2 API.
 
-use crate::{
-	crypto::ByteArray,
-};
-use codec::{Decode, Encode, MaxEncodedLen};
-use scale_info::TypeInfo;
+#[cfg(feature = "full_crypto")]
+use core::convert::TryFrom;
 
 #[cfg(feature = "std")]
-use crate::crypto::Ss58Codec;
+use bip39::{Language, Mnemonic, MnemonicType};
+use codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
+#[cfg(feature = "std")]
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "std")]
+use substrate_bip39::seed_from_entropy;
+
+use sp_runtime_interface::pass_by::{Inner, PassBy, PassByInner};
+use sp_std::ops::Deref;
+#[cfg(feature = "full_crypto")]
+use sp_std::vec::Vec;
+
+use crate::crypto::ByteArray;
 use crate::crypto::{
 	CryptoType, CryptoTypeId, CryptoTypePublicPair, Derive, Public as TraitPublic, UncheckedFrom,
 };
 #[cfg(feature = "full_crypto")]
 use crate::crypto::{DeriveJunction, Pair as TraitPair, SecretStringError};
 #[cfg(feature = "std")]
-use bip39::{Language, Mnemonic, MnemonicType};
-#[cfg(feature = "full_crypto")]
-use core::convert::TryFrom;
-#[cfg(feature = "std")]
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-use sp_std::ops::Deref;
-#[cfg(feature = "std")]
-use substrate_bip39::seed_from_entropy;
-
-#[cfg(feature = "full_crypto")]
-use sp_std::vec::Vec;
+use crate::crypto::Ss58Codec;
 
 /// An identifier used to match public keys against dilithium2 keys
 pub const CRYPTO_ID: CryptoTypeId = CryptoTypeId(*b"dth2");
@@ -63,7 +63,7 @@ type Seed = [u8; 32];
 	Copy,
 	Encode,
 	Decode,
-	// PassByInner,
+	PassByInner,
 	MaxEncodedLen,
 	TypeInfo,
 )]
@@ -80,7 +80,6 @@ pub struct Public(pub [u8; 1312]);
 	Copy,
 	Encode,
 	Decode,
-	// PassByInner,
 	MaxEncodedLen,
 	TypeInfo,
 )]
@@ -125,7 +124,7 @@ impl TryFrom<&[u8]> for Public {
 
 	fn try_from(data: &[u8]) -> Result<Self, Self::Error> {
 		if data.len() != Self::LEN {
-			return Err(())
+			return Err(());
 		}
 		let mut r = [0u8; Self::LEN];
 		r.copy_from_slice(data);
@@ -190,8 +189,8 @@ impl sp_std::fmt::Debug for Public {
 #[cfg(feature = "std")]
 impl Serialize for Public {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
+		where
+			S: Serializer,
 	{
 		serializer.serialize_str(&self.to_ss58check())
 	}
@@ -200,8 +199,8 @@ impl Serialize for Public {
 #[cfg(feature = "std")]
 impl<'de> Deserialize<'de> for Public {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-	where
-		D: Deserializer<'de>,
+		where
+			D: Deserializer<'de>,
 	{
 		Public::from_ss58check(&String::deserialize(deserializer)?)
 			.map_err(|e| de::Error::custom(format!("{:?}", e)))
@@ -213,6 +212,7 @@ impl<'de> Deserialize<'de> for Public {
 #[derive(
 	Encode,
 	Decode,
+	PassByInner,
 	MaxEncodedLen,
 	TypeInfo,
 	PartialEq,
@@ -237,8 +237,8 @@ impl TryFrom<&[u8]> for Signature {
 #[cfg(feature = "std")]
 impl Serialize for Signature {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
+		where
+			S: Serializer,
 	{
 		serializer.serialize_str(&hex::encode(self))
 	}
@@ -247,8 +247,8 @@ impl Serialize for Signature {
 #[cfg(feature = "std")]
 impl<'de> Deserialize<'de> for Signature {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-	where
-		D: Deserializer<'de>,
+		where
+			D: Deserializer<'de>,
 	{
 		let signature_hex = hex::decode(&String::deserialize(deserializer)?)
 			.map_err(|e| de::Error::custom(format!("{:?}", e)))?;
@@ -323,7 +323,7 @@ impl Signature {
 	/// you are certain that the array actually is a signature. GIGO!
 	pub fn from_slice(data: &[u8]) -> Option<Self> {
 		if data.len() != 2420 {
-			return None
+			return None;
 		}
 		let mut r = [0u8; 2420];
 		r.copy_from_slice(data);
@@ -423,7 +423,7 @@ impl TraitPair for Pair {
 		Self::from_seed_slice(&seed).map(|x| (x, seed))
 	}
 
-	fn derive<Iter: Iterator<Item = DeriveJunction>>(
+	fn derive<Iter: Iterator<Item=DeriveJunction>>(
 		&self,
 		_: Iter,
 		_: Option<Seed>,
@@ -431,17 +431,25 @@ impl TraitPair for Pair {
 		let seed = Seed::default();
 		Ok((Self::from_seed(&seed), Some(seed)))
 	}
-	fn from_seed(_: &Self::Seed) -> Self {
-		let public_bytes: Vec<u8> = (0..1312).map(|_| { rand::random::<u8>() }).collect();
-		let public = Public(<[u8; 1312]>::try_from(public_bytes.as_slice()).unwrap());
-		let secret_bytes: Vec<u8> = (0..2528).map(|_| { rand::random::<u8>() }).collect();
-		let secret = Secret(<[u8; 2528]>::try_from(secret_bytes.as_slice()).unwrap());
+	fn from_seed(seed: &Self::Seed) -> Self {
+		let mut public_bytes_array: [u8; 1312] = [0; 1312];
+		for i in 0..41 {
+			public_bytes_array[i * 32..i * 32 + 32].copy_from_slice(seed.as_slice());
+		}
+		let mut secret_bytes_array: [u8; 2528] = [0; 2528];
+		for i in 0..79 {
+			secret_bytes_array[i * 32..i * 32 + 32].copy_from_slice(seed.as_slice());
+		}
+		let public = Public(public_bytes_array);
+		let secret = Secret(secret_bytes_array);
 
 		Pair { public, secret }
 	}
 
-	fn from_seed_slice(_: &[u8]) -> Result<Self, SecretStringError> {
-		Ok(Self::from_seed(&Seed::default()))
+	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError> {
+		let mut s: [u8; 32] = [0; 32];
+		s.copy_from_slice(seed);
+		Ok(Self::from_seed(&s))
 	}
 	fn sign(&self, _: &[u8]) -> Self::Signature {
 		let sig_bytes: Vec<u8> = (0..2420).map(|_| { rand::random::<u8>() }).collect();
@@ -457,7 +465,10 @@ impl TraitPair for Pair {
 		self.public
 	}
 	fn to_raw_vec(&self) -> Vec<u8> {
-		Vec::new()
+		let mut vec_1 = self.secret.0.to_vec();
+		let mut vec_2 = self.public.0.to_vec();
+		vec_1.append(&mut vec_2);
+		vec_1
 	}
 }
 
