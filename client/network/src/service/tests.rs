@@ -152,7 +152,7 @@ fn build_test_full_node(
 		light_client_request_protocol_config,
 		warp_sync_protocol_config: None,
 	})
-	.unwrap();
+	.await.unwrap();
 
 	let service = worker.service().clone();
 	let event_stream = service.event_stream("test");
