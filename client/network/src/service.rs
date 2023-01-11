@@ -497,13 +497,6 @@ where
 			_ => {}
 		};
 
-		// let _result = match remove_file("psk") {
-		// 	Err(err) => {
-		// 		error!("Couldn't remove psk file: {:?}", err)
-		// 	},
-		// 	_ => {}
-		// };
-
 		Ok(NetworkWorker {
 			external_addresses,
 			num_connected,
