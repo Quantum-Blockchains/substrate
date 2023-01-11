@@ -383,7 +383,7 @@ where
 					config_mem,
 					params.network_config.yamux_window_size,
 					yamux_maximum_buffer_size,
-					params.network_config.pre_shared_key.into_pre_share_key()?
+					params.network_config.pre_shared_key.clone().into_pre_share_key()?
 				)
 			};
 
@@ -490,7 +490,7 @@ where
 		(params.transactions_handler_executor)(tx_handler.run().boxed());
 
 		// after loading psk we can delete it
-		let _result = match remove_file("psk") {
+		match params.network_config.pre_shared_key.remove_psk_file() {
 			Err(err) => {
 				error!("Couldn't remove psk file: {:?}", err)
 			},

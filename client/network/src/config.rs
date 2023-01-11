@@ -48,7 +48,7 @@ use std::{
 	borrow::Cow,
 	collections::HashMap,
 	error::Error,
-	fs,
+	fs, fs::remove_file,
 	future::Future,
 	io::{self, Write},
 	net::Ipv4Addr,
@@ -840,6 +840,14 @@ impl PreSharedKeyConfig {
 			}
 		}
 	}
+
+	pub fn remove_psk_file(self) -> io::Result<()>  {
+		match self.pre_shared_key {
+			PreSharedKeySecret::File(f) => {
+				remove_file(f)
+			}
+		}
+	}
 }
 
 /// The configuration of a node's secret key, describing the type of key
@@ -966,7 +974,7 @@ where
 fn write_psk_file<P>(path: P, sk_bytes: &[u8]) -> io::Result<()>
 where
 	P: AsRef<Path>,
-{	
+{
 	let mut file = fs::File::create(path)?;
 	file.write_all(sk_bytes)
 }
