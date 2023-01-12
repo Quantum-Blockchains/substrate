@@ -242,7 +242,7 @@ pub enum MultiSignature {
 	/// An ECDSA/SECP256k1 signature.
 	Ecdsa(ecdsa::Signature),
 	/// An Dilithium2 identity.
-	Dilithium2(dilithium2::Public),
+	Dilithium2(dilithium2::Signature),
 }
 
 impl From<ed25519::Signature> for MultiSignature {
@@ -296,6 +296,23 @@ impl TryFrom<MultiSignature> for ecdsa::Signature {
 	}
 }
 
+impl From<dilithium2::Signature> for MultiSignature {
+	fn from(x: dilithium2::Signature) -> Self {
+		Self::Dilithium2(x)
+	}
+}
+
+impl TryFrom<MultiSignature> for dilithium2::Signature {
+	type Error = ();
+	fn try_from(m: MultiSignature) -> Result<Self, Self::Error> {
+		if let MultiSignature::Dilithium2(x) = m {
+			Ok(x)
+		} else {
+			Err(())
+		}
+	}
+}
+
 /// Public key for any known crypto algorithm.
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -336,7 +353,7 @@ impl traits::IdentifyAccount for MultiSigner {
 			Self::Ed25519(who) => <[u8; 32]>::from(who).into(),
 			Self::Sr25519(who) => <[u8; 32]>::from(who).into(),
 			Self::Ecdsa(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
-			Self::Dilithium2(who) => <[u8; 32]>::from(who).into(),
+			Self::Dilithium2(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
 		}
 	}
 }
@@ -1088,6 +1105,22 @@ mod tests {
 
 		let signature = pair.sign(&msg);
 		assert!(ecdsa::Pair::verify(&signature, msg, &pair.public()));
+
+		let multi_sig = MultiSignature::from(signature);
+		let multi_signer = MultiSigner::from(pair.public());
+		assert!(multi_sig.verify(msg, &multi_signer.into_account()));
+
+		let multi_signer = MultiSigner::from(pair.public());
+		assert!(multi_sig.verify(msg, &multi_signer.into_account()));
+	}
+
+	#[test]
+	fn multi_signature_dilithium2_verify_works() {
+		let msg = &b"test-message"[..];
+		let (pair, _) = dilithium2::Pair::generate();
+
+		let signature = pair.sign(&msg);
+		assert!(dilithium2::Pair::verify(&signature, msg, &pair.public()));
 
 		let multi_sig = MultiSignature::from(signature);
 		let multi_signer = MultiSigner::from(pair.public());
