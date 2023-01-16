@@ -21,10 +21,7 @@ use std::{collections::HashMap, ops::Deref};
 
 use lazy_static::lazy_static;
 
-use sp_core::{
-	ByteArray,
-	dilithium2::{Pair, Public, Signature}, Pair as PairT,
-};
+use sp_core::{ByteArray, dilithium2::{Pair, Public, Signature}, H256, Pair as PairT};
 pub use sp_core::dilithium2;
 
 /// Set of test accounts.
@@ -213,6 +210,6 @@ mod tests {
 		let alice = Keyring::Alice.public();
 		let bob = Keyring::Bob.public();
 
-		assert_eq!(alice, bob);
+		assert_ne!(alice, bob);
 	}
 }

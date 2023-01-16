@@ -418,17 +418,32 @@ impl TraitPair for Pair {
 	}
 
 	#[cfg(feature = "std")]
-	fn from_phrase(_: &str, _: Option<&str>) -> Result<(Self, Self::Seed), SecretStringError> {
+	fn from_phrase(phrase: &str, password: Option<&str>) -> Result<(Self, Self::Seed), SecretStringError> {
+		let big_seed = seed_from_entropy(Mnemonic::from_phrase(phrase, Language::English)
+											 .map_err(|_| SecretStringError::InvalidPhrase)?
+											 .entropy(), password.unwrap_or(""))
+			.map_err(|_| SecretStringError::InvalidSeed)?;
 		let mut seed = Seed::default();
+		seed.copy_from_slice(&big_seed[0..32]);
 		Self::from_seed_slice(&seed).map(|x| (x, seed))
 	}
 
 	fn derive<Iter: Iterator<Item=DeriveJunction>>(
 		&self,
-		_: Iter,
+		path: Iter,
 		_: Option<Seed>,
 	) -> Result<(Self, Option<Seed>), Self::DeriveError> {
-		let seed = Seed::default();
+		let mut acc = self.secret.0;
+		let mut seed = [0u8; 32];
+		seed.copy_from_slice(&acc[0..32]);
+
+		for j in path {
+			match j {
+				DeriveJunction::Soft(_cc) => return Err(DeriveError::SoftKeyInPath),
+				DeriveJunction::Hard(cc) => seed = derive_hard_junction(&seed, &cc),
+			}
+		}
+
 		Ok((Self::from_seed(&seed), Some(seed)))
 	}
 	fn from_seed(seed: &Self::Seed) -> Self {
