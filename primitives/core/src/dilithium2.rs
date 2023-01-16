@@ -419,10 +419,14 @@ impl TraitPair for Pair {
 
 	#[cfg(feature = "std")]
 	fn from_phrase(phrase: &str, password: Option<&str>) -> Result<(Self, Self::Seed), SecretStringError> {
-		let big_seed = seed_from_entropy(Mnemonic::from_phrase(phrase, Language::English)
-											 .map_err(|_| SecretStringError::InvalidPhrase)?
-											 .entropy(), password.unwrap_or(""))
-			.map_err(|_| SecretStringError::InvalidSeed)?;
+		let big_seed = seed_from_entropy(
+			Mnemonic::from_phrase(phrase, Language::English)
+				.map_err(|_| SecretStringError::InvalidPhrase)?
+				.entropy(),
+			password.unwrap_or("")
+		)
+		.map_err(|_| SecretStringError::InvalidSeed)?;
+
 		let mut seed = Seed::default();
 		seed.copy_from_slice(&big_seed[0..32]);
 		Self::from_seed_slice(&seed).map(|x| (x, seed))
