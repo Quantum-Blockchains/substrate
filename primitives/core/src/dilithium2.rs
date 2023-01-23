@@ -471,13 +471,31 @@ impl TraitPair for Pair {
 		Ok(Self::from_seed(&s))
 	}
 	fn sign(&self, _: &[u8]) -> Self::Signature {
-		let sig_bytes: Vec<u8> = (0..2420).map(|_| { rand::random::<u8>() }).collect();
-		Signature(<[u8; 2420]>::try_from(sig_bytes.as_slice()).unwrap())
+		let pub_bytes = self.public.0;
+		let mut sig_bytes = [0u8; 2420];
+		sig_bytes[..1312].copy_from_slice(&pub_bytes);
+		sig_bytes[1312..].copy_from_slice(&pub_bytes[..1108]);
+
+		Signature(sig_bytes)
 	}
-	fn verify<M: AsRef<[u8]>>(_: &Self::Signature, _: M, _: &Self::Public) -> bool {
-		true
+	fn verify<M: AsRef<[u8]>>(sig: &Self::Signature, mess: M, pub_key: &Self::Public) -> bool {
+		Self::verify_weak(&sig.0[..], mess.as_ref(), pub_key)
 	}
-	fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(_: &[u8], _: M, _: P) -> bool {
+	fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(sig_bytes: &[u8], _: M, pub_key_bytes: P) -> bool {
+		if sig_bytes.len() != 2420 {
+			return false;
+		}
+
+		let mut sig = [0u8; 2420];
+		sig.copy_from_slice(&sig_bytes);
+
+		let mut pub_key = [0u8; 1312];
+		pub_key.copy_from_slice(pub_key_bytes.as_ref());
+
+		if sig[..1312] != pub_key && sig[1312..] != pub_key[..1108] {
+			return false;
+		}
+
 		true
 	}
 	fn public(&self) -> Self::Public {
@@ -504,4 +522,25 @@ impl CryptoType for Signature {
 #[cfg(feature = "full_crypto")]
 impl CryptoType for Pair {
 	type Pair = Pair;
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_sign_and_verify() {
+		let pair: Pair = TraitPair::from_seed(&[1u8; 32]);
+		let message = [5u8; 10];
+
+		let sig = pair.sign(&message);
+		let verified = Pair::verify(&sig, message, &pair.public);
+
+		assert!(verified);
+
+		let incorrect_sig = Signature([2u8; 2420]);
+		let verified = Pair::verify(&incorrect_sig, message, &pair.public);
+
+		assert!(!verified);
+	}
 }
