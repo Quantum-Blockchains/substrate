@@ -29,7 +29,7 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "std")]
 use substrate_bip39::seed_from_entropy;
 
-use sp_runtime_interface::pass_by::{Inner, PassBy, PassByInner};
+use sp_runtime_interface::pass_by::PassByInner;
 use sp_std::ops::Deref;
 #[cfg(feature = "full_crypto")]
 use sp_std::vec::Vec;
@@ -437,7 +437,7 @@ impl TraitPair for Pair {
 		path: Iter,
 		_: Option<Seed>,
 	) -> Result<(Self, Option<Seed>), Self::DeriveError> {
-		let mut acc = self.secret.0;
+		let acc = self.secret.0;
 		let mut seed = [0u8; 32];
 		seed.copy_from_slice(&acc[0..32]);
 

@@ -869,8 +869,8 @@ pub trait Crypto {
 	}
 
 	/// Returns all `dilithium2` public keys for the given key id from the keystore.
-	fn dilithium2_public_keys(&mut self, id: KeyTypeId) -> Vec<dilithium2::Public> {
-		let keystore = &***self
+	fn dilithium2_public_keys(&mut self, _: KeyTypeId) -> Vec<dilithium2::Public> {
+		let _keystore = &***self
 			.extension::<KeystoreExt>()
 			.expect("No `keystore` associated for the current context!");
 		// TODO JEQB-194 implement dilithium keystore
@@ -884,9 +884,9 @@ pub trait Crypto {
 	/// The `seed` needs to be a valid utf8.
 	///
 	/// Returns the public key.
-	fn dilithium2_generate(&mut self, id: KeyTypeId, seed: Option<Vec<u8>>) -> dilithium2::Public {
-		let seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
-		let keystore = &***self
+	fn dilithium2_generate(&mut self, _: KeyTypeId, seed: Option<Vec<u8>>) -> dilithium2::Public {
+		let _seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
+		let _keystore = &***self
 			.extension::<KeystoreExt>()
 			.expect("No `keystore` associated for the current context!");
 		// TODO JEQB-194 implement dilithium2 keystore
