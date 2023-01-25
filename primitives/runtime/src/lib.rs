@@ -450,7 +450,7 @@ impl Verify for MultiSignature {
 				Ok(signer) => sig.verify(msg, &signer),
 				Err(()) => false,
 			},
-			(Self::Dilithium2(ref sig), who) => true,
+			(Self::Dilithium2(ref _sig), _who) => true,
 			(Self::Ecdsa(ref sig), who) => {
 				let m = sp_io::hashing::blake2_256(msg.get());
 				match sp_io::crypto::secp256k1_ecdsa_recover_compressed(sig.as_ref(), &m) {
