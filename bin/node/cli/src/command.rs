@@ -88,7 +88,7 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(&cli.run)?;
 			runner.run_node_until_exit(|config| async move {
 				service::new_full(config, cli.no_hardware_benchmarks)
-					.await.map_err(sc_cli::Error::Service)
+					.map_err(sc_cli::Error::Service)
 			})
 		},
 		Some(Subcommand::Inspect(cmd)) => {

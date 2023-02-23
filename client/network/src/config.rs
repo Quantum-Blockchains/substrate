@@ -773,13 +773,14 @@ impl NonReservedPeerMode {
 	}
 }
 
+/// The options for obtaining a pre-shared key.
+pub type PSKey = PreSharedKeySecret;
+
+/// The configuration for obtaining a pre-shared key.
 #[derive(Clone, Debug)]
 pub struct PreSharedKeyConfig {
 	pub pre_shared_key: PreSharedKeySecret
 }
-
-/// The options for obtaining a pre-shared key.
-pub type PSKey = PreSharedKeySecret;
 
 /// The configuration options for obtaining a pre-shared key.
 #[derive(Clone)]
@@ -797,13 +798,6 @@ impl fmt::Debug for PreSharedKeySecret {
 }
 
 impl PreSharedKeyConfig {
-	pub fn write_psk_to_file(self, sk_bytes: &[u8]) {
-		match self.pre_shared_key {
-			PreSharedKeySecret::File(f) => {
-				write_psk_file(f, sk_bytes);
-			},
-		}
-	}
 	/// Evaluate a `PreSharedKeyConfig` to obtain an pre shared key:
 	///
 	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
