@@ -562,15 +562,15 @@ fn fallback_name_working() {
 #[should_panic(expected = "don't match the transport")]
 fn ensure_listen_addresses_consistent_with_transport_memory() {
 	let listen_addr = config::build_multiaddr![Ip4([127, 0, 0, 1]), Tcp(0_u16)];
-	
+
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		transport: config::TransportConfig::MemoryOnly,
 		..config::NetworkConfiguration::new(
-			"test-node", 
-			"test-client", 
-			Default::default(), 
-			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) }, 
+			"test-node",
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
 			None)
 	});
 }
@@ -579,14 +579,14 @@ fn ensure_listen_addresses_consistent_with_transport_memory() {
 #[should_panic(expected = "don't match the transport")]
 fn ensure_listen_addresses_consistent_with_transport_not_memory() {
 	let listen_addr = config::build_multiaddr![Memory(rand::random::<u64>())];
-	
+
 	let _ = build_test_full_node(config::NetworkConfiguration {
 		listen_addresses: vec![listen_addr.clone()],
 		..config::NetworkConfiguration::new(
-			"test-node", 
-			"test-client", 
-			Default::default(), 
-			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) }, 
+			"test-node",
+			"test-client",
+			Default::default(),
+			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
 			None)
 	});
 }
@@ -631,7 +631,7 @@ fn ensure_boot_node_addresses_consistent_with_transport_not_memory() {
 			"test-client",
 			Default::default(),
 			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
-			None	
+			None
 		)});
 }
 
@@ -652,7 +652,7 @@ fn ensure_reserved_node_addresses_consistent_with_transport_memory() {
 			..Default::default()
 		},
 		..config::NetworkConfiguration::new(
-			"test-node", 
+			"test-node",
 			"test-client",
 			Default::default(),
 			config::PreSharedKeyConfig { pre_shared_key: config::PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },

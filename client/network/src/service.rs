@@ -80,7 +80,7 @@ use std::{
 	borrow::Cow,
 	cmp,
 	collections::{HashMap, HashSet},
-	fs, fs::remove_file,
+	fs,
 	iter,
 	marker::PhantomData,
 	num::NonZeroUsize,
@@ -150,7 +150,7 @@ where
 	/// Returns a `NetworkWorker` that implements `Future` and must be regularly polled in order
 	/// for the network processing to advance. From it, you can extract a `NetworkService` using
 	/// `worker.service()`. The `NetworkService` can be shared through the codebase.
-	pub async fn new(mut params: Params<B, H, Client>) -> Result<Self, Error> {
+	pub fn new(mut params: Params<B, H, Client>) -> Result<Self, Error> {
 		// Private and public keys configuration.
 		let local_identity = params.network_config.node_key.clone().into_keypair()?;
 		let local_public = local_identity.public();
