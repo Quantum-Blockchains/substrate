@@ -964,15 +964,6 @@ where
 	file.write_all(sk_bytes)
 }
 
-/// Write pre-shared key bytes to a file.
-fn write_psk_file<P>(path: P, sk_bytes: &[u8]) -> io::Result<()>
-where
-	P: AsRef<Path>,
-{
-	let mut file = fs::File::create(path)?;
-	file.write_all(sk_bytes)
-}
-
 /// Opens a file containing a secret key in write mode.
 #[cfg(unix)]
 fn open_secret_file<P>(path: P) -> io::Result<fs::File>
