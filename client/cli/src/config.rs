@@ -487,7 +487,8 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreSharedKeyConfig> {
 		self.psk_params()
 			.map(|x| Ok(x.pre_shared_key(net_config_dir)))
-			.unwrap_or_else(|| Err(error::Error::PreSharedKeyError))
+			.unwrap_or_else(|| Ok(Default::default()))
+			//.unwrap_or_else(|| Err(error::Error::PreSharedKeyError))
 	}
 
 	/// Get maximum runtime instancess

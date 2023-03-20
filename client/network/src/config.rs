@@ -782,6 +782,12 @@ pub struct PreSharedKeyConfig {
 	pub pre_shared_key: PreSharedKeySecret
 }
 
+impl Default for PreSharedKeyConfig {
+	fn default() -> PreSharedKeyConfig {
+		Self{pre_shared_key: PreSharedKeySecret::File(PathBuf::new())}
+	}
+}
+
 /// The configuration options for obtaining a pre-shared key.
 #[derive(Clone)]
 pub enum PreSharedKeySecret {
