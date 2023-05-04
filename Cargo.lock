@@ -1628,7 +1628,7 @@ dependencies = [
 [[package]]
 name = "dilithium"
 version = "0.1.0"
-source = "git+https://github.com/Quantum-Blockchains/dilithium.git#9a292c94b82856dbfd34340b5450632f8e715b38"
+source = "git+https://github.com/Quantum-Blockchains/dilithium.git?branch=kostia/JEQB-235/Start-Dilithium-integration#7c06fe52ef304966b1cd654d78a1bc928ca86afc"
 dependencies = [
  "rand 0.7.3",
 ]

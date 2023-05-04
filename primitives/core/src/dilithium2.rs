@@ -462,17 +462,19 @@ impl TraitPair for Pair {
 		let public = Public(pair.public.to_bytes());
 		Ok(Pair {public, secret})
 	}
+
 	fn sign(&self, message: &[u8]) -> Self::Signature {
 
 		let secret_key: dil2::SecretKey = dil2::SecretKey::from_bytes(&self.secret.0);
 		let r = secret_key.sign(message);
 		Signature::from_raw(r)
 	}
+
 	fn verify<M: AsRef<[u8]>>(sig: &Self::Signature, mess: M, pub_key: &Self::Public) -> bool {
 		Self::verify_weak(&sig.0[..], mess.as_ref(), pub_key)
 	}
-	fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(sig_bytes: &[u8], message: M, pub_key_bytes: P) -> bool {
 
+	fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(sig_bytes: &[u8], message: M, pub_key_bytes: P) -> bool {
 		let public_key: dil2::PublicKey = dil2::PublicKey::from_bytes(pub_key_bytes.as_ref());
 
 		if sig_bytes.len() != 2420 {
@@ -480,11 +482,12 @@ impl TraitPair for Pair {
 		}
 
 		public_key.verify(message.as_ref(), sig_bytes)
-
 	}
+
 	fn public(&self) -> Self::Public {
 		self.public
 	}
+
 	fn to_raw_vec(&self) -> Vec<u8> {
 		let mut vec_1 = self.secret.0.to_vec();
 		let mut vec_2 = self.public.0.to_vec();

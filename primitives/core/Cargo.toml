@@ -60,7 +60,7 @@ secp256k1 = { version = "0.24.0", default-features = false, features = ["recover
 ss58-registry = { version = "1.18.0", default-features = false }
 sp-core-hashing = { version = "4.0.0", path = "./hashing", default-features = false, optional = true }
 sp-runtime-interface = { version = "6.0.0", default-features = false, path = "../runtime-interface" }
-dilithium = {version = "0.1.0", default-features = false, git = "https://github.com/Quantum-Blockchains/dilithium.git", optional = true}
+dilithium = {version = "0.1.0", default-features = false, git = "https://github.com/Quantum-Blockchains/dilithium.git", branch = "kostia/JEQB-235/Start-Dilithium-integration", optional = true}
 
 [dev-dependencies]
 sp-serializer = { version = "4.0.0-dev", path = "../serializer" }
