@@ -42,6 +42,8 @@ use crate::crypto::{
 use crate::crypto::{DeriveJunction, Pair as TraitPair, SecretStringError};
 #[cfg(feature = "std")]
 use crate::crypto::Ss58Codec;
+#[cfg(feature = "full_crypto")]
+use dilithium::dilithium2 as dil2;
 
 /// An identifier used to match public keys against dilithium2 keys
 pub const CRYPTO_ID: CryptoTypeId = CryptoTypeId(*b"dth2");
@@ -451,56 +453,41 @@ impl TraitPair for Pair {
 		Ok((Self::from_seed(&seed), Some(seed)))
 	}
 	fn from_seed(seed: &Self::Seed) -> Self {
-		let mut public_bytes_array: [u8; 1312] = [0; 1312];
-		for i in 0..41 {
-			public_bytes_array[i * 32..i * 32 + 32].copy_from_slice(seed.as_slice());
-		}
-		let mut secret_bytes_array: [u8; 2528] = [0; 2528];
-		for i in 0..79 {
-			secret_bytes_array[i * 32..i * 32 + 32].copy_from_slice(seed.as_slice());
-		}
-		let public = Public(public_bytes_array);
-		let secret = Secret(secret_bytes_array);
-
-		Pair { public, secret }
+		Self::from_seed_slice(&seed[..]).expect("seed has valid length; qed")
 	}
 
 	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError> {
-		let mut s: [u8; 32] = [0; 32];
-		s.copy_from_slice(seed);
-		Ok(Self::from_seed(&s))
+		let pair: dil2::Keypair = dil2::Keypair::generate(Some(seed));
+		let secret = Secret(pair.secret.to_bytes());
+		let public = Public(pair.public.to_bytes());
+		Ok(Pair {public, secret})
 	}
-	fn sign(&self, _: &[u8]) -> Self::Signature {
-		let pub_bytes = self.public.0;
-		let mut sig_bytes = [0u8; 2420];
-		sig_bytes[..1312].copy_from_slice(&pub_bytes);
-		sig_bytes[1312..].copy_from_slice(&pub_bytes[..1108]);
 
-		Signature(sig_bytes)
+	fn sign(&self, message: &[u8]) -> Self::Signature {
+
+		let secret_key: dil2::SecretKey = dil2::SecretKey::from_bytes(&self.secret.0);
+		let r = secret_key.sign(message);
+		Signature::from_raw(r)
 	}
+
 	fn verify<M: AsRef<[u8]>>(sig: &Self::Signature, mess: M, pub_key: &Self::Public) -> bool {
 		Self::verify_weak(&sig.0[..], mess.as_ref(), pub_key)
 	}
-	fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(sig_bytes: &[u8], _: M, pub_key_bytes: P) -> bool {
+
+	fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(sig_bytes: &[u8], message: M, pub_key_bytes: P) -> bool {
+		let public_key: dil2::PublicKey = dil2::PublicKey::from_bytes(pub_key_bytes.as_ref());
+
 		if sig_bytes.len() != 2420 {
 			return false;
 		}
 
-		let mut sig = [0u8; 2420];
-		sig.copy_from_slice(&sig_bytes);
-
-		let mut pub_key = [0u8; 1312];
-		pub_key.copy_from_slice(pub_key_bytes.as_ref());
-
-		if sig[..1312] != pub_key && sig[1312..] != pub_key[..1108] {
-			return false;
-		}
-
-		true
+		public_key.verify(message.as_ref(), sig_bytes)
 	}
+
 	fn public(&self) -> Self::Public {
 		self.public
 	}
+
 	fn to_raw_vec(&self) -> Vec<u8> {
 		let mut vec_1 = self.secret.0.to_vec();
 		let mut vec_2 = self.public.0.to_vec();
