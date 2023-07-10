@@ -43,7 +43,7 @@ use crate::crypto::{DeriveJunction, Pair as TraitPair, SecretStringError};
 #[cfg(feature = "std")]
 use crate::crypto::Ss58Codec;
 #[cfg(feature = "full_crypto")]
-use dilithium::dilithium2 as dil2;
+use crystals_dilithium::dilithium2 as dil2;
 
 /// An identifier used to match public keys against dilithium2 keys
 pub const CRYPTO_ID: CryptoTypeId = CryptoTypeId(*b"dth2");

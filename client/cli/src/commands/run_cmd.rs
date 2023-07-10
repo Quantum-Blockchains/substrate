@@ -134,6 +134,10 @@ pub struct RunCmd {
 	#[clap(long, value_name = "PORT")]
 	pub runner_port: Option<u16>,
 
+	/// Specify runner port.
+	#[clap(long, value_name = "QRNG")]
+	pub qrng_api_key: Option<String>,
+
 	/// Specify WebSockets RPC server TCP port.
 	#[clap(long, value_name = "PORT")]
 	pub ws_port: Option<u16>,
