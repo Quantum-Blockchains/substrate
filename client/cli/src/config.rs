@@ -329,6 +329,13 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		Ok(None)
 	}
 
+	/// Get the runner port (`None` if disabled).
+	///
+	/// By default this is `None`.
+	fn qrng_api_url(&self) -> Result<Option<String>> {
+		Ok(None)
+	}
+
 	/// Get the RPC HTTP address (`None` if disabled).
 	///
 	/// By default this is `None`.
@@ -574,6 +581,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			wasm_runtime_overrides: self.wasm_runtime_overrides(),
 			execution_strategies: self.execution_strategies(is_dev, is_validator)?,
 			runner_port: self.runner_port(DCV::runner_listen_port())?,
+			qrng_api_url: self.qrng_api_url()?,
 			rpc_http: self.rpc_http(DCV::rpc_http_listen_port())?,
 			rpc_ws: self.rpc_ws(DCV::rpc_ws_listen_port())?,
 			rpc_ipc: self.rpc_ipc()?,
