@@ -136,7 +136,7 @@ pub struct RunCmd {
 
 	/// Specify runner port.
 	#[clap(long, value_name = "QRNG")]
-	pub qrng_api_key: Option<String>,
+	pub qrng_api_url: Option<String>,
 
 	/// Specify WebSockets RPC server TCP port.
 	#[clap(long, value_name = "PORT")]
@@ -400,6 +400,10 @@ impl CliConfiguration for RunCmd {
 
 	fn runner_port(&self, default_listen_port: u16) -> Result<Option<u16>> {
 		Ok(Some(self.runner_port.unwrap_or(default_listen_port)))
+	}
+
+	fn qrng_api_url(&self) -> Result<Option<String>> {
+		Ok(self.qrng_api_url.clone())
 	}
 
 	fn disable_grandpa(&self) -> Result<bool> {
