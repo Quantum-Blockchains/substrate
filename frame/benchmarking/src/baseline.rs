@@ -92,11 +92,12 @@ benchmarks! {
 	dilithium2_verification {
 		let i in 1 .. 100;
 		let public = SignerId::generate_pair(None);
-		// let sigs_count: u8 = i.try_into().unwrap();
-		// let msg_and_sigs: Vec<_> = (0..sigs_count).map(|j| {
-		// 	let msg = vec![j, j];
+		let sigs_count: u8 = i.try_into().unwrap();
+		let msg_and_sigs: Vec<_> = (0..sigs_count).map(|j| {
+			let msg = vec![j, j];
+			(msg.clone())
 		// 	(msg.clone(), public.sign(&msg).unwrap())
-		// })
+		})
 		.collect();
 	}: {
 		msg_and_sigs.iter().for_each(|(msg, sig)| {
