@@ -92,10 +92,11 @@ benchmarks! {
 	dilithium2_verification {
 		let i in 1 .. 100;
 		let public = SignerId::generate_pair(None);
-		log::info!("{:?}", public);
+		// log::info!("{:?}", public);
 		let sigs_count: u8 = i.try_into().unwrap();
 		let msg_and_sigs: Vec<_> = (0..sigs_count).map(|j| {
 			let msg = vec![j, j];
+			public.sign(&msg);
 			(msg.clone())
 		// 	(msg.clone(), public.sign(&msg).unwrap())
 		})
