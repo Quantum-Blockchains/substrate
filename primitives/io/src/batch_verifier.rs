@@ -107,6 +107,22 @@ impl BatchVerifier {
 		)
 	}
 
+	/// Push ed25519 signature to verify.
+	///
+	/// Returns false if some of the pushed signatures before already failed the check
+	/// (in this case it won't verify anything else)
+	pub fn push_dilithium2(
+		&mut self,
+		signature: dilithium2::Signature,
+		pub_key: dilithium2::Public,
+		message: Vec<u8>,
+	) -> bool {
+		self.spawn_verification_task(
+			move || dilithium2::Pair::verify(&signature, &message, &pub_key),
+			"substrate_dilithium2_verify",
+		)
+	}
+
 	/// Push sr25519 signature to verify.
 	///
 	/// Returns false if some of the pushed signatures before already failed the check.
