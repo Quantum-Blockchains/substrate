@@ -24,7 +24,7 @@ use async_trait::async_trait;
 use futures::{executor::block_on, future::join_all};
 use sp_core::{
 	crypto::{CryptoTypePublicPair, KeyTypeId},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, sr25519, dilithium2
 };
 use std::sync::Arc;
 
@@ -72,6 +72,18 @@ pub trait CryptoStore: Send + Sync {
 		id: KeyTypeId,
 		seed: Option<&str>,
 	) -> Result<ed25519::Public, Error>;
+	/// Returns all dilithium2 public keys for the given key type.
+	async fn dilithium2_public_keys(&self, id: KeyTypeId) -> Vec<dilithium2::Public>;
+	/// Generate a new dilithium2 key pair for the given key type and an optional seed.
+	///
+	/// If the given seed is `Some(_)`, the key pair will only be stored in memory.
+	///
+	/// Returns the public key of the generated key pair.
+	async fn dilithium2_generate_new(
+		&self,
+		id: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error>;
 	/// Returns all ecdsa public keys for the given key type.
 	async fn ecdsa_public_keys(&self, id: KeyTypeId) -> Vec<ecdsa::Public>;
 	/// Generate a new ecdsa key pair for the given key type and an optional seed.
@@ -245,6 +257,20 @@ pub trait SyncCryptoStore: CryptoStore + Send + Sync {
 		id: KeyTypeId,
 		seed: Option<&str>,
 	) -> Result<ed25519::Public, Error>;
+
+	/// Returns all dilithium2 public keys for the given key type.
+	fn dilithium2_public_keys(&self, id: KeyTypeId) -> Vec<dilithium2::Public>;
+
+	/// Generate a new dilithium2 key pair for the given key type and an optional seed.
+	///
+	/// If the given seed is `Some(_)`, the key pair will only be stored in memory.
+	///
+	/// Returns the public key of the generated key pair.
+	fn dilithium2_generate_new(
+		&self,
+		id: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error>;
 
 	/// Returns all ecdsa public keys for the given key type.
 	fn ecdsa_public_keys(&self, id: KeyTypeId) -> Vec<ecdsa::Public>;

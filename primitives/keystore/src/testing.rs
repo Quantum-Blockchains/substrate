@@ -19,7 +19,7 @@
 
 use sp_core::{
 	crypto::{ByteArray, CryptoTypePublicPair, KeyTypeId, Pair},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, sr25519, dilithium2
 };
 
 use crate::{
@@ -99,6 +99,18 @@ impl CryptoStore for KeyStore {
 		seed: Option<&str>,
 	) -> Result<ed25519::Public, Error> {
 		SyncCryptoStore::ed25519_generate_new(self, id, seed)
+	}
+
+	async fn dilithium2_public_keys(&self, id: KeyTypeId) -> Vec<dilithium2::Public> {
+		SyncCryptoStore::dilithium2_public_keys(self, id)
+	}
+
+	async fn dilithium2_generate_new(
+		&self,
+		id: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error> {
+		SyncCryptoStore::dilithium2_generate_new(self, id, seed)
 	}
 
 	async fn ecdsa_public_keys(&self, id: KeyTypeId) -> Vec<ecdsa::Public> {
@@ -251,6 +263,50 @@ impl SyncCryptoStore for KeyStore {
 			},
 			None => {
 				let (pair, phrase, _) = ed25519::Pair::generate_with_phrase(None);
+				self.keys
+					.write()
+					.entry(id)
+					.or_default()
+					.insert(pair.public().to_raw_vec(), phrase);
+				Ok(pair.public())
+			},
+		}
+	}
+
+	fn dilithium2_public_keys(&self, id: KeyTypeId) -> Vec<dilithium2::Public> {
+		self.keys
+			.read()
+			.get(&id)
+			.map(|keys| {
+				keys.values()
+					.map(|s| {
+						dilithium2::Pair::from_string(s, None).expect("`dilithium2` seed slice is valid")
+					})
+					.map(|p| p.public())
+					.collect()
+			})
+			.unwrap_or_default()
+	}
+
+	fn dilithium2_generate_new(
+		&self,
+		id: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error> {
+		match seed {
+			Some(seed) => {
+				let pair = dilithium2::Pair::from_string(seed, None).map_err(|_| {
+					Error::ValidationError("Generates an `dilithium2` pair.".to_owned())
+				})?;
+				self.keys
+					.write()
+					.entry(id)
+					.or_default()
+					.insert(pair.public().to_raw_vec(), seed.into());
+				Ok(pair.public())
+			},
+			None => {
+				let (pair, phrase, _) = dilithium2::Pair::generate_with_phrase(None);
 				self.keys
 					.write()
 					.entry(id)
