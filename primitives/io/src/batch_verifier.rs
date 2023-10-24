@@ -18,7 +18,7 @@
 //! Batch/parallel verification.
 
 use futures::{channel::oneshot, future::FutureExt};
-use sp_core::{crypto::Pair, ecdsa, ed25519, sr25519, traits::SpawnNamed};
+use sp_core::{crypto::Pair, ecdsa, ed25519, sr25519, dilithium2, traits::SpawnNamed};
 use std::sync::{
 	atomic::{AtomicBool, Ordering as AtomicOrdering},
 	Arc,
