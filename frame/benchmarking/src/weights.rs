@@ -49,7 +49,7 @@ pub trait WeightInfo {
 	fn multiplication(i: u32, ) -> Weight;
 	fn division(i: u32, ) -> Weight;
 	fn hashing(i: u32, ) -> Weight;
-	fn ed25519_verification(i: u32, ) -> Weight;
+	fn dilithium2_verification(i: u32, ) -> Weight;
 	fn storage_read(i: u32, ) -> Weight;
 	fn storage_write(i: u32, ) -> Weight;
 }
@@ -72,7 +72,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	fn hashing(_i: u32, ) -> Weight {
 		(20_865_902_000 as Weight)
 	}
-	fn ed25519_verification(i: u32, ) -> Weight {
+	fn dilithium2_verification(i: u32, ) -> Weight {
 		(319_000 as Weight)
 			// Standard Error: 8_000
 			.saturating_add((47_171_000 as Weight).saturating_mul(i as Weight))
@@ -110,7 +110,7 @@ impl WeightInfo for () {
 	fn hashing(_i: u32, ) -> Weight {
 		(20_865_902_000 as Weight)
 	}
-	fn ed25519_verification(i: u32, ) -> Weight {
+	fn dilithium2_verification(i: u32, ) -> Weight {
 		(319_000 as Weight)
 			// Standard Error: 8_000
 			.saturating_add((47_171_000 as Weight).saturating_mul(i as Weight))
