@@ -32,13 +32,13 @@ use sp_std::prelude::*;
 
 pub const TEST_KEY_TYPE_ID: KeyTypeId = KeyTypeId(*b"test");
 
-mod app_dilithium2 {
+mod app_sr25519 {
 	use super::TEST_KEY_TYPE_ID;
-	use sp_application_crypto::{app_crypto, dilithium2};
-	app_crypto!(dilithium2, TEST_KEY_TYPE_ID);
+	use sp_application_crypto::{app_crypto, sr25519};
+	app_crypto!(sr25519, TEST_KEY_TYPE_ID);
 }
 
-type SignerId = app_dilithium2::Public;
+type SignerId = app_sr25519::Public;
 
 pub struct Pallet<T: Config>(System<T>);
 pub trait Config: frame_system::Config {}
@@ -89,7 +89,7 @@ benchmarks! {
 		assert!(hash != T::Hash::default());
 	}
 
-	dilithium2_verification {
+	sr25519_verification {
 		let i in 1 .. 100;
 
 		let public = SignerId::generate_pair(None);
