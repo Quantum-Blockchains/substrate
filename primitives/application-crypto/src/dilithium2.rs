@@ -45,6 +45,7 @@ impl RuntimePublic for Public {
 	}
 
 	fn generate_pair(key_type: KeyTypeId, seed: Option<Vec<u8>>) -> Self {
+		log::info!("ASIA");
 		sp_io::crypto::dilithium2_generate(key_type, seed)
 	}
 
