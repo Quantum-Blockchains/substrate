@@ -936,59 +936,6 @@ pub trait Crypto {
 		sr25519::Pair::verify_deprecated(sig, msg, pubkey)
 	}
 
-	/// Returns all `dilithium2` public keys for the given key id from the keystore.
-	fn dilithium2_public_keys(&mut self, _: KeyTypeId) -> Vec<dilithium2::Public> {
-		let _keystore = &***self
-			.extension::<KeystoreExt>()
-			.expect("No `keystore` associated for the current context!");
-		// TODO JEQB-194 implement dilithium keystore
-		SyncCryptoStore::dilithium2_public_keys(keystore, id);
-		// vec![]
-	}
-
-	/// Generate an `dilithium2` key for the given key type using an optional `seed` and
-	/// store it in the keystore.
-	///
-	/// The `seed` needs to be a valid utf8.
-	///
-	/// Returns the public key.
-	fn dilithium2_generate(&mut self, _: KeyTypeId, seed: Option<Vec<u8>>) -> dilithium2::Public {
-		let _seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
-		let _keystore = &***self
-			.extension::<KeystoreExt>()
-			.expect("No `keystore` associated for the current context!");
-		// TODO JEQB-194 implement dilithium2 keystore
-		SyncCryptoStore::dilithium2_generate_new(keystore, id, seed)
-			.expect("`dilithium2_generate` failed")
-		// dilithium2::Public([1u8; 1312])
-	}
-
-	/// Sign the given `msg` with the `dilithium2` key that corresponds to the given public key and
-	/// key type in the keystore.
-	///
-	/// Returns the signature.
-	fn dilithium2_sign(
-		&mut self,
-		id: KeyTypeId,
-		pub_key: &dilithium2::Public,
-		msg: &[u8],
-	) -> Option<dilithium2::Signature> {
-		let keystore = &***self
-			.extension::<KeystoreExt>()
-			.expect("No `keystore` associated for the current context!");
-		SyncCryptoStore::sign_with(keystore, id, &pub_key.into(), msg)
-			.ok()
-			.flatten()
-			.and_then(|sig| dilithium2::Signature::from_slice(&sig))
-	}
-
-	/// Verify `dilithium2` signature.
-	///
-	/// Returns `true` when the verification was successful.
-	fn dilithium2_verify(sig: &dilithium2::Signature, msg: &[u8], pub_key: &dilithium2::Public) -> bool {
-		dilithium2::Pair::verify(sig, msg, pub_key)
-	}
-
 	/// Returns all `ecdsa` public keys for the given key id from the keystore.
 	fn ecdsa_public_keys(&mut self, id: KeyTypeId) -> Vec<ecdsa::Public> {
 		let keystore = &***self
