@@ -96,15 +96,15 @@ benchmarks! {
 		let sigs_count: u8 = i.try_into().unwrap();
 		let msg_and_sigs: Vec<_> = (0..sigs_count).map(|j| {
 			let msg = vec![j, j];
-			public.sign(&msg);
-			(msg.clone())
-		// 	(msg.clone(), public.sign(&msg).unwrap())
+			// public.sign(&msg);
+			// (msg.clone())
+			(msg.clone(), public.sign(&msg).unwrap())
 		})
 		.collect();
 	}: {
 		msg_and_sigs.iter().for_each(|(msg/*, sig*/)| {
-			// assert!(sig.verify(&msg[..], &public));
-			assert!(true);
+			assert!(sig.verify(&msg[..], &public));
+			// assert!(true);
 		});
 	}
 
