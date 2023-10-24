@@ -874,8 +874,8 @@ pub trait Crypto {
 			.extension::<KeystoreExt>()
 			.expect("No `keystore` associated for the current context!");
 		// TODO JEQB-194 implement dilithium keystore
-		// SyncCryptoStore::dilithium2_public_keys(keystore, id);
-		vec![]
+		SyncCryptoStore::dilithium2_public_keys(keystore, id);
+		// vec![]
 	}
 
 	/// Generate an `dilithium2` key for the given key type using an optional `seed` and
@@ -890,9 +890,9 @@ pub trait Crypto {
 			.extension::<KeystoreExt>()
 			.expect("No `keystore` associated for the current context!");
 		// TODO JEQB-194 implement dilithium2 keystore
-		// SyncCryptoStore::dilithium2_generate_new(keystore, id, seed)
-		// 	.expect("`ed25519_generate` failed")
-		dilithium2::Public([1u8; 1312])
+		SyncCryptoStore::dilithium2_generate_new(keystore, id, seed)
+			.expect("`dilithium2_generate` failed")
+		// dilithium2::Public([1u8; 1312])
 	}
 
 	/// Sign the given `msg` with the `dilithium2` key that corresponds to the given public key and
