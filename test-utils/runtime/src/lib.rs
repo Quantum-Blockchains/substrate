@@ -425,6 +425,10 @@ cfg_if! {
 				///
 				/// Returns the signature generated for the message `ed25519` and the public key.
 				fn test_ed25519_crypto() -> (ed25519::AppSignature, ed25519::AppPublic);
+				/// Test that `dilithium2` crypto works in the runtime.
+				///
+				/// Returns the signature generated for the message `dilithium2` and the public key.
+				fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic);
 				/// Test that `sr25519` crypto works in the runtime.
 				///
 				/// Returns the signature generated for the message `sr25519`.
@@ -475,6 +479,10 @@ cfg_if! {
 				///
 				/// Returns the signature generated for the message `ed25519` and the public key.
 				fn test_ed25519_crypto() -> (ed25519::AppSignature, ed25519::AppPublic);
+				/// Test that `dilithium2` crypto works in the runtime.
+				///
+				/// Returns the signature generated for the message `dilithium2` and the public key.
+				fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic);
 				/// Test that `sr25519` crypto works in the runtime.
 				///
 				/// Returns the signature generated for the message `sr25519`.
@@ -881,6 +889,9 @@ cfg_if! {
 				fn test_ed25519_crypto() -> (ed25519::AppSignature, ed25519::AppPublic) {
 					test_ed25519_crypto()
 				}
+				fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic) {
+					test_dilithium2_crypto()
+				}
 
 				fn test_sr25519_crypto() -> (sr25519::AppSignature, sr25519::AppPublic) {
 					test_sr25519_crypto()
@@ -1156,6 +1167,10 @@ cfg_if! {
 					test_ed25519_crypto()
 				}
 
+				fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic) {
+					test_dilithium2_crypto()
+				}
+
 				fn test_sr25519_crypto() -> (sr25519::AppSignature, sr25519::AppPublic) {
 					test_sr25519_crypto()
 				}
@@ -1278,6 +1293,21 @@ fn test_ed25519_crypto() -> (ed25519::AppSignature, ed25519::AppPublic) {
 
 	let signature = public0.sign(&"ed25519").expect("Generates a valid `ed25519` signature.");
 	assert!(public0.verify(&"ed25519", &signature));
+	(signature, public0)
+}
+
+fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic) {
+	let public0 = dilithium2::AppPublic::generate_pair(None);
+	let public1 = dilithium2::AppPublic::generate_pair(None);
+	let public2 = dilithium2::AppPublic::generate_pair(None);
+
+	let all = dilithium2::AppPublic::all();
+	assert!(all.contains(&public0));
+	assert!(all.contains(&public1));
+	assert!(all.contains(&public2));
+
+	let signature = public0.sign(&"dilithium2").expect("Generates a valid `dilithium2` signature.");
+	assert!(public0.verify(&"dilithium2", &signature));
 	(signature, public0)
 }
 

@@ -62,6 +62,14 @@ impl KeyStore {
 		})
 	}
 
+	fn dilithium2_key_pair(&self, id: KeyTypeId, pub_key: &dilithium2::Public) -> Option<dilithium2::Pair> {
+		self.keys.read().get(&id).and_then(|inner| {
+			inner.get(pub_key.as_slice()).map(|s| {
+				dilithium2::Pair::from_string(s, None).expect("`dilithium2` seed slice is valid")
+			})
+		})
+	}
+
 	fn ecdsa_key_pair(&self, id: KeyTypeId, pub_key: &ecdsa::Public) -> Option<ecdsa::Pair> {
 		self.keys.read().get(&id).and_then(|inner| {
 			inner
@@ -178,6 +186,7 @@ impl SyncCryptoStore for KeyStore {
 				Ok(map.keys().fold(Vec::new(), |mut v, k| {
 					v.push(CryptoTypePublicPair(sr25519::CRYPTO_ID, k.clone()));
 					v.push(CryptoTypePublicPair(ed25519::CRYPTO_ID, k.clone()));
+					v.push(CryptoTypePublicPair(dilithium2::CRYPTO_ID, k.clone()));
 					v.push(CryptoTypePublicPair(ecdsa::CRYPTO_ID, k.clone()));
 					v
 				}))
@@ -410,6 +419,12 @@ impl SyncCryptoStore for KeyStore {
 			ecdsa::CRYPTO_ID => {
 				let key_pair =
 					self.ecdsa_key_pair(id, &ecdsa::Public::from_slice(key.1.as_slice()).unwrap());
+
+				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
+			},
+			dilithium2::CRYPTO_ID => {
+				let key_pair =
+					self.dilithium2_key_pair(id, &dilithium2::Public::from_slice(key.1.as_slice()).unwrap());
 
 				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
 			},
