@@ -437,11 +437,14 @@ impl TraitPair for Pair {
 	fn derive<Iter: Iterator<Item=DeriveJunction>>(
 		&self,
 		path: Iter,
-		_: Option<Seed>,
+		_seed: Option<Seed>,
 	) -> Result<(Self, Option<Seed>), Self::DeriveError> {
 		let acc = self.secret.0;
 		let mut seed = [0u8; 32];
-		seed.copy_from_slice(&acc[0..32]);
+		match _seed {
+			Some(s) => seed.copy_from_slice(&s[0..32]),
+			None => seed.copy_from_slice(&acc[0..32])
+		};
 
 		for j in path {
 			match j {
@@ -452,6 +455,7 @@ impl TraitPair for Pair {
 
 		Ok((Self::from_seed(&seed), Some(seed)))
 	}
+
 	fn from_seed(seed: &Self::Seed) -> Self {
 		Self::from_seed_slice(&seed[..]).expect("seed has valid length; qed")
 	}
