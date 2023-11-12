@@ -19,7 +19,7 @@
 
 use async_trait::async_trait;
 use parking_lot::RwLock;
-use sp_application_crypto::{ecdsa, ed25519, sr25519, AppKey, AppPair, IsWrappedBy};
+use sp_application_crypto::{ecdsa, ed25519, sr25519, dilithium2, AppKey, AppPair, IsWrappedBy};
 use sp_core::{
 	crypto::{
 		ByteArray, CryptoTypePublicPair, ExposeSecret, KeyTypeId, Pair as PairT, SecretString,
@@ -102,6 +102,18 @@ impl CryptoStore for LocalKeystore {
 		SyncCryptoStore::ed25519_generate_new(self, id, seed)
 	}
 
+	async fn dilithium2_public_keys(&self, id: KeyTypeId) -> Vec<dilithium2::Public> {
+		SyncCryptoStore::dilithium2_public_keys(self, id)
+	}
+
+	async fn dilithium2_generate_new(
+		&self,
+		id: KeyTypeId,
+		seed: Option<&str>,
+	) -> std::result::Result<dilithium2::Public, TraitError> {
+		SyncCryptoStore::dilithium2_generate_new(self, id, seed)
+	}
+
 	async fn ecdsa_public_keys(&self, id: KeyTypeId) -> Vec<ecdsa::Public> {
 		SyncCryptoStore::ecdsa_public_keys(self, id)
 	}
@@ -169,6 +181,7 @@ impl SyncCryptoStore for LocalKeystore {
 		Ok(raw_keys.into_iter().fold(Vec::new(), |mut v, k| {
 			v.push(CryptoTypePublicPair(sr25519::CRYPTO_ID, k.clone()));
 			v.push(CryptoTypePublicPair(ed25519::CRYPTO_ID, k.clone()));
+			v.push(CryptoTypePublicPair(dilithium2::CRYPTO_ID, k.clone()));
 			v.push(CryptoTypePublicPair(ecdsa::CRYPTO_ID, k));
 			v
 		}))
@@ -198,6 +211,17 @@ impl SyncCryptoStore for LocalKeystore {
 					.0
 					.read()
 					.key_pair_by_type::<ed25519::Pair>(&pub_key, id)
+					.map_err(TraitError::from)?;
+				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
+			},
+			dilithium2::CRYPTO_ID => {
+				let pub_key = dilithium2::Public::from_slice(key.1.as_slice()).map_err(|()| {
+					TraitError::Other("Corrupted public key - Invalid size".into())
+				})?;
+				let key_pair = self
+					.0
+					.read()
+					.key_pair_by_type::<dilithium2::Pair>(&pub_key, id)
 					.map_err(TraitError::from)?;
 				key_pair.map(|k| k.sign(msg).encode()).map(Ok).transpose()
 			},
@@ -277,6 +301,33 @@ impl SyncCryptoStore for LocalKeystore {
 			None => self.0.write().generate_by_type::<ed25519::Pair>(id),
 		}
 		.map_err(|e| -> TraitError { e.into() })?;
+
+		Ok(pair.public())
+	}
+
+	fn dilithium2_public_keys(&self, key_type: KeyTypeId) -> Vec<dilithium2::Public> {
+		self.0
+			.read()
+			.raw_public_keys(key_type)
+			.map(|v| {
+				v.into_iter()
+					.filter_map(|k| dilithium2::Public::from_slice(k.as_slice()).ok())
+					.collect()
+			})
+			.unwrap_or_default()
+	}
+
+	fn dilithium2_generate_new(
+		&self,
+		id: KeyTypeId,
+		seed: Option<&str>,
+	) -> std::result::Result<dilithium2::Public, TraitError> {
+		let pair = match seed {
+			Some(seed) =>
+				self.0.write().insert_ephemeral_from_seed_by_type::<dilithium2::Pair>(seed, id),
+			None => self.0.write().generate_by_type::<dilithium2::Pair>(id),
+		}
+			.map_err(|e| -> TraitError { e.into() })?;
 
 		Ok(pair.public())
 	}

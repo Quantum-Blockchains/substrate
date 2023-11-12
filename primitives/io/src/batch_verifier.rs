@@ -18,7 +18,7 @@
 //! Batch/parallel verification.
 
 use futures::{channel::oneshot, future::FutureExt};
-use sp_core::{crypto::Pair, ecdsa, ed25519, sr25519, traits::SpawnNamed};
+use sp_core::{crypto::Pair, ecdsa, ed25519, sr25519, dilithium2, traits::SpawnNamed};
 use std::sync::{
 	atomic::{AtomicBool, Ordering as AtomicOrdering},
 	Arc,
@@ -104,6 +104,18 @@ impl BatchVerifier {
 		self.spawn_verification_task(
 			move || ed25519::Pair::verify(&signature, &message, &pub_key),
 			"substrate_ed25519_verify",
+		)
+	}
+
+	pub fn push_dilithium2(
+		&mut self,
+		signature: dilithium2::Signature,
+		pub_key: dilithium2::Public,
+		message: Vec<u8>,
+	) -> bool {
+		self.spawn_verification_task(
+			move || dilithium2::Pair::verify(&signature, &message, &pub_key),
+			"substrate_dilithium2_verify",
 		)
 	}
 

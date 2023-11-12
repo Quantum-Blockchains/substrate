@@ -23,7 +23,7 @@ use crate::crypto::KeyTypeId;
 pub const ED25519: KeyTypeId = KeyTypeId(*b"ed25");
 /// Key type for generic Sr 25519 key.
 pub const SR25519: KeyTypeId = KeyTypeId(*b"sr25");
-/// Key type for generic Sr 25519 key.
+/// Key type for generic Sr Dilithium2 key.
 pub const DILITHIUM2: KeyTypeId = KeyTypeId(*b"dth2");
 /// Key type for generic ECDSA key.
 pub const ECDSA: KeyTypeId = KeyTypeId(*b"ecds");
