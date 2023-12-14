@@ -85,7 +85,7 @@ pub struct Public(pub [u8; 1312]);
 	MaxEncodedLen,
 	TypeInfo,
 )]
-pub struct Secret(pub [u8; 2528]);
+pub struct Secret(pub [u8; 32]);
 
 /// A key pair.
 #[cfg(feature = "full_crypto")]
@@ -439,21 +439,21 @@ impl TraitPair for Pair {
 		path: Iter,
 		_seed: Option<Seed>,
 	) -> Result<(Self, Option<Seed>), Self::DeriveError> {
-		let acc = self.secret.0;
-		let mut seed = [0u8; 32];
-		match _seed {
-			Some(s) => seed.copy_from_slice(&s[0..32]),
-			None => seed.copy_from_slice(&acc[0..32])
-		};
-
+		// let acc = self.secret.0;
+		// let mut seed = [0u8; 32];
+		// match _seed {
+		// 	Some(s) => seed.copy_from_slice(&s[0..32]),
+		// 	None => seed.copy_from_slice(&acc[0..32])
+		// };
+		let mut acc = self.secret.0;
 		for j in path {
 			match j {
 				DeriveJunction::Soft(_cc) => return Err(DeriveError::SoftKeyInPath),
-				DeriveJunction::Hard(cc) => seed = derive_hard_junction(&seed, &cc),
+				DeriveJunction::Hard(cc) => acc = derive_hard_junction(&acc, &cc),
 			}
 		}
 
-		Ok((Self::from_seed(&seed), Some(seed)))
+		Ok((Self::from_seed(&acc), Some(acc)))
 	}
 
 	fn from_seed(seed: &Self::Seed) -> Self {
@@ -462,14 +462,19 @@ impl TraitPair for Pair {
 
 	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError> {
 		let pair: dil2::Keypair = dil2::Keypair::generate(Some(seed));
-		let secret = Secret(pair.secret.to_bytes());
+		// let secret = Secret(pair.secret.to_bytes());
 		let public = Public(pair.public.to_bytes());
+
+		let mut arr: [u8; 32] = [0; 32];
+		arr.copy_from_slice(&seed[0..32]);
+
+		let secret = Secret(arr);
 		Ok(Pair {public, secret})
 	}
 
 	fn sign(&self, message: &[u8]) -> Self::Signature {
 
-		let secret_key: dil2::SecretKey = dil2::SecretKey::from_bytes(&self.secret.0);
+		let secret_key: dil2::SecretKey = dil2::Keypair::generate(Some(&self.secret.0)).secret;
 		let r = secret_key.sign(message);
 		Signature::from_raw(r)
 	}
