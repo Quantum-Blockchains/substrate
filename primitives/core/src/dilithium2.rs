@@ -439,12 +439,6 @@ impl TraitPair for Pair {
 		path: Iter,
 		_seed: Option<Seed>,
 	) -> Result<(Self, Option<Seed>), Self::DeriveError> {
-		// let acc = self.secret.0;
-		// let mut seed = [0u8; 32];
-		// match _seed {
-		// 	Some(s) => seed.copy_from_slice(&s[0..32]),
-		// 	None => seed.copy_from_slice(&acc[0..32])
-		// };
 		let mut acc = self.secret.0;
 		for j in path {
 			match j {
@@ -462,7 +456,6 @@ impl TraitPair for Pair {
 
 	fn from_seed_slice(seed: &[u8]) -> Result<Self, SecretStringError> {
 		let pair: dil2::Keypair = dil2::Keypair::generate(Some(seed));
-		// let secret = Secret(pair.secret.to_bytes());
 		let public = Public(pair.public.to_bytes());
 
 		let mut arr: [u8; 32] = [0; 32];
