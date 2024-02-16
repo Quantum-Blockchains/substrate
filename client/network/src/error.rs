@@ -68,6 +68,15 @@ pub enum Error {
 		/// Name of the protocol registered multiple times.
 		protocol: ProtocolName,
 	},
+	/// Pre shared key length in file is not equal to 32 bytes.
+	#[error("Invalid length of pre shared key. Length: {len}")]
+	InvalidLengthOfPreSharedKey {
+		/// Length of data in file.
+		len: usize,
+	},
+	/// Hex error
+	#[error(transparent)]
+	HexError(#[from] hex::FromHexError),
 }
 
 // Make `Debug` use the `Display` implementation.

@@ -39,14 +39,15 @@ use zeroize::Zeroize;
 pub use sc_network_common::{
 	role::{Role, Roles},
 	sync::{warp::WarpSyncProvider, SyncMode},
-	ExHashT,
+	ExHashT
 };
+use crate::error;
 use sc_utils::mpsc::TracingUnboundedSender;
 use sp_runtime::traits::Block as BlockT;
 
 use std::{
 	error::Error,
-	fmt, fs,
+	fmt, fs, fs::remove_file,
 	future::Future,
 	io::{self, Write},
 	iter,
@@ -60,6 +61,7 @@ use std::{
 pub use libp2p::{
 	build_multiaddr,
 	identity::{self, ed25519},
+	pnet::PreSharedKey
 };
 
 /// Protocol name prefix, transmitted on the wire for legacy protocol names.
@@ -273,6 +275,83 @@ impl NonReservedPeerMode {
 			"accept" => Some(Self::Accept),
 			"deny" => Some(Self::Deny),
 			_ => None,
+		}
+	}
+}
+
+/// The options for obtaining a pre-shared key.
+pub type PSKey = PreSharedKeySecret;
+
+/// The configuration for obtaining a pre-shared key.
+#[derive(Clone, Debug)]
+pub struct PreSharedKeyConfig {
+	pub pre_shared_key: PreSharedKeySecret
+}
+
+impl Default for PreSharedKeyConfig {
+	fn default() -> PreSharedKeyConfig {
+		Self{pre_shared_key: PreSharedKeySecret::File(PathBuf::new())}
+	}
+}
+
+/// The configuration options for obtaining a pre-shared key.
+#[derive(Clone)]
+pub enum PreSharedKeySecret {
+	/// Read the pre-shared key from a file.
+	File(PathBuf),
+}
+
+impl fmt::Debug for PreSharedKeySecret {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			Self::File(path) => f.debug_tuple("PSKSecret::File").field(path).finish(),
+		}
+	}
+}
+
+impl PreSharedKeyConfig {
+	/// Evaluate a `PreSharedKeyConfig` to obtain an pre shared key:
+	///
+	///  * If the secret is configured as a file, it is read from that file, if it exists. Otherwise
+	///    return error.
+	pub fn into_pre_share_key(self) -> io::Result<PreSharedKey> {
+		match self.pre_shared_key {
+			PreSharedKeySecret::File(f) => {
+				match std::fs::read(f) {
+					Ok(_data) => {
+						match _data.len() {
+							64 => {
+								match hex::decode(_data.clone()) {
+									Ok(_d) => {
+										let mut data: [u8; 32] = [0;32];
+										for i in 0..32 {
+											data[i] = _d[i];
+										}
+										Ok(PreSharedKey::new(data))
+									},
+									Err(_err) => {
+										Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::HexError(_err)))
+									}
+								}
+							},
+							_ => {
+								Err(std::io::Error::new(io::ErrorKind::InvalidData, error::Error::InvalidLengthOfPreSharedKey{ len: _data.len()}))
+							}
+						}
+					},
+					Err(_err) => {
+						Err(_err)
+					}
+				}
+			}
+		}
+	}
+
+	pub fn remove_psk_file(self) -> io::Result<()>  {
+		match self.pre_shared_key {
+			PreSharedKeySecret::File(f) => {
+				remove_file(f)
+			}
 		}
 	}
 }
@@ -534,6 +613,9 @@ pub struct NetworkConfiguration {
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
 
+	/// The pre-shared key configuration, which determines the pre-shard key.
+	pub pre_shared_key: PreSharedKeyConfig,
+
 	/// Configuration for the default set of nodes used for block syncing and transactions.
 	pub default_peers_set: SetConfig,
 
@@ -610,6 +692,7 @@ impl NetworkConfiguration {
 		node_name: SN,
 		client_version: SV,
 		node_key: NodeKeyConfig,
+		pre_shared_key: PreSharedKeyConfig,
 		net_config_path: Option<PathBuf>,
 	) -> Self {
 		let default_peers_set = SetConfig::default();
@@ -619,6 +702,7 @@ impl NetworkConfiguration {
 			public_addresses: Vec::new(),
 			boot_nodes: Vec::new(),
 			node_key,
+			pre_shared_key,
 			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
 			default_peers_set,
 			client_version: client_version.into(),
@@ -641,7 +725,7 @@ impl NetworkConfiguration {
 	/// testing)
 	pub fn new_local() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new("test-node", "test-client", Default::default(), PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))}, None);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))
@@ -656,7 +740,7 @@ impl NetworkConfiguration {
 	/// testing)
 	pub fn new_memory() -> NetworkConfiguration {
 		let mut config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
+			NetworkConfiguration::new("test-node", "test-client", Default::default(), PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./psk"))}, None);
 
 		config.listen_addresses =
 			vec![iter::once(multiaddr::Protocol::Ip4(Ipv4Addr::new(127, 0, 0, 1)))

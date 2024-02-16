@@ -23,7 +23,7 @@ pub use sc_executor::{WasmExecutionMethod, WasmtimeInstantiationStrategy};
 pub use sc_network::{
 	config::{
 		MultiaddrWithPeerId, NetworkConfiguration, NodeKeyConfig, NonDefaultSetConfig, ProtocolId,
-		Role, SetConfig, SyncMode, TransportConfig,
+		Role, SetConfig, SyncMode, TransportConfig, PreSharedKeyConfig
 	},
 	request_responses::{
 		IncomingRequest, OutgoingResponse, ProtocolConfig as RequestResponseConfig,
@@ -80,6 +80,10 @@ pub struct Configuration {
 	/// over on-chain runtimes when the spec version matches. Set to `None` to
 	/// disable overrides (default).
 	pub wasm_runtime_overrides: Option<PathBuf>,
+	/// Runner port. `None` if disabled.
+	pub runner_port: Option<u16>,
+	/// Qrng api url. `None` if disabled.
+	pub qrng_api_url: Option<String>,
 	/// JSON-RPC server binding address.
 	pub rpc_addr: Option<SocketAddr>,
 	/// Maximum number of connections for JSON-RPC server.

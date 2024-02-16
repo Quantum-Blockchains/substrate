@@ -95,6 +95,14 @@ pub struct RunCmd {
 	#[arg(long, value_name = "PORT")]
 	pub rpc_port: Option<u16>,
 
+	/// Specify runner port.
+	#[clap(long, value_name = "PORT")]
+	pub runner_port: Option<u16>,
+
+	/// Specify runner port.
+	#[clap(long, value_name = "QRNG")]
+	pub qrng_api_url: Option<String>,
+
 	/// Maximum number of RPC server connections.
 	#[arg(long, value_name = "COUNT", default_value_t = RPC_DEFAULT_MAX_CONNECTIONS)]
 	pub rpc_max_connections: u32,
@@ -307,6 +315,14 @@ impl CliConfiguration for RunCmd {
 		Ok(self
 			.prometheus_params
 			.prometheus_config(default_listen_port, chain_spec.id().to_string()))
+	}
+
+	fn runner_port(&self, default_listen_port: u16) -> Result<Option<u16>> {
+		Ok(Some(self.runner_port.unwrap_or(default_listen_port)))
+	}
+
+	fn qrng_api_url(&self) -> Result<Option<String>> {
+		Ok(self.qrng_api_url.clone())
 	}
 
 	fn disable_grandpa(&self) -> Result<bool> {

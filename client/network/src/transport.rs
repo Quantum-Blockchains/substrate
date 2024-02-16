@@ -28,6 +28,7 @@ use libp2p::{
 	dns, identity, noise, tcp, websocket, PeerId, Transport, TransportExt,
 };
 use std::{sync::Arc, time::Duration};
+use libp2p::pnet::{PnetConfig, PreSharedKey};
 
 pub use libp2p::bandwidth::BandwidthSinks;
 
@@ -51,6 +52,7 @@ pub fn build_transport(
 	memory_only: bool,
 	yamux_window_size: Option<u32>,
 	yamux_maximum_buffer_size: usize,
+	psk: PreSharedKey,
 ) -> (Boxed<(PeerId, StreamMuxerBox)>, Arc<BandwidthSinks>) {
 	// Build the base layer of the transport.
 	let transport = if !memory_only {
@@ -96,6 +98,7 @@ pub fn build_transport(
 	};
 
 	let transport = transport
+		.and_then(move |socket, _| PnetConfig::new(psk).handshake(socket))
 		.upgrade(upgrade::Version::V1Lazy)
 		.authenticate(authentication_config)
 		.multiplex(multiplexing_config)
