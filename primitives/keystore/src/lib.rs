@@ -23,7 +23,7 @@ pub mod testing;
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, CryptoTypeId, KeyTypeId},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, sr25519, dilithium2
 };
 
 use std::sync::Arc;
@@ -130,6 +130,21 @@ pub trait Keystore: Send + Sync {
 		public: &ed25519::Public,
 		msg: &[u8],
 	) -> Result<Option<ed25519::Signature>, Error>;
+
+	fn dilithium2_public_keys(&self, key_type: KeyTypeId) -> Vec<dilithium2::Public>;
+
+	fn dilithium2_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error>;
+
+	fn dilithium2_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &dilithium2::Public,
+		msg: &[u8],
+	) -> Result<Option<dilithium2::Signature>, Error>;
 
 	/// Returns all ecdsa public keys for the given key type.
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public>;
@@ -285,6 +300,11 @@ pub trait Keystore: Send + Sync {
 					.map_err(|_| Error::ValidationError("Invalid public key format".into()))?;
 				self.ed25519_sign(id, &public, msg)?.map(|s| s.encode())
 			},
+			dilithium2::CRYPTO_ID => {
+				let public = dilithium2::Public::from_slice(public)
+					.map_err(|_| Error::ValidationError("Invalid public key format".into()))?;
+				self.dilithium2_sign(id, &public, msg)?.map(|s| s.encode())
+			},
 			ecdsa::CRYPTO_ID => {
 				let public = ecdsa::Public::from_slice(public)
 					.map_err(|_| Error::ValidationError("Invalid public key format".into()))?;
@@ -368,6 +388,27 @@ impl<T: Keystore + ?Sized> Keystore for Arc<T> {
 		msg: &[u8],
 	) -> Result<Option<ed25519::Signature>, Error> {
 		(**self).ed25519_sign(key_type, public, msg)
+	}
+
+	fn dilithium2_public_keys(&self, key_type: KeyTypeId) -> Vec<dilithium2::Public> {
+		(**self).dilithium2_public_keys(key_type)
+	}
+
+	fn dilithium2_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error> {
+		(**self).dilithium2_generate_new(key_type, seed)
+	}
+
+	fn dilithium2_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &dilithium2::Public,
+		msg: &[u8],
+	) -> Result<Option<dilithium2::Signature>, Error> {
+		(**self).dilithium2_sign(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

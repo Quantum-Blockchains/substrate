@@ -80,4 +80,11 @@ mod tests {
 		let generate = GenerateCmd::parse_from(&["generate", "--password", "12345"]);
 		assert!(generate.run().is_ok())
 	}
+
+	#[test]
+	fn generate_with_dilithium2_scheme() {
+		let generate = GenerateCmd::parse_from(&["generate", "--scheme", "dilithium2"]);
+		let result = generate.run();
+		assert!(generate.run().is_ok())
+	}
 }

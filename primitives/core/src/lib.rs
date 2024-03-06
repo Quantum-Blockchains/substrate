@@ -69,6 +69,7 @@ pub mod testing;
 #[cfg(feature = "std")]
 pub mod traits;
 pub mod uint;
+pub mod dilithium2;
 
 #[cfg(feature = "bls-experimental")]
 pub use bls::{bls377, bls381};

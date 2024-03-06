@@ -43,7 +43,7 @@ use frame_system::{
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
-use sp_application_crypto::{ecdsa, ed25519, sr25519, RuntimeAppPublic};
+use sp_application_crypto::{ecdsa, ed25519, sr25519, dilithium2, RuntimeAppPublic};
 use sp_core::{OpaqueMetadata, RuntimeDebug};
 use sp_trie::{
 	trie_types::{TrieDBBuilder, TrieDBMutBuilderV1},

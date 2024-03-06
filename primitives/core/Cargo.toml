@@ -53,6 +53,7 @@ merlin = { version = "2.0", default-features = false }
 secp256k1 = { version = "0.24.0", default-features = false, features = ["recovery", "alloc"], optional = true }
 sp-core-hashing = { version = "9.0.0", path = "./hashing", default-features = false, optional = true }
 sp-runtime-interface = { version = "17.0.0", default-features = false, path = "../runtime-interface" }
+crystals-dilithium = {version = "1.0.0", default-features = false, git = "https://github.com/Quantum-Blockchains/dilithium.git", optional = true}
 # bls crypto
 w3f-bls = { version = "0.1.3", default-features = false, optional = true}
 
@@ -143,6 +144,7 @@ full_crypto = [
 	"secp256k1",
 	"sp-core-hashing",
 	"sp-runtime-interface/disable_target_static_assertions",
+	"crystals-dilithium",
 ]
 
 # This feature adds BLS crypto primitives. It should not be used in production since

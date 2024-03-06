@@ -135,6 +135,8 @@ pub enum CryptoScheme {
 	Sr25519,
 	/// Use
 	Ecdsa,
+	/// Use dilithium2
+	Dilithium2,
 }
 
 /// The type of the output format.

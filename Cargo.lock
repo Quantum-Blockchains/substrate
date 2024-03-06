@@ -1740,6 +1740,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "crystals-dilithium"
+version = "1.0.0"
+source = "git+https://github.com/Quantum-Blockchains/dilithium.git#0edee8de3a11fd6bbcc62b8cc87f65d7da25a93d"
+dependencies = [
+ "rand 0.7.3",
+]
+
+[[package]]
 name = "ctor"
 version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11157,6 +11165,7 @@ dependencies = [
  "bounded-collections",
  "bs58",
  "criterion",
+ "crystals-dilithium",
  "dyn-clonable",
  "ed25519-zebra",
  "futures",
@@ -11300,6 +11309,7 @@ name = "sp-io"
 version = "23.0.0"
 dependencies = [
  "bytes",
+ "crystals-dilithium",
  "ed25519",
  "ed25519-dalek",
  "libsecp256k1",

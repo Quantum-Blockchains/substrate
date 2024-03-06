@@ -23,7 +23,7 @@ use crate::{Error, Keystore, KeystorePtr};
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId, Pair, VrfSecret},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, sr25519, dilithium2
 };
 
 use parking_lot::RwLock;
@@ -181,6 +181,27 @@ impl Keystore for MemoryKeystore {
 		msg: &[u8],
 	) -> Result<Option<ed25519::Signature>, Error> {
 		self.sign::<ed25519::Pair>(key_type, public, msg)
+	}
+
+	fn dilithium2_public_keys(&self, key_type: KeyTypeId) -> Vec<dilithium2::Public> {
+		self.public_keys::<dilithium2::Pair>(key_type)
+	}
+
+	fn dilithium2_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<dilithium2::Public, Error> {
+		self.generate_new::<dilithium2::Pair>(key_type, seed)
+	}
+
+	fn dilithium2_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &dilithium2::Public,
+		msg: &[u8],
+	) -> Result<Option<dilithium2::Signature>, Error> {
+		self.sign::<dilithium2::Pair>(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

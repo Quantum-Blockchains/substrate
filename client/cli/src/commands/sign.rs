@@ -123,4 +123,20 @@ mod test {
 		assert!(sig.starts_with("0x"), "Signature must start with 0x");
 		assert!(array_bytes::hex2bytes(&sig).is_ok(), "Signature is valid hex");
 	}
+
+	#[test]
+	fn sign_with_dilithium2_scheme() {
+		let seed = "0xad1fb77243b536b90cfe5f0d351ab1b1ac40e3890b41dc64f766ee56340cfca5";
+
+		let sign = SignCmd::parse_from(&[
+			"sign",
+			"--suri",
+			seed,
+			"--message",
+			&seed[2..],
+			"--scheme",
+			"dilithium2",
+		]);
+		assert!(sign.run().is_ok());
+	}
 }

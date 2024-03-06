@@ -51,6 +51,7 @@ use sp_core::{
 		HttpError, HttpRequestId, HttpRequestStatus, OpaqueNetworkState, StorageKind, Timestamp,
 	},
 	sr25519,
+	dilithium2,
 	storage::StateVersion,
 	LogLevel, LogLevelFilter, OpaquePeerId, H256,
 };
@@ -807,6 +808,73 @@ pub trait Crypto {
 		pub_key: &ed25519::Public,
 	) -> bool {
 		let res = ed25519_verify(sig, msg, pub_key);
+
+		if let Some(ext) = self.extension::<VerificationExtDeprecated>() {
+			ext.0 &= res;
+		}
+
+		res
+	}
+
+	fn dilithium2_public_keys(&mut self, id: KeyTypeId) -> Vec<dilithium2::Public> {
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.dilithium2_public_keys(id)
+	}
+
+	fn dilithium2_generate(&mut self, id: KeyTypeId, seed: Option<Vec<u8>>) -> dilithium2::Public {
+		let seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.dilithium2_generate_new(id, seed)
+			.expect("`dilithium2_generate` failed")
+	}
+
+	fn dilithium2_sign(
+		&mut self,
+		id: KeyTypeId,
+		pub_key: &dilithium2::Public,
+		msg: &[u8],
+	) -> Option<dilithium2::Signature> {
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.dilithium2_sign(id, pub_key, msg)
+			.ok()
+			.flatten()
+	}
+
+	fn dilithium2_verify(sig: &dilithium2::Signature, msg: &[u8], pub_key: &dilithium2::Public) -> bool {
+		// We don't want to force everyone needing to call the function in an externalities context.
+		// So, we assume that we should not use dalek when we are not in externalities context.
+		// Otherwise, we check if the extension is present.
+		if sp_externalities::with_externalities(|mut e| e.extension::<UseDalekExt>().is_some())
+			.unwrap_or_default()
+		{
+			// use dilithium2_dalek::Verifier;
+			use crystals_dilithium::dilithium2 as dil2;
+
+			let public_key = dil2::PublicKey::from_bytes(&pub_key.0) else {
+				return false
+			};
+
+			// let Ok(sig) = dil2::Signature::from_bytes(&sig.0) else {
+			// 	return false
+			// };
+
+			public_key.verify(msg, &sig.0[..])
+		} else {
+			dilithium2::Pair::verify(sig, msg, pub_key)
+		}
+	}
+
+	#[version(1, register_only)]
+	fn dilithium2_batch_verify(
+		&mut self,
+		sig: &dilithium2::Signature,
+		msg: &[u8],
+		pub_key: &dilithium2::Public,
+	) -> bool {
+		let res = dilithium2_verify(sig, msg, pub_key);
 
 		if let Some(ext) = self.extension::<VerificationExtDeprecated>() {
 			ext.0 &= res;

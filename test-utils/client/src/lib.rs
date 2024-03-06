@@ -28,7 +28,7 @@ pub use sc_executor::{self, NativeElseWasmExecutor, WasmExecutionMethod, WasmExe
 pub use sc_service::{client, RpcHandlers};
 pub use sp_consensus;
 pub use sp_keyring::{
-	ed25519::Keyring as Ed25519Keyring, sr25519::Keyring as Sr25519Keyring, AccountKeyring,
+	ed25519::Keyring as Ed25519Keyring, sr25519::Keyring as Sr25519Keyring, AccountKeyring, dilithium2::Keyring as Dilithium2Keyring, AccountKeyringDH
 };
 pub use sp_keystore::{Keystore, KeystorePtr};
 pub use sp_runtime::{Storage, StorageChild};

@@ -50,6 +50,7 @@ pub mod bls381;
 pub mod ecdsa;
 pub mod ed25519;
 pub mod sr25519;
+pub mod dilithium2;
 mod traits;
 
 pub use traits::*;
