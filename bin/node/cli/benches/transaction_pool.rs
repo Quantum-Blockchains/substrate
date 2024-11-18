@@ -36,25 +36,15 @@ use sp_core::{crypto::Pair, sr25519};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::BlockId, OpaqueExtrinsic};
 use tokio::runtime::Handle;
-use sc_network::config::{PreSharedKeyConfig, PreSharedKeySecret};
-use std::path::PathBuf;
-use std::fs;
-use hex;
 
 fn new_node(tokio_handle: Handle) -> node_cli::service::NewFullBase {
 	let base_path = BasePath::new_temp_dir().expect("Creates base path");
 	let root = base_path.path().to_path_buf();
 
-	let path = root.join("pre_shared_key");
-	let key_bytes: [u8;32] = [24, 97, 125, 255, 78, 254, 242, 4, 80, 221, 94, 175, 192, 96, 253,
-		133, 250, 172, 202, 19, 217, 90, 206, 59, 218, 11, 227, 46, 70, 148, 252, 215];
-	fs::write(&path, hex::encode(key_bytes.as_ref())).expect("Writes pre shared key");
-
 	let network_config = NetworkConfiguration::new(
 		Sr25519Keyring::Alice.to_seed(),
 		"network/test/0.1",
 		Default::default(),
-		PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from(path)) },
 		None,
 	);
 

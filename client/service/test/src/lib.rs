@@ -23,7 +23,7 @@ use log::{debug, info};
 use parking_lot::Mutex;
 use sc_client_api::{Backend, CallExecutor};
 use sc_network::{
-	config::{MultiaddrWithPeerId, NetworkConfiguration, TransportConfig, PreSharedKeyConfig, PreSharedKeySecret},
+	config::{MultiaddrWithPeerId, NetworkConfiguration, TransportConfig},
 	multiaddr, NetworkBlock, NetworkPeers, NetworkStateInfo,
 };
 use sc_network_sync::SyncingService;
@@ -37,7 +37,7 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::BlockId;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::traits::Block as BlockT;
-use std::{iter, net::Ipv4Addr, pin::Pin, sync::Arc, task::Context, time::Duration, path::PathBuf};
+use std::{iter, net::Ipv4Addr, pin::Pin, sync::Arc, task::Context, time::Duration};
 use tempfile::TempDir;
 use tokio::{runtime::Runtime, time};
 
@@ -216,7 +216,6 @@ fn node_config<
 		format!("Node {}", index),
 		"network/test/0.1",
 		Default::default(),
-		PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) },
 		None,
 	);
 
@@ -246,8 +245,6 @@ fn node_config<
 		chain_spec: Box::new((*spec).clone()),
 		wasm_method: Default::default(),
 		wasm_runtime_overrides: Default::default(),
-		runner_port: None,
-		qrng_api_url: None,
 		rpc_addr: Default::default(),
 		rpc_max_connections: Default::default(),
 		rpc_cors: None,

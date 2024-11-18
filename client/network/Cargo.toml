@@ -19,14 +19,30 @@ async-channel = "1.8.0"
 async-trait = "0.1"
 asynchronous-codec = "0.6"
 bytes = "1"
-codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.6.1", features = [
+	"derive",
+] }
 either = "1.5.3"
 fnv = "1.0.6"
 futures = "0.3.21"
 futures-timer = "3.0.2"
 hex = "0.4.3"
 ip_network = "0.4.1"
-libp2p = { version = "0.51.3", features = ["dns", "identify", "kad", "macros", "mdns", "noise", "ping", "tcp",  "tokio", "yamux", "websocket", "request-response", "pnet"] }
+libp2p = { version = "0.51.3", features = [
+	"dns",
+	"identify",
+	"noise",
+	"kad",
+	"macros",
+	"mdns",
+	"ping",
+	"tcp",
+	"tokio",
+	"yamux",
+	"websocket",
+	"request-response",
+] }
+libp2p-noise-pqkd = { version = "0.42.2", git = "https://github.com/Quantum-Blockchains/libp2p-noise-pqkd.git", branch = "kostiask/v0.42.2" }
 linked_hash_set = "0.1.3"
 log = "0.4.17"
 mockall = "0.11.3"
@@ -38,7 +54,10 @@ serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.85"
 smallvec = "1.8.0"
 thiserror = "1.0"
-unsigned-varint = { version = "0.7.1", features = ["futures", "asynchronous_codec"] }
+unsigned-varint = { version = "0.7.1", features = [
+	"futures",
+	"asynchronous_codec",
+] }
 zeroize = "1.4.3"
 prometheus-endpoint = { package = "substrate-prometheus-endpoint", version = "0.10.0-dev", path = "../../utils/prometheus" }
 sc-client-api = { version = "4.0.0-dev", path = "../api" }

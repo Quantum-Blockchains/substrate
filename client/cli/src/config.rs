@@ -19,16 +19,18 @@
 //! Configuration trait for a CLI based on substrate
 
 use crate::{
-	arg_enums::Database, error::{Result, self}, DatabaseParams, ImportParams, KeystoreParams,
-	NetworkParams, NodeKeyParams, OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli, PreSharedKeyParams,
+	arg_enums::Database,
+	error::Result,
+	DatabaseParams, ImportParams, KeystoreParams, NetworkParams, NodeKeyParams,
+	OffchainWorkerParams, PruningParams, SharedParams, SubstrateCli,
 };
 use log::warn;
 use names::{Generator, Name};
 use sc_service::{
 	config::{
 		BasePath, Configuration, DatabaseSource, KeystoreConfig, NetworkConfiguration,
-		NodeKeyConfig, OffchainWorkerConfig, PrometheusConfig, PruningMode, Role, RpcMethods,
-		TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod, PreSharedKeyConfig
+		NodeKeyConfig, OffchainWorkerConfig, PrometheusConfig, PruningMode,
+		Role, RpcMethods, TelemetryEndpoints, TransactionPoolOptions, WasmExecutionMethod,
 	},
 	BlocksPruning, ChainSpec, TracingReceiver,
 };
@@ -74,13 +76,6 @@ pub trait DefaultConfigurationValues {
 		RPC_DEFAULT_PORT
 	}
 
-	/// Runner port
-	///
-	/// By default this is `8000`.
-	fn runner_listen_port() -> u16 {
-		8000
-	}
-
 	/// The port Substrate should listen on for prometheus connections.
 	///
 	/// By default this is `9615`.
@@ -124,11 +119,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// Get the NodeKeyParams for this object
 	fn node_key_params(&self) -> Option<&NodeKeyParams> {
 		self.network_params().map(|x| &x.node_key_params)
-	}
-
-	/// Get the PreSharedKeyParams for this object.
-	fn psk_params(&self) -> Option<&PreSharedKeyParams> {
-		self.network_params().map(|x| &x.psk_params)
 	}
 
 	/// Get the DatabaseParams for this object
@@ -178,7 +168,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		pre_shared_key: PreSharedKeyConfig,
 		default_listen_port: u16,
 	) -> Result<NetworkConfiguration> {
 		Ok(if let Some(network_params) = self.network_params() {
@@ -190,11 +179,15 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id,
 				node_name,
 				node_key,
-				pre_shared_key,
 				default_listen_port,
 			)
 		} else {
-			NetworkConfiguration::new(node_name, client_id, node_key,pre_shared_key, Some(net_config_dir))
+			NetworkConfiguration::new(
+				node_name,
+				client_id,
+				node_key,
+				Some(net_config_dir),
+			)
 		})
 	}
 
@@ -302,20 +295,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 	/// By default this is `None`.
 	fn wasm_runtime_overrides(&self) -> Option<PathBuf> {
 		self.import_params().map(|x| x.wasm_runtime_overrides()).unwrap_or_default()
-	}
-
-	/// Get the runner port (`None` if disabled).
-	///
-	/// By default this is `None`.
-	fn runner_port(&self, _default_listen_port: u16) -> Result<Option<u16>> {
-		Ok(None)
-	}
-
-	/// Get the runner port (`None` if disabled).
-	///
-	/// By default this is `None`.
-	fn qrng_api_url(&self) -> Result<Option<String>> {
-		Ok(None)
 	}
 
 	/// Get the RPC address.
@@ -442,16 +421,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			.unwrap_or_else(|| Ok(Default::default()))
 	}
 
-	/// Get the pre shared key from the current object
-	///
-	/// By default this is retrieved from `PreSharedKeyParams` if it is available.
-	fn pre_shared_key(&self, net_config_dir: &PathBuf) -> Result<PreSharedKeyConfig> {
-		self.psk_params()
-			.map(|x| Ok(x.pre_shared_key(net_config_dir)))
-			.unwrap_or_else(|| Ok(Default::default()))
-			//.unwrap_or_else(|| Err(error::Error::PreSharedKeyError))
-	}
-
 	/// Get maximum runtime instances
 	///
 	/// By default this is `None`.
@@ -500,7 +469,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			},
 		);
 		let node_key = self.node_key(&net_config_dir)?;
-		let pre_shared_key = self.pre_shared_key(&net_config_dir)?;
 		let role = self.role(is_dev)?;
 		let max_runtime_instances = self.max_runtime_instances()?.unwrap_or(8);
 		let is_validator = role.is_authority();
@@ -521,7 +489,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				client_id.as_str(),
 				self.node_name()?.as_str(),
 				node_key,
-				pre_shared_key,
 				DCV::p2p_listen_port(),
 			)?,
 			keystore,
@@ -532,8 +499,6 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 			blocks_pruning: self.blocks_pruning()?,
 			wasm_method: self.wasm_method()?,
 			wasm_runtime_overrides: self.wasm_runtime_overrides(),
-			runner_port: self.runner_port(DCV::runner_listen_port())?,
-			qrng_api_url: self.qrng_api_url()?,
 			rpc_addr: self.rpc_addr(DCV::rpc_listen_port())?,
 			rpc_methods: self.rpc_methods()?,
 			rpc_max_connections: self.rpc_max_connections()?,
@@ -670,7 +635,7 @@ pub fn generate_node_name() -> String {
 		let count = node_name.chars().count();
 
 		if count < NODE_NAME_MAX_LENGTH {
-			return node_name
+			return node_name;
 		}
 	}
 }

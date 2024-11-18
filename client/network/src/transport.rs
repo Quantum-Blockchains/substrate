@@ -25,12 +25,12 @@ use libp2p::{
 		transport::{Boxed, OptionalTransport},
 		upgrade,
 	},
-	dns, identity, noise, tcp, websocket, PeerId, Transport, TransportExt,
+	dns, identity, tcp, websocket, PeerId, Transport, TransportExt,
 };
 use std::{sync::Arc, time::Duration};
-use libp2p::pnet::{PnetConfig, PreSharedKey};
 
 pub use libp2p::bandwidth::BandwidthSinks;
+use libp2p_noise_pqkd as noise;
 
 /// Builds the transport that serves as a common ground for all connections.
 ///
@@ -52,7 +52,8 @@ pub fn build_transport(
 	memory_only: bool,
 	yamux_window_size: Option<u32>,
 	yamux_maximum_buffer_size: usize,
-	psk: PreSharedKey,
+	sae_id_pqkd: &str,
+	addr_pqkd: &str,
 ) -> (Boxed<(PeerId, StreamMuxerBox)>, Arc<BandwidthSinks>) {
 	// Build the base layer of the transport.
 	let transport = if !memory_only {
@@ -82,7 +83,8 @@ pub fn build_transport(
 		Either::Right(OptionalTransport::some(libp2p::core::transport::MemoryTransport::default()))
 	};
 
-	let authentication_config = noise::Config::new(&keypair).expect("Can create noise config. qed");
+	let authentication_config =
+		noise::Config::new(&keypair, sae_id_pqkd, addr_pqkd).expect("Can create noise config. qed");
 	let multiplexing_config = {
 		let mut yamux_config = libp2p::yamux::Config::default();
 		// Enable proper flow-control: window updates are only sent when
@@ -98,7 +100,6 @@ pub fn build_transport(
 	};
 
 	let transport = transport
-		.and_then(move |socket, _| PnetConfig::new(psk).handshake(socket))
 		.upgrade(upgrade::Version::V1Lazy)
 		.authenticate(authentication_config)
 		.multiplex(multiplexing_config)

@@ -31,7 +31,6 @@ use std::{
 	sync::Arc,
 	task::{Context as FutureContext, Poll},
 	time::Duration,
-	path::PathBuf,
 };
 
 use futures::{channel::oneshot, future::BoxFuture, pin_mut, prelude::*};
@@ -52,8 +51,7 @@ use sc_consensus::{
 use sc_network::{
 	config::{
 		FullNetworkConfiguration, MultiaddrWithPeerId, NetworkConfiguration, NonDefaultSetConfig,
-		NonReservedPeerMode, ProtocolId, Role, SyncMode, TransportConfig, PreSharedKeyConfig, PreSharedKeySecret
-	},
+		NonReservedPeerMode, ProtocolId, Role, SyncMode, TransportConfig},
 	request_responses::ProtocolConfig as RequestResponseConfig,
 	types::ProtocolName,
 	Multiaddr, NetworkBlock, NetworkService, NetworkStateInfo, NetworkSyncForkRequest,
@@ -796,7 +794,7 @@ where
 		let listen_addr = build_multiaddr![Memory(rand::random::<u64>())];
 
 		let mut network_config =
-			NetworkConfiguration::new("test-node", "test-client", Default::default(), PreSharedKeyConfig { pre_shared_key: PreSharedKeySecret::File(PathBuf::from("./pre_shared_key")) }, None);
+			NetworkConfiguration::new("test-node", "test-client", Default::default(), None);
 		network_config.sync_mode = config.sync_mode;
 		network_config.transport = TransportConfig::MemoryOnly;
 		network_config.listen_addresses = vec![listen_addr.clone()];

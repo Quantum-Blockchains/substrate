@@ -16,11 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{arg_enums::SyncMode, params::node_key_params::NodeKeyParams, params::psk_params::PreSharedKeyParams};
+use crate::{
+	arg_enums::SyncMode, params::node_key_params::NodeKeyParams,
+	params::pqkd_params::PqkdParams,
+};
 use clap::Args;
 use sc_network::{
 	config::{
-		NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, SetConfig, TransportConfig, PreSharedKeyConfig
+		NetworkConfiguration, NodeKeyConfig, NonReservedPeerMode, SetConfig,
+		TransportConfig,
 	},
 	multiaddr::Protocol,
 };
@@ -110,7 +114,7 @@ pub struct NetworkParams {
 
 	#[allow(missing_docs)]
 	#[clap(flatten)]
-	pub psk_params: PreSharedKeyParams,
+	pub pqkd_params: PqkdParams,
 
 	/// Enable peer discovery on local networks.
 	/// By default this option is `true` for `--dev` or when the chain type is
@@ -166,7 +170,6 @@ impl NetworkParams {
 		client_id: &str,
 		node_name: &str,
 		node_key: NodeKeyConfig,
-		pre_shared_key: PreSharedKeyConfig,
 		default_listen_port: u16,
 	) -> NetworkConfiguration {
 		let port = self.port.unwrap_or(default_listen_port);
@@ -206,15 +209,16 @@ impl NetworkParams {
 		// Activate if the user explicitly requested local discovery, `--dev` is given or the
 		// chain type is `Local`/`Development`
 		let allow_non_globals_in_dht =
-			self.discover_local ||
-				is_dev || matches!(chain_type, ChainType::Local | ChainType::Development);
+			self.discover_local
+				|| is_dev || matches!(chain_type, ChainType::Local | ChainType::Development);
 
 		let allow_private_ip = match (self.allow_private_ip, self.no_private_ip) {
 			(true, true) => unreachable!("`*_private_ip` flags are mutually exclusive; qed"),
 			(true, false) => true,
 			(false, true) => false,
-			(false, false) =>
-				is_dev || matches!(chain_type, ChainType::Local | ChainType::Development),
+			(false, false) => {
+				is_dev || matches!(chain_type, ChainType::Local | ChainType::Development)
+			},
 		};
 
 		NetworkConfiguration {
@@ -234,7 +238,7 @@ impl NetworkParams {
 			listen_addresses,
 			public_addresses,
 			node_key,
-			pre_shared_key,
+			pqkd: self.pqkd_params.pqkd_config(),
 			node_name: node_name.to_string(),
 			client_version: client_id.to_string(),
 			transport: TransportConfig::Normal {
