@@ -299,6 +299,9 @@ macro_rules! with_crypto_scheme {
 			$crate::CryptoScheme::Dilithium2 => {
 				$method::<sp_core::dilithium2::Pair, $($generics),*>($($params),*)
 			}
+			$crate::CryptoScheme::Mldsa44 => {
+				$method::<sp_core::mldsa44::Pair, $($generics),*>($($params),*)
+			}
 		}
 	};
 }

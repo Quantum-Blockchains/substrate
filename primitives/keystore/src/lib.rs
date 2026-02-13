@@ -23,7 +23,7 @@ pub mod testing;
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, CryptoTypeId, KeyTypeId},
-	ecdsa, ed25519, sr25519, dilithium2
+	ecdsa, ed25519, sr25519, dilithium2, mldsa44,
 };
 
 use std::sync::Arc;
@@ -145,6 +145,21 @@ pub trait Keystore: Send + Sync {
 		public: &dilithium2::Public,
 		msg: &[u8],
 	) -> Result<Option<dilithium2::Signature>, Error>;
+
+	fn mldsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<mldsa44::Public>;
+
+	fn mldsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<mldsa44::Public, Error>;
+
+	fn mldsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &mldsa44::Public,
+		msg: &[u8],
+	) -> Result<Option<mldsa44::Signature>, Error>;
 
 	/// Returns all ecdsa public keys for the given key type.
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public>;
@@ -305,6 +320,11 @@ pub trait Keystore: Send + Sync {
 					.map_err(|_| Error::ValidationError("Invalid public key format".into()))?;
 				self.dilithium2_sign(id, &public, msg)?.map(|s| s.encode())
 			},
+			mldsa44::CRYPTO_ID => {
+				let public = mldsa44::Public::from_slice(public)
+					.map_err(|_| Error::ValidationError("Invalid public key format".into()))?;
+				self.mldsa44_sign(id, &public, msg)?.map(|s| s.encode())
+			},
 			ecdsa::CRYPTO_ID => {
 				let public = ecdsa::Public::from_slice(public)
 					.map_err(|_| Error::ValidationError("Invalid public key format".into()))?;
@@ -409,6 +429,27 @@ impl<T: Keystore + ?Sized> Keystore for Arc<T> {
 		msg: &[u8],
 	) -> Result<Option<dilithium2::Signature>, Error> {
 		(**self).dilithium2_sign(key_type, public, msg)
+	}
+
+	fn mldsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<mldsa44::Public> {
+		(**self).mldsa44_public_keys(key_type)
+	}
+
+	fn mldsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<mldsa44::Public, Error> {
+		(**self).mldsa44_generate_new(key_type, seed)
+	}
+
+	fn mldsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &mldsa44::Public,
+		msg: &[u8],
+	) -> Result<Option<mldsa44::Signature>, Error> {
+		(**self).mldsa44_sign(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

@@ -87,4 +87,11 @@ mod tests {
 		let result = generate.run();
 		assert!(generate.run().is_ok())
 	}
+
+	#[test]
+	fn generate_with_mldsa44_scheme() {
+		let generate = GenerateCmd::parse_from(&["generate", "--scheme", "mldsa44"]);
+		let result = generate.run();
+		assert!(generate.run().is_ok())
+	}
 }

@@ -31,6 +31,8 @@ pub const BLS377: KeyTypeId = KeyTypeId(*b"bls7");
 pub const BLS381: KeyTypeId = KeyTypeId(*b"bls8");
 /// Key type for generic Sr Dilithium2 key.
 pub const DILITHIUM2: KeyTypeId = KeyTypeId(*b"dth2");
+/// Key type for generic Sr ML-DSA-44 key.
+pub const MLDSA44: KeyTypeId = KeyTypeId(*b"ml44");
 
 /// Macro for exporting functions from wasm in with the expected signature for using it with the
 /// wasm executor. This is useful for tests where you need to call a function in wasm.

@@ -137,6 +137,8 @@ pub enum CryptoScheme {
 	Ecdsa,
 	/// Use dilithium2
 	Dilithium2,
+	/// Use mldsa44
+	Mldsa44,
 }
 
 /// The type of the output format.

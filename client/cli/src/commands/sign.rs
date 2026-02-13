@@ -139,4 +139,20 @@ mod test {
 		]);
 		assert!(sign.run().is_ok());
 	}
+
+	#[test]
+	fn sign_with_mldsa44_scheme() {
+		let seed = "0xad1fb77243b536b90cfe5f0d351ab1b1ac40e3890b41dc64f766ee56340cfca5";
+
+		let sign = SignCmd::parse_from(&[
+			"sign",
+			"--suri",
+			seed,
+			"--message",
+			&seed[2..],
+			"--scheme",
+			"mldsa44",
+		]);
+		assert!(sign.run().is_ok());
+	}
 }

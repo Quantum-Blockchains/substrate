@@ -47,7 +47,8 @@ use sp_core::{
 	ecdsa, ed25519,
 	hash::{H256, H512},
 	sr25519,
-	dilithium2
+	dilithium2,
+	mldsa44,
 };
 use sp_std::prelude::*;
 
@@ -252,6 +253,8 @@ pub enum MultiSignature {
 	Ecdsa(ecdsa::Signature),
 	/// An Dilithium2 identity.
 	Dilithium2(dilithium2::Signature),
+	/// An ML-DSA-44 identity.
+	Mldsa44(mldsa44::Signature),
 }
 
 impl From<ed25519::Signature> for MultiSignature {
@@ -281,6 +284,23 @@ impl TryFrom<MultiSignature> for dilithium2::Signature {
 	type Error = ();
 	fn try_from(m: MultiSignature) -> Result<Self, Self::Error> {
 		if let MultiSignature::Dilithium2(x) = m {
+			Ok(x)
+		} else {
+			Err(())
+		}
+	}
+}
+
+impl From<mldsa44::Signature> for MultiSignature {
+	fn from(x: mldsa44::Signature) -> Self {
+		Self::Mldsa44(x)
+	}
+}
+
+impl TryFrom<MultiSignature> for mldsa44::Signature {
+	type Error = ();
+	fn try_from(m: MultiSignature) -> Result<Self, Self::Error> {
+		if let MultiSignature::Mldsa44(x) = m {
 			Ok(x)
 		} else {
 			Err(())
@@ -334,6 +354,8 @@ pub enum MultiSigner {
 	Ecdsa(ecdsa::Public),
 	/// An Dilithium2 identity.
 	Dilithium2(dilithium2::Public),
+	/// An ML-DSA-44 identity.
+	Mldsa44(mldsa44::Public),
 }
 
 impl FromEntropy for MultiSigner {
@@ -361,6 +383,7 @@ impl AsRef<[u8]> for MultiSigner {
 			Self::Sr25519(ref who) => who.as_ref(),
 			Self::Ecdsa(ref who) => who.as_ref(),
 			Self::Dilithium2(ref who) => who.as_ref(),
+			Self::Mldsa44(ref who) => who.as_ref(),
 		}
 	}
 }
@@ -373,6 +396,7 @@ impl traits::IdentifyAccount for MultiSigner {
 			Self::Sr25519(who) => <[u8; 32]>::from(who).into(),
 			Self::Ecdsa(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
 			Self::Dilithium2(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
+			Self::Mldsa44(who) => sp_io::hashing::blake2_256(who.as_ref()).into(),
 		}
 	}
 }
@@ -404,6 +428,23 @@ impl TryFrom<MultiSigner> for dilithium2::Public {
 	type Error = ();
 	fn try_from(m: MultiSigner) -> Result<Self, Self::Error> {
 		if let MultiSigner::Dilithium2(x) = m {
+			Ok(x)
+		} else {
+			Err(())
+		}
+	}
+}
+
+impl From<mldsa44::Public> for MultiSigner {
+	fn from(x: mldsa44::Public) -> Self {
+		Self::Mldsa44(x)
+	}
+}
+
+impl TryFrom<MultiSigner> for mldsa44::Public {
+	type Error = ();
+	fn try_from(m: MultiSigner) -> Result<Self, Self::Error> {
+		if let MultiSigner::Mldsa44(x) = m {
 			Ok(x)
 		} else {
 			Err(())
@@ -453,6 +494,7 @@ impl std::fmt::Display for MultiSigner {
 			Self::Sr25519(ref who) => write!(fmt, "sr25519: {}", who),
 			Self::Ecdsa(ref who) => write!(fmt, "ecdsa: {}", who),
 			Self::Dilithium2(ref who) => write!(fmt, "dilithium2: {}", who),
+			Self::Mldsa44(ref who) => write!(fmt, "mldsa44: {}", who),
 		}
 	}
 }
@@ -465,7 +507,8 @@ impl Verify for MultiSignature {
 				Ok(signer) => sig.verify(msg, &signer),
 				Err(()) => false,
 			},
-			(Self::Dilithium2(ref _sig), _who) => true,
+			(Self::Dilithium2(ref _sig), _who) => false,
+			(Self::Mldsa44(ref _sig), _who) => false,
 			(Self::Sr25519(ref sig), who) => match sr25519::Public::from_slice(who.as_ref()) {
 				Ok(signer) => sig.verify(msg, &signer),
 				Err(()) => false,

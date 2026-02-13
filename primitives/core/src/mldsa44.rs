@@ -16,7 +16,7 @@
 // limitations under the License.
 
 // tag::description[]
-//! Simple Dilithium2 API.
+//! Simple ML-DSA-44 API.
 // end::description[]
 
 #[cfg(feature = "full_crypto")]

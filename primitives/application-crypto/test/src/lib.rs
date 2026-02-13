@@ -25,3 +25,5 @@ mod ed25519;
 mod sr25519;
 #[cfg(test)]
 mod dilithium2;
+#[cfg(test)]
+mod mldsa44;

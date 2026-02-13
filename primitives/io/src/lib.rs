@@ -52,6 +52,7 @@ use sp_core::{
 	},
 	sr25519,
 	dilithium2,
+	mldsa44,
 	storage::StateVersion,
 	LogLevel, LogLevelFilter, OpaquePeerId, H256,
 };
@@ -875,6 +876,73 @@ pub trait Crypto {
 		pub_key: &dilithium2::Public,
 	) -> bool {
 		let res = dilithium2_verify(sig, msg, pub_key);
+
+		if let Some(ext) = self.extension::<VerificationExtDeprecated>() {
+			ext.0 &= res;
+		}
+
+		res
+	}
+
+	fn mldsa44_public_keys(&mut self, id: KeyTypeId) -> Vec<mldsa44::Public> {
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.mldsa44_public_keys(id)
+	}
+
+	fn mldsa44_generate(&mut self, id: KeyTypeId, seed: Option<Vec<u8>>) -> mldsa44::Public {
+		let seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.mldsa44_generate_new(id, seed)
+			.expect("`mldsa44_generate` failed")
+	}
+
+	fn mldsa44_sign(
+		&mut self,
+		id: KeyTypeId,
+		pub_key: &mldsa44::Public,
+		msg: &[u8],
+	) -> Option<mldsa44::Signature> {
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.mldsa44_sign(id, pub_key, msg)
+			.ok()
+			.flatten()
+	}
+
+	fn mldsa44_verify(sig: &mldsa44::Signature, msg: &[u8], pub_key: &mldsa44::Public) -> bool {
+		// We don't want to force everyone needing to call the function in an externalities context.
+		// So, we assume that we should not use dalek when we are not in externalities context.
+		// Otherwise, we check if the extension is present.
+		if sp_externalities::with_externalities(|mut e| e.extension::<UseDalekExt>().is_some())
+			.unwrap_or_default()
+		{
+			// use mldsa44::Verifier;
+			use crystals_dilithium::ml_dsa_44 as ml44;
+
+			let public_key = ml44::PublicKey::from_bytes(&pub_key.0) else {
+				return false
+			};
+
+			// let Ok(sig) = dil2::Signature::from_bytes(&sig.0) else {
+			// 	return false
+			// };
+
+			public_key.verify(msg, &sig.0[..], None)
+		} else {
+			mldsa44::Pair::verify(sig, msg, pub_key)
+		}
+	}
+
+	#[version(1, register_only)]
+	fn mldsa44_batch_verify(
+		&mut self,
+		sig: &mldsa44::Signature,
+		msg: &[u8],
+		pub_key: &mldsa44::Public,
+	) -> bool {
+		let res = mldsa44_verify(sig, msg, pub_key);
 
 		if let Some(ext) = self.extension::<VerificationExtDeprecated>() {
 			ext.0 &= res;

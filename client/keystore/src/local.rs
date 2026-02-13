@@ -23,7 +23,7 @@ use sp_application_crypto::{AppCrypto, AppPair, IsWrappedBy};
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, ExposeSecret, KeyTypeId, Pair as CorePair, SecretString, VrfSecret},
-	ecdsa, ed25519, sr25519, dilithium2
+	ecdsa, ed25519, sr25519, dilithium2, mldsa44,
 };
 use sp_keystore::{Error as TraitError, Keystore, KeystorePtr};
 use std::{
@@ -215,6 +215,27 @@ impl Keystore for LocalKeystore {
 		msg: &[u8],
 	) -> std::result::Result<Option<dilithium2::Signature>, TraitError> {
 		self.sign::<dilithium2::Pair>(key_type, public, msg)
+	}
+
+	fn mldsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<mldsa44::Public> {
+		self.public_keys::<mldsa44::Pair>(key_type)
+	}
+
+	fn mldsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> std::result::Result<mldsa44::Public, TraitError> {
+		self.generate_new::<mldsa44::Pair>(key_type, seed)
+	}
+
+	fn mldsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &mldsa44::Public,
+		msg: &[u8],
+	) -> std::result::Result<Option<mldsa44::Signature>, TraitError> {
+		self.sign::<mldsa44::Pair>(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

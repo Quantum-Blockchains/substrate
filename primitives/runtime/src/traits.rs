@@ -89,6 +89,13 @@ impl IdentifyAccount for sp_core::dilithium2::Public {
 	}
 }
 
+impl IdentifyAccount for sp_core::mldsa44::Public {
+	type AccountId = Self;
+	fn into_account(self) -> Self {
+		self
+	}
+}
+
 impl IdentifyAccount for sp_core::sr25519::Public {
 	type AccountId = Self;
 	fn into_account(self) -> Self {
@@ -130,6 +137,14 @@ impl Verify for sp_core::dilithium2::Signature {
 
 	fn verify<L: Lazy<[u8]>>(&self, mut msg: L, signer: &sp_core::dilithium2::Public) -> bool {
 		sp_io::crypto::dilithium2_verify(self, msg.get(), signer)
+	}
+}
+
+impl Verify for sp_core::mldsa44::Signature {
+	type Signer = sp_core::mldsa44::Public;
+
+	fn verify<L: Lazy<[u8]>>(&self, mut msg: L, signer: &sp_core::mldsa44::Public) -> bool {
+		sp_io::crypto::mldsa44_verify(self, msg.get(), signer)
 	}
 }
 
