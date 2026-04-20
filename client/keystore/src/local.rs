@@ -25,7 +25,7 @@ use sp_core::bandersnatch;
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, ExposeSecret, KeyTypeId, Pair as CorePair, SecretString, VrfSecret},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, ml_dsa, sr25519,
 };
 use sp_keystore::{Error as TraitError, Keystore, KeystorePtr};
 use std::{
@@ -196,6 +196,27 @@ impl Keystore for LocalKeystore {
 		msg: &[u8],
 	) -> std::result::Result<Option<ed25519::Signature>, TraitError> {
 		self.sign::<ed25519::Pair>(key_type, public, msg)
+	}
+
+	fn ml_dsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<ml_dsa::Public> {
+		self.public_keys::<ml_dsa::Pair>(key_type)
+	}
+
+	fn ml_dsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> std::result::Result<ml_dsa::Public, TraitError> {
+		self.generate_new::<ml_dsa::Pair>(key_type, seed)
+	}
+
+	fn ml_dsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &ml_dsa::Public,
+		msg: &[u8],
+	) -> std::result::Result<Option<ml_dsa::Signature>, TraitError> {
+		self.sign::<ml_dsa::Pair>(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

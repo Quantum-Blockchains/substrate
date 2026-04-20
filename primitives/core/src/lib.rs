@@ -63,6 +63,7 @@ pub mod defer;
 pub mod ecdsa;
 pub mod ed25519;
 pub mod hash;
+pub mod ml_dsa;
 #[cfg(feature = "std")]
 mod hasher;
 pub mod offchain;

@@ -96,7 +96,7 @@ use sp_keystore::KeystoreExt;
 use sp_core::bandersnatch;
 use sp_core::{
 	crypto::KeyTypeId,
-	ecdsa, ed25519,
+	ecdsa, ed25519, ml_dsa,
 	offchain::{
 		HttpError, HttpRequestId, HttpRequestStatus, OpaqueNetworkState, StorageKind, Timestamp,
 	},
@@ -872,6 +872,47 @@ pub trait Crypto {
 	#[version(2)]
 	fn sr25519_verify(sig: &sr25519::Signature, msg: &[u8], pub_key: &sr25519::Public) -> bool {
 		sr25519::Pair::verify(sig, msg, pub_key)
+	}
+
+	/// Returns all ML-DSA-44 public keys for the given key type from the keystore.
+	fn ml_dsa44_public_keys(&mut self, id: KeyTypeId) -> Vec<ml_dsa::Public> {
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.ml_dsa44_public_keys(id)
+	}
+
+	/// Generate an ML-DSA-44 key for the given key type using an optional seed and store it in
+	/// the keystore. Returns the public key.
+	fn ml_dsa44_generate(&mut self, id: KeyTypeId, seed: Option<Vec<u8>>) -> ml_dsa::Public {
+		let seed = seed.as_ref().map(|s| std::str::from_utf8(s).expect("Seed is valid utf8!"));
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.ml_dsa44_generate_new(id, seed)
+			.expect("`ml_dsa44_generate` failed")
+	}
+
+	/// Sign the given message with the ML-DSA-44 key that corresponds to the given public key and
+	/// key type in the keystore. Returns the signature.
+	fn ml_dsa44_sign(
+		&mut self,
+		id: KeyTypeId,
+		pub_key: &ml_dsa::Public,
+		msg: &[u8],
+	) -> Option<ml_dsa::Signature> {
+		self.extension::<KeystoreExt>()
+			.expect("No `keystore` associated for the current context!")
+			.ml_dsa44_sign(id, pub_key, msg)
+			.ok()
+			.flatten()
+	}
+
+	/// Verify an ML-DSA-44 signature. Returns `true` when the verification was successful.
+	fn ml_dsa44_verify(
+		sig: &ml_dsa::Signature,
+		msg: &[u8],
+		pub_key: &ml_dsa::Public,
+	) -> bool {
+		ml_dsa::Pair::verify(sig, msg, pub_key)
 	}
 
 	/// Register a `sr25519` signature for batch verification.
@@ -1745,7 +1786,7 @@ mod allocator_impl {
 /// A default panic handler for WASM environment.
 #[cfg(all(not(feature = "disable_panic_handler"), not(feature = "std")))]
 #[panic_handler]
-#[no_mangle]
+// #[no_mangle]
 pub fn panic(info: &core::panic::PanicInfo) -> ! {
 	let message = sp_std::alloc::format!("{}", info);
 	#[cfg(feature = "improved_panic_error_reporting")]

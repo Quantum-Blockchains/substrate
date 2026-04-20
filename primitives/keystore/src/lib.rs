@@ -25,7 +25,7 @@ use sp_core::bandersnatch;
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, CryptoTypeId, KeyTypeId},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, ml_dsa, sr25519,
 };
 
 use std::sync::Arc;
@@ -132,6 +132,34 @@ pub trait Keystore: Send + Sync {
 		public: &ed25519::Public,
 		msg: &[u8],
 	) -> Result<Option<ed25519::Signature>, Error>;
+
+	/// Returns all ML-DSA-44 public keys for the given key type.
+	fn ml_dsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<ml_dsa::Public>;
+
+	/// Generate a new ML-DSA-44 key pair for the given key type and an optional seed.
+	///
+	/// Returns an `ml_dsa::Public` key of the generated key pair or an `Err` if
+	/// something failed during key generation.
+	fn ml_dsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<ml_dsa::Public, Error>;
+
+	/// Generate an ML-DSA-44 signature for a given message.
+	///
+	/// Receives [`KeyTypeId`] and an [`ml_dsa::Public`] key to be able to map
+	/// them to a private key that exists in the keystore.
+	///
+	/// Returns an [`ml_dsa::Signature`] or `None` in case the given `key_type`
+	/// and `public` combination doesn't exist in the keystore.
+	/// An `Err` will be returned if generating the signature itself failed.
+	fn ml_dsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &ml_dsa::Public,
+		msg: &[u8],
+	) -> Result<Option<ml_dsa::Signature>, Error>;
 
 	/// Returns all ecdsa public keys for the given key type.
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public>;
@@ -462,6 +490,27 @@ impl<T: Keystore + ?Sized> Keystore for Arc<T> {
 		msg: &[u8],
 	) -> Result<Option<ed25519::Signature>, Error> {
 		(**self).ed25519_sign(key_type, public, msg)
+	}
+
+	fn ml_dsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<ml_dsa::Public> {
+		(**self).ml_dsa44_public_keys(key_type)
+	}
+
+	fn ml_dsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<ml_dsa::Public, Error> {
+		(**self).ml_dsa44_generate_new(key_type, seed)
+	}
+
+	fn ml_dsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &ml_dsa::Public,
+		msg: &[u8],
+	) -> Result<Option<ml_dsa::Signature>, Error> {
+		(**self).ml_dsa44_sign(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

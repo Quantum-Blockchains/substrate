@@ -47,6 +47,9 @@ paste = "1.0.7"
 # full crypto
 array-bytes = { version = "6.1", optional = true }
 ed25519-zebra = { version = "3.1.0", default-features = false, optional = true }
+# ML-DSA-44 (FIPS 204) post-quantum signature scheme
+fips204 = { version = "0.4", default-features = false, features = ["ml-dsa-44"], optional = true }
+rand_chacha = { version = "0.3", default-features = false, optional = true }
 blake2 = { version = "0.10.4", default-features = false, optional = true }
 libsecp256k1 = { version = "0.7", default-features = false, features = ["static-context"], optional = true }
 schnorrkel = { version = "0.9.1", features = ["preaudit_deprecated", "u64_backend"], default-features = false }
@@ -143,7 +146,9 @@ full_crypto = [
 	"array-bytes",
 	"blake2",
 	"ed25519-zebra",
+	"fips204",
 	"libsecp256k1",
+	"rand_chacha",
 	"secp256k1",
 	"sp-core-hashing",
 	"sp-runtime-interface/disable_target_static_assertions",

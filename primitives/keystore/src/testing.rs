@@ -25,7 +25,7 @@ use sp_core::bandersnatch;
 use sp_core::{bls377, bls381};
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId, Pair, VrfSecret},
-	ecdsa, ed25519, sr25519,
+	ecdsa, ed25519, ml_dsa, sr25519,
 };
 
 use parking_lot::RwLock;
@@ -183,6 +183,27 @@ impl Keystore for MemoryKeystore {
 		msg: &[u8],
 	) -> Result<Option<ed25519::Signature>, Error> {
 		self.sign::<ed25519::Pair>(key_type, public, msg)
+	}
+
+	fn ml_dsa44_public_keys(&self, key_type: KeyTypeId) -> Vec<ml_dsa::Public> {
+		self.public_keys::<ml_dsa::Pair>(key_type)
+	}
+
+	fn ml_dsa44_generate_new(
+		&self,
+		key_type: KeyTypeId,
+		seed: Option<&str>,
+	) -> Result<ml_dsa::Public, Error> {
+		self.generate_new::<ml_dsa::Pair>(key_type, seed)
+	}
+
+	fn ml_dsa44_sign(
+		&self,
+		key_type: KeyTypeId,
+		public: &ml_dsa::Public,
+		msg: &[u8],
+	) -> Result<Option<ml_dsa::Signature>, Error> {
+		self.sign::<ml_dsa::Pair>(key_type, public, msg)
 	}
 
 	fn ecdsa_public_keys(&self, key_type: KeyTypeId) -> Vec<ecdsa::Public> {

@@ -51,6 +51,7 @@ pub mod bls377;
 pub mod bls381;
 pub mod ecdsa;
 pub mod ed25519;
+pub mod ml_dsa;
 pub mod sr25519;
 mod traits;
 

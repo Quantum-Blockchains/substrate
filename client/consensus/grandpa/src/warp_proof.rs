@@ -333,6 +333,16 @@ mod tests {
 		TestClientBuilder, TestClientBuilderExt,
 	};
 
+	fn ml_dsa_pair_for(keyring: &Ed25519Keyring) -> sp_core::ml_dsa::Pair {
+		use sp_core::Pair as _;
+		sp_core::ml_dsa::Pair::from_string(&keyring.to_seed(), None)
+			.expect("valid seed for ML-DSA-44")
+	}
+
+	fn ml_dsa_authority_id(keyring: &Ed25519Keyring) -> sp_consensus_grandpa::AuthorityId {
+		sp_application_crypto::UncheckedFrom::unchecked_from(ml_dsa_pair_for(keyring).public().0)
+	}
+
 	#[test]
 	fn warp_sync_proof_generate_verify() {
 		let mut rng = rand::rngs::StdRng::from_seed([0; 32]);
@@ -341,7 +351,7 @@ mod tests {
 		let mut client = Arc::new(builder.build());
 
 		let available_authorities = Ed25519Keyring::iter().collect::<Vec<_>>();
-		let genesis_authorities = vec![(Ed25519Keyring::Alice.public().into(), 1)];
+		let genesis_authorities = vec![(ml_dsa_authority_id(&Ed25519Keyring::Alice), 1)];
 
 		let mut current_authorities = vec![Ed25519Keyring::Alice];
 		let mut current_set_id = 0;
@@ -364,7 +374,7 @@ mod tests {
 
 				let next_authorities = next_authorities
 					.iter()
-					.map(|keyring| (keyring.public().into(), 1))
+					.map(|keyring| (ml_dsa_authority_id(keyring), 1))
 					.collect::<Vec<_>>();
 
 				let digest = sp_runtime::generic::DigestItem::Consensus(
@@ -392,16 +402,17 @@ mod tests {
 
 				let mut precommits = Vec::new();
 				for keyring in &current_authorities {
+					let pair = ml_dsa_pair_for(keyring);
 					let precommit = finality_grandpa::Precommit { target_hash, target_number };
 
 					let msg = finality_grandpa::Message::Precommit(precommit.clone());
 					let encoded = sp_consensus_grandpa::localized_payload(42, current_set_id, &msg);
-					let signature = keyring.sign(&encoded[..]).into();
+					let signature = pair.sign(&encoded[..]).into();
 
 					let precommit = finality_grandpa::SignedPrecommit {
 						precommit,
 						signature,
-						id: keyring.public().into(),
+						id: ml_dsa_authority_id(keyring),
 					};
 
 					precommits.push(precommit);
@@ -436,7 +447,7 @@ mod tests {
 
 		let expected_authorities = current_authorities
 			.iter()
-			.map(|keyring| (keyring.public().into(), 1))
+			.map(|keyring| (ml_dsa_authority_id(keyring), 1))
 			.collect::<Vec<_>>();
 
 		assert_eq!(new_set_id, current_set_id);

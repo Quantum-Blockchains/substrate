@@ -308,8 +308,18 @@ pub(crate) fn make_test_network() -> (impl Future<Output = Tester>, TestNetwork)
 	)
 }
 
+fn ml_dsa_pair_for(keyring: &Ed25519Keyring) -> sp_core::ml_dsa::Pair {
+	use sp_core::Pair as _;
+	sp_core::ml_dsa::Pair::from_string(&keyring.to_seed(), None)
+		.expect("valid seed for ML-DSA-44")
+}
+
+fn ml_dsa_authority_id(keyring: &Ed25519Keyring) -> sp_consensus_grandpa::AuthorityId {
+	sp_application_crypto::UncheckedFrom::unchecked_from(ml_dsa_pair_for(keyring).public().0)
+}
+
 fn make_ids(keys: &[Ed25519Keyring]) -> AuthorityList {
-	keys.iter().map(|&key| key.public().into()).map(|id| (id, 1)).collect()
+	keys.iter().map(|key| (ml_dsa_authority_id(key), 1u64)).collect()
 }
 
 struct NoopContext;
@@ -347,7 +357,9 @@ fn good_commit_leads_to_relay() {
 		for (i, key) in private.iter().enumerate() {
 			precommits.push(precommit.clone());
 
-			let signature = sp_consensus_grandpa::AuthoritySignature::from(key.sign(&payload[..]));
+			let signature = sp_consensus_grandpa::AuthoritySignature::from(
+				ml_dsa_pair_for(key).sign(&payload[..]),
+			);
 			auth_data.push((signature, public[i].0.clone()))
 		}
 
@@ -499,7 +511,9 @@ fn bad_commit_leads_to_report() {
 		for (i, key) in private.iter().enumerate() {
 			precommits.push(precommit.clone());
 
-			let signature = sp_consensus_grandpa::AuthoritySignature::from(key.sign(&payload[..]));
+			let signature = sp_consensus_grandpa::AuthoritySignature::from(
+				ml_dsa_pair_for(key).sign(&payload[..]),
+			);
 			auth_data.push((signature, public[i].0.clone()))
 		}
 

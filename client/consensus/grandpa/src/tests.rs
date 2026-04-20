@@ -281,13 +281,23 @@ impl AssertBestBlock {
 const TEST_GOSSIP_DURATION: Duration = Duration::from_millis(500);
 
 fn make_ids(keys: &[Ed25519Keyring]) -> AuthorityList {
-	keys.iter().map(|&key| key.public().into()).map(|id| (id, 1)).collect()
+	keys.iter()
+		.map(|key| {
+			use sp_core::Pair as _;
+			let pair =
+				sp_core::ml_dsa::Pair::from_string(&key.to_seed(), None).expect("valid seed");
+			let raw_public = pair.public();
+			let authority_id: sp_consensus_grandpa::AuthorityId =
+				sp_application_crypto::UncheckedFrom::unchecked_from(raw_public.0);
+			(authority_id, 1u64)
+		})
+		.collect()
 }
 
 fn create_keystore(authority: Ed25519Keyring) -> KeystorePtr {
 	let keystore = MemoryKeystore::new();
 	keystore
-		.ed25519_generate_new(GRANDPA, Some(&authority.to_seed()))
+		.ml_dsa44_generate_new(GRANDPA, Some(&authority.to_seed()))
 		.expect("Creates authority key");
 	keystore.into()
 }

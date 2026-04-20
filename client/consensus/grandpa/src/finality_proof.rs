@@ -430,12 +430,16 @@ mod tests {
 		auth: &[Ed25519Keyring],
 	) -> finality_grandpa::Commit<H256, u64, S, Id>
 	where
-		Id: From<sp_core::ed25519::Public>,
-		S: From<sp_core::ed25519::Signature>,
+		Id: From<sp_core::ml_dsa::Public>,
+		S: From<sp_core::ml_dsa::Signature>,
 	{
+		use sp_core::Pair as _;
 		let mut precommits = Vec::new();
 
 		for voter in auth {
+			let pair = sp_core::ml_dsa::Pair::from_string(&voter.to_seed(), None)
+				.expect("valid seed for ML-DSA-44 pair");
+
 			let precommit = finality_grandpa::Precommit {
 				target_hash: block.hash(),
 				target_number: *block.header().number(),
@@ -443,12 +447,12 @@ mod tests {
 
 			let msg = finality_grandpa::Message::Precommit(precommit.clone());
 			let encoded = sp_consensus_grandpa::localized_payload(round, set_id, &msg);
-			let signature = voter.sign(&encoded[..]).into();
+			let signature = pair.sign(&encoded[..]).into();
 
 			let signed_precommit = finality_grandpa::SignedPrecommit {
 				precommit,
 				signature,
-				id: voter.public().into(),
+				id: pair.public().into(),
 			};
 			precommits.push(signed_precommit);
 		}
