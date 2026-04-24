@@ -306,12 +306,19 @@ fn time_slot_have_sane_ord() {
 	assert!(FIXTURE.windows(2).all(|f| f[0] < f[1]));
 }
 
-/// Returns a list with 3 authorities with known keys:
-/// Alice, Bob and Charlie.
+/// Returns a list with 3 authorities with known ML-DSA-44 keys derived from
+/// Alice, Bob, and Charlie Ed25519Keyring seeds.
 pub fn test_authorities() -> AuthorityList {
-	let authorities = vec![Ed25519Keyring::Alice, Ed25519Keyring::Bob, Ed25519Keyring::Charlie];
-
-	authorities.into_iter().map(|id| (id.public().into(), 1u64)).collect()
+	use sp_application_crypto::UncheckedFrom;
+	use sp_core::Pair as _;
+	vec![Ed25519Keyring::Alice, Ed25519Keyring::Bob, Ed25519Keyring::Charlie]
+		.into_iter()
+		.map(|k| {
+			let pair = sp_core::ml_dsa::Pair::from_string(&k.to_seed(), None).unwrap();
+			let id = AuthorityId::unchecked_from(pair.public().0);
+			(id, 1u64)
+		})
+		.collect()
 }
 
 #[test]
@@ -645,14 +652,14 @@ fn report_equivocation_invalid_equivocation_proof() {
 		assert_invalid_equivocation_proof(generate_equivocation_proof(
 			set_id,
 			(1, H256::random(), 10, &equivocation_keyring),
-			(1, H256::random(), 10, &Ed25519Keyring::Charlie),
+			(1, H256::random(), 10, &ml_dsa_pair_from_keyring(Ed25519Keyring::Charlie)),
 		));
 
 		// votes signed with a key that isn't part of the authority set
 		assert_invalid_equivocation_proof(generate_equivocation_proof(
 			set_id,
 			(1, H256::random(), 10, &equivocation_keyring),
-			(1, H256::random(), 10, &Ed25519Keyring::Dave),
+			(1, H256::random(), 10, &ml_dsa_pair_from_keyring(Ed25519Keyring::Dave)),
 		));
 	});
 }

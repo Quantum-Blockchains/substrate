@@ -32,6 +32,7 @@ use frame_support::{
 };
 use pallet_session::historical as pallet_session_historical;
 use sp_consensus_grandpa::{RoundNumber, SetId, GRANDPA_ENGINE_ID};
+use sp_application_crypto::UncheckedFrom;
 use sp_core::{crypto::KeyTypeId, H256};
 use sp_keyring::Ed25519Keyring;
 use sp_runtime::{
@@ -237,16 +238,50 @@ pub fn grandpa_log(log: ConsensusLog<u64>) -> DigestItem {
 	DigestItem::Consensus(GRANDPA_ENGINE_ID, log.encode())
 }
 
+/// Create an ML-DSA-44 pair deterministically from a uint id (uses id as seed prefix).
+pub fn ml_dsa_pair_from_uint(id: u64) -> sp_core::ml_dsa::Pair {
+	use sp_core::Pair as _;
+	let mut seed = [0u8; 32];
+	seed[..8].copy_from_slice(&id.to_le_bytes());
+	sp_core::ml_dsa::Pair::from_seed(&seed)
+}
+
+/// Create an ML-DSA-44 pair from an Ed25519Keyring seed phrase.
+pub fn ml_dsa_pair_from_keyring(keyring: Ed25519Keyring) -> sp_core::ml_dsa::Pair {
+	use sp_core::Pair as _;
+	sp_core::ml_dsa::Pair::from_string(&keyring.to_seed(), None)
+		.expect("valid seed for ML-DSA-44")
+}
+
 pub fn to_authorities(vec: Vec<(u64, u64)>) -> AuthorityList {
+	use sp_core::Pair as _;
 	vec.into_iter()
-		.map(|(id, weight)| (UintAuthorityId(id).to_public_key::<AuthorityId>(), weight))
+		.map(|(id, weight)| {
+			let pair = ml_dsa_pair_from_uint(id);
+			let pub_key = AuthorityId::unchecked_from(pair.public().0);
+			(pub_key, weight)
+		})
 		.collect()
 }
 
-pub fn extract_keyring(id: &AuthorityId) -> Ed25519Keyring {
-	let mut raw_public = [0; 32];
-	raw_public.copy_from_slice(id.as_ref());
-	Ed25519Keyring::from_raw_public(raw_public).unwrap()
+/// Recover the ML-DSA-44 pair for a known test authority by matching its public key.
+pub fn extract_keyring(id: &AuthorityId) -> sp_core::ml_dsa::Pair {
+	use sp_core::Pair as _;
+	// Try uint-seeded pairs (from to_authorities / new_test_ext).
+	for i in 1u64..=256 {
+		let pair = ml_dsa_pair_from_uint(i);
+		if AuthorityId::unchecked_from(pair.public().0) == *id {
+			return pair
+		}
+	}
+	// Try Ed25519Keyring-seeded pairs (from test_authorities).
+	for keyring in Ed25519Keyring::iter() {
+		let pair = ml_dsa_pair_from_keyring(keyring);
+		if AuthorityId::unchecked_from(pair.public().0) == *id {
+			return pair
+		}
+	}
+	panic!("unknown authority id")
 }
 
 pub fn new_test_ext(vec: Vec<(u64, u64)>) -> sp_io::TestExternalities {
@@ -340,26 +375,29 @@ pub fn initialize_block(number: u64, parent_hash: H256) {
 
 pub fn generate_equivocation_proof(
 	set_id: SetId,
-	vote1: (RoundNumber, H256, u64, &Ed25519Keyring),
-	vote2: (RoundNumber, H256, u64, &Ed25519Keyring),
+	vote1: (RoundNumber, H256, u64, &sp_core::ml_dsa::Pair),
+	vote2: (RoundNumber, H256, u64, &sp_core::ml_dsa::Pair),
 ) -> sp_consensus_grandpa::EquivocationProof<H256, u64> {
-	let signed_prevote = |round, hash, number, keyring: &Ed25519Keyring| {
+	use sp_core::Pair as _;
+	let signed_prevote = |round, hash, number, pair: &sp_core::ml_dsa::Pair| {
 		let prevote = finality_grandpa::Prevote { target_hash: hash, target_number: number };
-
 		let prevote_msg = finality_grandpa::Message::Prevote(prevote.clone());
 		let payload = sp_consensus_grandpa::localized_payload(round, set_id, &prevote_msg);
-		let signed = keyring.sign(&payload).into();
-		(prevote, signed)
+		let sig: sp_consensus_grandpa::AuthoritySignature =
+			UncheckedFrom::unchecked_from(pair.sign(&payload).0);
+		(prevote, sig)
 	};
 
 	let (prevote1, signed1) = signed_prevote(vote1.0, vote1.1, vote1.2, vote1.3);
 	let (prevote2, signed2) = signed_prevote(vote2.0, vote2.1, vote2.2, vote2.3);
+	let identity: sp_consensus_grandpa::AuthorityId =
+		UncheckedFrom::unchecked_from(vote1.3.public().0);
 
 	sp_consensus_grandpa::EquivocationProof::new(
 		set_id,
 		sp_consensus_grandpa::Equivocation::Prevote(finality_grandpa::Equivocation {
 			round_number: vote1.0,
-			identity: vote1.3.public().into(),
+			identity,
 			first: (prevote1, signed1),
 			second: (prevote2, signed2),
 		}),

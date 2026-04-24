@@ -25,6 +25,9 @@ use crate::{Config, CurrentSetId, SetIdSession, LOG_TARGET};
 /// Version 4.
 pub mod v4;
 
+/// Version 5: ML-DSA-44 authority key migration.
+pub mod v5;
+
 /// This migration will clean up all stale set id -> session entries from the
 /// `SetIdSession` storage map, only the latest `max_set_id_session_entries`
 /// will be kept.
