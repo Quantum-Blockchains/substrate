@@ -340,6 +340,7 @@ mod tests {
 	}
 
 	fn ml_dsa_authority_id(keyring: &Ed25519Keyring) -> sp_consensus_grandpa::AuthorityId {
+		use sp_core::Pair as _;
 		sp_application_crypto::UncheckedFrom::unchecked_from(ml_dsa_pair_for(keyring).public().0)
 	}
 
@@ -402,6 +403,7 @@ mod tests {
 
 				let mut precommits = Vec::new();
 				for keyring in &current_authorities {
+					use sp_core::Pair as _;
 					let pair = ml_dsa_pair_for(keyring);
 					let precommit = finality_grandpa::Precommit { target_hash, target_number };
 

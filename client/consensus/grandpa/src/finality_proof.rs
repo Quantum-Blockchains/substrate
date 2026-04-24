@@ -373,7 +373,7 @@ mod tests {
 		// When we can't decode proof from Vec<u8>
 		check_finality_proof::<Block>(
 			1,
-			vec![(UncheckedFrom::unchecked_from([3u8; 32]), 1u64)],
+			vec![(UncheckedFrom::unchecked_from([3u8; 1312]), 1u64)],
 			vec![42],
 		)
 		.unwrap_err();
@@ -384,7 +384,7 @@ mod tests {
 		// When decoded proof has zero length
 		check_finality_proof::<Block>(
 			1,
-			vec![(UncheckedFrom::unchecked_from([3u8; 32]), 1u64)],
+			vec![(UncheckedFrom::unchecked_from([3u8; 1312]), 1u64)],
 			Vec::<GrandpaJustification<Block>>::new().encode(),
 		)
 		.unwrap_err();
@@ -417,7 +417,7 @@ mod tests {
 
 		check_finality_proof::<Block>(
 			1,
-			vec![(UncheckedFrom::unchecked_from([3u8; 32]), 1u64)],
+			vec![(UncheckedFrom::unchecked_from([3u8; 1312]), 1u64)],
 			finality_proof.encode(),
 		)
 		.unwrap_err();
@@ -483,7 +483,12 @@ mod tests {
 			finality_proof,
 			check_finality_proof::<Block>(
 				set_id,
-				vec![(alice.public().into(), 1u64)],
+				{
+					use sp_core::Pair as _;
+					let alice_ml_dsa =
+						sp_core::ml_dsa::Pair::from_string(&alice.to_seed(), None).unwrap();
+					vec![(alice_ml_dsa.public().into(), 1u64)]
+				},
 				finality_proof.encode(),
 			)
 			.unwrap(),

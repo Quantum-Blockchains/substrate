@@ -19,7 +19,7 @@
 //!
 //! Key sizes:
 //!   Public key:  1312 bytes
-//!   Private key: 2528 bytes (expanded form)
+//!   Private key: 2560 bytes (expanded form)
 //!   Signature:   2420 bytes
 //!   Seed:          32 bytes
 
@@ -38,6 +38,8 @@ use scale_info::TypeInfo;
 use crate::crypto::Ss58Codec;
 #[cfg(feature = "serde")]
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(all(not(feature = "std"), feature = "serde"))]
+use sp_std::alloc::{format, string::String};
 use sp_runtime_interface::pass_by::PassByInner;
 use sp_std::ops::Deref;
 #[cfg(feature = "full_crypto")]

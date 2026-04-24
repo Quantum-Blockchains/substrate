@@ -803,8 +803,8 @@ mod tests {
 		let h3 = make_header(7);
 
 		let signed_prevote = |header: &Header| finality_grandpa::SignedPrevote {
-			id: UncheckedFrom::unchecked_from([1; 32]),
-			signature: UncheckedFrom::unchecked_from([1; 64]),
+			id: UncheckedFrom::unchecked_from([1u8; 1312]),
+			signature: UncheckedFrom::unchecked_from([1u8; 2420]),
 			prevote: finality_grandpa::Prevote {
 				target_hash: header.hash(),
 				target_number: *header.number(),
@@ -812,8 +812,8 @@ mod tests {
 		};
 
 		let signed_precommit = |header: &Header| finality_grandpa::SignedPrecommit {
-			id: UncheckedFrom::unchecked_from([1; 32]),
-			signature: UncheckedFrom::unchecked_from([1; 64]),
+			id: UncheckedFrom::unchecked_from([1u8; 1312]),
+			signature: UncheckedFrom::unchecked_from([1u8; 2420]),
 			precommit: finality_grandpa::Precommit {
 				target_hash: header.hash(),
 				target_number: *header.number(),
@@ -851,8 +851,8 @@ mod tests {
 		let h3 = make_header(7);
 
 		let signed_prevote = |header: &Header| finality_grandpa::SignedPrevote {
-			id: UncheckedFrom::unchecked_from([1; 32]),
-			signature: UncheckedFrom::unchecked_from([1; 64]),
+			id: UncheckedFrom::unchecked_from([1u8; 1312]),
+			signature: UncheckedFrom::unchecked_from([1u8; 2420]),
 			prevote: finality_grandpa::Prevote {
 				target_hash: header.hash(),
 				target_number: *header.number(),
@@ -860,8 +860,8 @@ mod tests {
 		};
 
 		let signed_precommit = |header: &Header| finality_grandpa::SignedPrecommit {
-			id: UncheckedFrom::unchecked_from([1; 32]),
-			signature: UncheckedFrom::unchecked_from([1; 64]),
+			id: UncheckedFrom::unchecked_from([1u8; 1312]),
+			signature: UncheckedFrom::unchecked_from([1u8; 2420]),
 			precommit: finality_grandpa::Precommit {
 				target_hash: header.hash(),
 				target_number: *header.number(),

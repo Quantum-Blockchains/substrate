@@ -1141,7 +1141,7 @@ async fn voter_persists_its_votes() {
 
 	{
 		let (round_rx, round_tx) = bob_network.round_communication(
-			Some((peers[1].public().into(), bob_keystore).into()),
+			Some((make_ids(&[peers[1]])[0].0.clone(), bob_keystore).into()),
 			communication::Round(1),
 			communication::SetId(0),
 			Arc::new(VoterSet::new(voters).unwrap()),
@@ -1935,12 +1935,19 @@ async fn imports_justification_for_regular_blocks_on_import() {
 
 		let msg = finality_grandpa::Message::Precommit(precommit.clone());
 		let encoded = sp_consensus_grandpa::localized_payload(round, set_id, &msg);
-		let signature = peers[0].sign(&encoded[..]).into();
+		let (signature, authority_id) = {
+			use sp_core::Pair as _;
+			let pair = sp_core::ml_dsa::Pair::from_string(&peers[0].to_seed(), None).unwrap();
+			let sig: sp_consensus_grandpa::AuthoritySignature = pair.sign(&encoded[..]).into();
+			let id: sp_consensus_grandpa::AuthorityId =
+				sp_application_crypto::UncheckedFrom::unchecked_from(pair.public().0);
+			(sig, id)
+		};
 
 		let precommit = finality_grandpa::SignedPrecommit {
 			precommit,
 			signature,
-			id: peers[0].public().into(),
+			id: authority_id,
 		};
 
 		let commit = finality_grandpa::Commit {
@@ -2016,16 +2023,23 @@ async fn grandpa_environment_doesnt_send_equivocation_reports_for_itself() {
 		test_environment(&link, Some(keystore), network_service.clone(), sync_service, ())
 	};
 
+	let (alice_ml_dsa_sig, alice_authority_id) = {
+		use sp_core::Pair as _;
+		let pair = sp_core::ml_dsa::Pair::from_string(&alice.to_seed(), None).unwrap();
+		let sig: sp_consensus_grandpa::AuthoritySignature = pair.sign(&[]).into();
+		let id: sp_consensus_grandpa::AuthorityId =
+			sp_application_crypto::UncheckedFrom::unchecked_from(pair.public().0);
+		(sig, id)
+	};
+
 	let signed_prevote = {
 		let prevote = finality_grandpa::Prevote { target_hash: H256::random(), target_number: 1 };
-
-		let signed = alice.sign(&[]).into();
-		(prevote, signed)
+		(prevote, alice_ml_dsa_sig)
 	};
 
 	let mut equivocation = finality_grandpa::Equivocation {
 		round_number: 1,
-		identity: alice.public().into(),
+		identity: alice_authority_id,
 		first: signed_prevote.clone(),
 		second: signed_prevote.clone(),
 	};

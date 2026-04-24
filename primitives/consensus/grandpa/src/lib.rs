@@ -40,6 +40,11 @@ pub const CLIENT_LOG_TARGET: &str = "grandpa";
 /// The log target to be used by runtime code.
 pub const RUNTIME_LOG_TARGET: &str = "runtime::grandpa";
 
+pub mod signature_scheme;
+pub use signature_scheme::{PublicKey, SignatureScheme};
+#[cfg(feature = "std")]
+pub use signature_scheme::{MlDsa44Scheme, Sr25519Scheme};
+
 /// Key type for GRANDPA module.
 pub const KEY_TYPE: sp_core::crypto::KeyTypeId = sp_application_crypto::key_types::GRANDPA;
 
@@ -56,8 +61,14 @@ sp_application_crypto::with_pair! {
 /// Identity of a Grandpa authority.
 pub type AuthorityId = app::Public;
 
-/// Signature for a Grandpa authority.
+/// Signature for a Grandpa authority (concrete, scheme-specific).
+///
+/// This type is kept for compatibility with `finality-grandpa` and the runtime API.
+/// For scheme-agnostic code use [`GenericAuthoritySignature`].
 pub type AuthoritySignature = app::Signature;
+
+/// Scheme-agnostic wire representation of a signature (raw bytes, no type info).
+pub type GenericAuthoritySignature = Vec<u8>;
 
 /// The `ConsensusEngineId` of GRANDPA.
 pub const GRANDPA_ENGINE_ID: ConsensusEngineId = *b"FRNK";
@@ -78,8 +89,16 @@ pub type SetId = u64;
 /// The round indicator.
 pub type RoundNumber = u64;
 
+/// A scheme-agnostic list of Grandpa authorities with associated weights.
+///
+/// Parameterised over the public key type so the same structure works for
+/// both classical (sr25519) and post-quantum (ML-DSA-44) deployments.
+pub type GenericAuthorityList<PK> = Vec<(PK, AuthorityWeight)>;
+
 /// A list of Grandpa authorities with associated weights.
-pub type AuthorityList = Vec<(AuthorityId, AuthorityWeight)>;
+///
+/// Concrete alias using the active [`AuthorityId`] (ML-DSA-44 in this build).
+pub type AuthorityList = GenericAuthorityList<AuthorityId>;
 
 /// A GRANDPA message for a substrate chain.
 pub type Message<Header> = grandpa::Message<<Header as HeaderT>::Hash, <Header as HeaderT>::Number>;
@@ -438,6 +457,30 @@ where
 	valid
 }
 
+/// Verify a vote signature using a pluggable [`SignatureScheme`].
+///
+/// Client-side (std-only) generic counterpart to [`check_message_signature`].
+/// Choose the scheme at compile time via `S`; runtime verification goes through
+/// `check_message_signature*` which uses host functions.
+///
+/// `sig` is the raw signature bytes (no length prefix).
+#[cfg(feature = "std")]
+pub fn verify_vote_signature<S, H, N>(
+	message: &grandpa::Message<H, N>,
+	pk: &S::PublicKeyType,
+	sig: &[u8],
+	round: RoundNumber,
+	set_id: SetId,
+) -> bool
+where
+	S: SignatureScheme,
+	H: Encode,
+	N: Encode,
+{
+	let payload = localized_payload(round, set_id, message);
+	S::verify(&payload, sig, pk)
+}
+
 /// Localizes the message to the given set and round and signs the payload.
 #[cfg(feature = "std")]
 pub fn sign_message<H, N>(
@@ -541,6 +584,197 @@ impl OpaqueKeyOwnershipProof {
 	/// ownership proof type.
 	pub fn decode<T: Decode>(self) -> Option<T> {
 		codec::Decode::decode(&mut &self.0[..]).ok()
+	}
+}
+
+#[cfg(all(feature = "std", test))]
+mod tests {
+	use super::*;
+	use grandpa::Message;
+	use sp_application_crypto::UncheckedFrom;
+	use sp_core::Pair as _;
+
+	// ── helpers ──────────────────────────────────────────────────────────────
+
+	fn ml_dsa_pair() -> sp_core::ml_dsa::Pair {
+		sp_core::ml_dsa::Pair::from_seed(&[42u8; 32])
+	}
+
+	fn ed25519_pair() -> sp_core::ed25519::Pair {
+		sp_core::ed25519::Pair::from_seed(&[42u8; 32])
+	}
+
+	fn prevote_message() -> Message<sp_core::H256, u64> {
+		Message::Prevote(grandpa::Prevote {
+			target_hash: sp_core::H256::from([1u8; 32]),
+			target_number: 42u64,
+		})
+	}
+
+	// ── unit tests ───────────────────────────────────────────────────────────
+
+	/// GRANDPA now uses ML-DSA-44. A vote signed with ML-DSA-44 must verify.
+	#[test]
+	fn test_verify_vote_with_ml_dsa_44() {
+		let pair = ml_dsa_pair();
+		let pub_key = pair.public();
+		let msg = prevote_message();
+		let payload = localized_payload(1, 0, &msg);
+		let sig = pair.sign(&payload);
+
+		assert!(
+			verify_vote_signature::<MlDsa44Scheme, _, _>(&msg, &pub_key, &sig.0, 1, 0),
+			"ML-DSA-44 vote must verify"
+		);
+	}
+
+	/// A vote signed with ed25519 must NOT verify under the ML-DSA-44 scheme
+	/// (wrong signature length — 64 bytes vs 2420 expected).
+	#[test]
+	fn test_verify_vote_with_ed25519_fails_ml_dsa_verifier() {
+		let ed_pair = ed25519_pair();
+		let ml_pair = ml_dsa_pair();
+		let pub_key = ml_pair.public();
+		let msg = prevote_message();
+		let payload = localized_payload(1, 0, &msg);
+
+		// Sign with ed25519 but attempt ML-DSA-44 verification — must reject.
+		let ed_sig = ed_pair.sign(&payload);
+		assert!(
+			!verify_vote_signature::<MlDsa44Scheme, _, _>(&msg, &pub_key, &ed_sig.0, 1, 0),
+			"ed25519 signature must not verify under ML-DSA-44 scheme"
+		);
+	}
+
+	/// Wrong round or set_id must invalidate the signature.
+	#[test]
+	fn test_verify_vote_wrong_round_fails() {
+		let pair = ml_dsa_pair();
+		let pub_key = pair.public();
+		let msg = prevote_message();
+		let payload = localized_payload(1, 0, &msg);
+		let sig = pair.sign(&payload);
+
+		assert!(
+			!verify_vote_signature::<MlDsa44Scheme, _, _>(&msg, &pub_key, &sig.0, 2, 0),
+			"wrong round must invalidate"
+		);
+		assert!(
+			!verify_vote_signature::<MlDsa44Scheme, _, _>(&msg, &pub_key, &sig.0, 1, 99),
+			"wrong set_id must invalidate"
+		);
+	}
+
+	// ── size comparison benchmark (run with `cargo test -- --nocapture`) ──────
+
+	/// Reports key and signature sizes for ML-DSA-44 vs ed25519.
+	/// ML-DSA-44 is ~41× larger public keys, ~38× larger signatures.
+	#[test]
+	fn test_signature_size_comparison() {
+		const ML_DSA_PK: usize = sp_core::ml_dsa::PUBLIC_KEY_LEN;     // 1312
+		const ML_DSA_SIG: usize = sp_core::ml_dsa::SIGNATURE_LEN;     // 2420
+		const ED25519_PK: usize = 32;
+		const ED25519_SIG: usize = 64;
+
+		assert_eq!(ML_DSA_PK, 1312);
+		assert_eq!(ML_DSA_SIG, 2420);
+
+		println!("\n=== GRANDPA key/signature size comparison ===");
+		println!("  ed25519  public key : {:>5} bytes", ED25519_PK);
+		println!("  ML-DSA-44 public key: {:>5} bytes  ({:.0}×)", ML_DSA_PK, ML_DSA_PK as f64 / ED25519_PK as f64);
+		println!("  ed25519  signature  : {:>5} bytes", ED25519_SIG);
+		println!("  ML-DSA-44 signature : {:>5} bytes  ({:.0}×)", ML_DSA_SIG, ML_DSA_SIG as f64 / ED25519_SIG as f64);
+
+		// Authority set storage: N validators × (pub_key + weight)
+		let n: usize = 1000;
+		let ed_set_bytes  = n * (ED25519_PK  + 8);  // u64 weight = 8 bytes
+		let ml_set_bytes  = n * (ML_DSA_PK   + 8);
+		println!("\n  Authority set ({} validators):", n);
+		println!("    ed25519  : {:>8} bytes  (~{:.0} KB)", ed_set_bytes, ed_set_bytes as f64 / 1024.0);
+		println!("    ML-DSA-44: {:>8} bytes  (~{:.0} KB)", ml_set_bytes, ml_set_bytes as f64 / 1024.0);
+		println!("    Size increase: {:.1}×", ml_set_bytes as f64 / ed_set_bytes as f64);
+
+		// Commit message: N sigs per round
+		let ed_commit  = n * ED25519_SIG;
+		let ml_commit  = n * ML_DSA_SIG;
+		println!("\n  Commit message ({} validators):", n);
+		println!("    ed25519  : {:>8} bytes  (~{:.0} KB)", ed_commit, ed_commit as f64 / 1024.0);
+		println!("    ML-DSA-44: {:>8} bytes  (~{:.0} KB)", ml_commit, ml_commit as f64 / 1024.0);
+		println!("    Size increase: {:.1}×\n", ml_commit as f64 / ed_commit as f64);
+	}
+
+	/// Measures key generation, signing, and verification times for both schemes.
+	#[test]
+	fn test_performance_comparison() {
+		use std::time::Instant;
+
+		const ITERS: u32 = 100;
+		let msg = prevote_message();
+		let payload = localized_payload(1, 0, &msg);
+
+		// ─── ML-DSA-44 ───────────────────────────────────────────────────────
+
+		let t = Instant::now();
+		for i in 0..ITERS {
+			let _ = sp_core::ml_dsa::Pair::from_seed(&[i as u8; 32]);
+		}
+		let ml_keygen_us = t.elapsed().as_micros() / ITERS as u128;
+
+		let ml_pair = ml_dsa_pair();
+		let t = Instant::now();
+		for _ in 0..ITERS {
+			let _ = ml_pair.sign(&payload);
+		}
+		let ml_sign_us = t.elapsed().as_micros() / ITERS as u128;
+
+		let ml_sig = ml_pair.sign(&payload);
+		let ml_pk = ml_pair.public();
+		let t = Instant::now();
+		for _ in 0..ITERS {
+			let _ = sp_core::ml_dsa::Pair::verify(&ml_sig, &payload, &ml_pk);
+		}
+		let ml_verify_us = t.elapsed().as_micros() / ITERS as u128;
+
+		// ─── ed25519 ─────────────────────────────────────────────────────────
+
+		let t = Instant::now();
+		for i in 0..ITERS {
+			let _ = sp_core::ed25519::Pair::from_seed(&[i as u8; 32]);
+		}
+		let ed_keygen_us = t.elapsed().as_micros() / ITERS as u128;
+
+		let ed_pair = ed25519_pair();
+		let t = Instant::now();
+		for _ in 0..ITERS {
+			let _ = ed_pair.sign(&payload);
+		}
+		let ed_sign_us = t.elapsed().as_micros() / ITERS as u128;
+
+		let ed_sig = ed_pair.sign(&payload);
+		let ed_pk = ed_pair.public();
+		let t = Instant::now();
+		for _ in 0..ITERS {
+			let _ = sp_core::ed25519::Pair::verify(&ed_sig, &payload, &ed_pk);
+		}
+		let ed_verify_us = t.elapsed().as_micros() / ITERS as u128;
+
+		// ─── report ──────────────────────────────────────────────────────────
+
+		println!("\n=== GRANDPA signing performance ({} iterations) ===", ITERS);
+		println!("  {:12}  {:>10}  {:>10}  {:>10}", "", "key_gen", "sign", "verify");
+		println!("  {:12}  {:>9}µs  {:>9}µs  {:>9}µs", "ed25519",   ed_keygen_us, ed_sign_us, ed_verify_us);
+		println!("  {:12}  {:>9}µs  {:>9}µs  {:>9}µs", "ML-DSA-44", ml_keygen_us, ml_sign_us, ml_verify_us);
+		println!(
+			"  ML-DSA-44 overhead: keygen={:.1}×  sign={:.1}×  verify={:.1}×\n",
+			ml_keygen_us as f64 / ed_keygen_us.max(1) as f64,
+			ml_sign_us   as f64 / ed_sign_us.max(1)   as f64,
+			ml_verify_us as f64 / ed_verify_us.max(1) as f64,
+		);
+
+		// Sanity: ML-DSA-44 sign/verify must be slower (not astronomically)
+		// but never more than 10000× (catches infinite loops / crashes).
+		assert!(ml_sign_us   < ed_sign_us.max(1)   * 10_000);
+		assert!(ml_verify_us < ed_verify_us.max(1) * 10_000);
 	}
 }
 

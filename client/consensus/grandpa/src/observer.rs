@@ -436,7 +436,15 @@ mod tests {
 			(Arc::new(client), backend)
 		};
 
-		let voters = vec![(sp_keyring::Ed25519Keyring::Alice.public().into(), 1)];
+		let voters = {
+			use sp_core::Pair as _;
+			let alice_ml_dsa = sp_core::ml_dsa::Pair::from_string(
+				&sp_keyring::Ed25519Keyring::Alice.to_seed(),
+				None,
+			)
+			.unwrap();
+			vec![(alice_ml_dsa.public().into(), 1)]
+		};
 
 		let persistent_data =
 			aux_schema::load_persistent(&*backend, client.info().genesis_hash, 0, || Ok(voters))

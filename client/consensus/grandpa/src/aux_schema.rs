@@ -506,7 +506,7 @@ mod test {
 	use substrate_test_runtime_client::{self, runtime::Block};
 
 	fn dummy_id() -> AuthorityId {
-		AuthorityId::unchecked_from([1; 32])
+		AuthorityId::unchecked_from([1u8; 1312])
 	}
 
 	#[test]

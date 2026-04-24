@@ -1707,7 +1707,7 @@ mod tests {
 
 		let base = (H256::zero(), 0);
 
-		let voters = vec![(AuthorityId::unchecked_from([1; 32]), 1)];
+		let voters = vec![(AuthorityId::unchecked_from([1u8; 1312]), 1)];
 		let voters = AuthoritySet::genesis(voters).unwrap();
 
 		let set_state = VoterSetState::live(0, &voters, base);
@@ -1907,7 +1907,7 @@ mod tests {
 
 		let (val, _) = GossipValidator::<Block>::new(config(), voter_set_state(), None, None);
 		let set_id = 1;
-		let auth = AuthorityId::unchecked_from([1u8; 32]);
+		let auth = AuthorityId::unchecked_from([1u8; 1312]);
 		let peer = PeerId::random();
 
 		val.note_set(SetId(set_id), vec![auth.clone()], |_, _| {});
@@ -1924,8 +1924,8 @@ mod tests {
 						target_hash: Default::default(),
 						target_number: 10,
 					}),
-					signature: UncheckedFrom::unchecked_from([1; 64]),
-					id: UncheckedFrom::unchecked_from([2u8; 32]),
+					signature: UncheckedFrom::unchecked_from([1u8; 2420]),
+					id: UncheckedFrom::unchecked_from([2u8; 1312]),
 				},
 			},
 		);
@@ -1940,7 +1940,7 @@ mod tests {
 						target_hash: Default::default(),
 						target_number: 10,
 					}),
-					signature: UncheckedFrom::unchecked_from([1; 64]),
+					signature: UncheckedFrom::unchecked_from([1u8; 2420]),
 					id: auth.clone(),
 				},
 			},
@@ -1955,7 +1955,7 @@ mod tests {
 		let (val, _) = GossipValidator::<Block>::new(config(), voter_set_state(), None, None);
 
 		let set_id = 1;
-		let auth = AuthorityId::unchecked_from([1u8; 32]);
+		let auth = AuthorityId::unchecked_from([1u8; 1312]);
 		let peer = PeerId::random();
 
 		val.note_set(SetId(set_id), vec![auth.clone()], |_, _| {});
@@ -2018,7 +2018,7 @@ mod tests {
 		let (val, _) = GossipValidator::<Block>::new(config(), set_state.clone(), None, None);
 
 		let set_id = 1;
-		let auth = AuthorityId::unchecked_from([1u8; 32]);
+		let auth = AuthorityId::unchecked_from([1u8; 1312]);
 		let peer = PeerId::random();
 
 		val.note_set(SetId(set_id), vec![auth.clone()], |_, _| {});
@@ -2588,13 +2588,13 @@ mod tests {
 	fn allow_noting_different_authorities_for_same_set() {
 		let (val, _) = GossipValidator::<Block>::new(config(), voter_set_state(), None, None);
 
-		let a1 = vec![UncheckedFrom::unchecked_from([0; 32])];
+		let a1 = vec![UncheckedFrom::unchecked_from([0u8; 1312])];
 		val.note_set(SetId(1), a1.clone(), |_, _| {});
 
 		assert_eq!(val.inner().read().authorities, a1);
 
 		let a2 =
-			vec![UncheckedFrom::unchecked_from([1; 32]), UncheckedFrom::unchecked_from([2; 32])];
+			vec![UncheckedFrom::unchecked_from([1u8; 1312]), UncheckedFrom::unchecked_from([2u8; 1312])];
 		val.note_set(SetId(1), a2.clone(), |_, _| {});
 
 		assert_eq!(val.inner().read().authorities, a2);

@@ -703,9 +703,9 @@ pub struct SetId(pub SetIdNumber);
 /// be replaced, as appropriate, according to the given `HasVoted`.
 /// NOTE: The votes are stored unsigned, which means that the signatures need to
 /// be "stable", i.e. we should end up with the exact same signed message if we
-/// use the same raw message and key to sign. This is currently true for
-/// `ed25519` and `BLS` signatures (which we might use in the future), care must
-/// be taken when switching to different key types.
+/// use the same raw message and key to sign. This is true for ML-DSA-44 (FIPS 204)
+/// which is the active scheme — signatures are deterministic given the same key and
+/// message. Care must be taken if switching to a non-deterministic scheme.
 pub(crate) struct OutgoingMessages<Block: BlockT> {
 	round: RoundNumber,
 	set_id: SetIdNumber,

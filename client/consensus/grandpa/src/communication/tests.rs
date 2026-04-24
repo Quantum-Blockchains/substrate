@@ -270,7 +270,7 @@ fn voter_set_state() -> SharedVoterSetState<Block> {
 	let state = RoundState::genesis((H256::zero(), 0));
 	let base = state.prevote_ghost.unwrap();
 
-	let voters = vec![(AuthorityId::from_slice(&[1; 32]).unwrap(), 1)];
+	let voters = vec![(AuthorityId::from_slice(&[1u8; 1312]).unwrap(), 1)];
 	let voters = AuthoritySet::genesis(voters).unwrap();
 
 	let set_state = VoterSetState::live(0, &voters, base);
@@ -315,6 +315,7 @@ fn ml_dsa_pair_for(keyring: &Ed25519Keyring) -> sp_core::ml_dsa::Pair {
 }
 
 fn ml_dsa_authority_id(keyring: &Ed25519Keyring) -> sp_consensus_grandpa::AuthorityId {
+	use sp_core::Pair as _;
 	sp_application_crypto::UncheckedFrom::unchecked_from(ml_dsa_pair_for(keyring).public().0)
 }
 
@@ -355,6 +356,7 @@ fn good_commit_leads_to_relay() {
 		let mut auth_data = Vec::new();
 
 		for (i, key) in private.iter().enumerate() {
+			use sp_core::Pair as _;
 			precommits.push(precommit.clone());
 
 			let signature = sp_consensus_grandpa::AuthoritySignature::from(
@@ -509,6 +511,7 @@ fn bad_commit_leads_to_report() {
 		let mut auth_data = Vec::new();
 
 		for (i, key) in private.iter().enumerate() {
+			use sp_core::Pair as _;
 			precommits.push(precommit.clone());
 
 			let signature = sp_consensus_grandpa::AuthoritySignature::from(
