@@ -18,6 +18,7 @@
 //! Local keystore implementation
 
 use parking_lot::RwLock;
+use serde::{Deserialize, Serialize};
 use sp_application_crypto::{AppCrypto, AppPair, IsWrappedBy};
 #[cfg(feature = "bls-experimental")]
 use sp_core::{bls377, bls381};
@@ -368,6 +369,13 @@ struct KeystoreInner {
 	password: Option<SecretString>,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(untagged)]
+enum StoredKeyFile {
+	Legacy(String),
+	V2 { public: String, secret_uri: String },
+}
+
 impl KeystoreInner {
 	/// Open the store at the given path.
 	///
@@ -413,7 +421,7 @@ impl KeystoreInner {
 	/// Places it into the file system store, if a path is configured.
 	fn insert(&self, key_type: KeyTypeId, suri: &str, public: &[u8]) -> Result<()> {
 		if let Some(path) = self.key_file_path(public, key_type) {
-			Self::write_to_file(path, suri)?;
+			Self::write_to_file(path, public, suri)?;
 		}
 
 		Ok(())
@@ -426,7 +434,7 @@ impl KeystoreInner {
 	fn generate_by_type<Pair: CorePair>(&mut self, key_type: KeyTypeId) -> Result<Pair> {
 		let (pair, phrase, _) = Pair::generate_with_phrase(self.password());
 		if let Some(path) = self.key_file_path(pair.public().as_slice(), key_type) {
-			Self::write_to_file(path, &phrase)?;
+			Self::write_to_file(path, pair.public().as_slice(), &phrase)?;
 		} else {
 			self.insert_ephemeral_pair(&pair, &phrase, key_type);
 		}
@@ -435,7 +443,7 @@ impl KeystoreInner {
 	}
 
 	/// Write the given `data` to `file`.
-	fn write_to_file(file: PathBuf, data: &str) -> Result<()> {
+	fn write_to_file(file: PathBuf, public: &[u8], data: &str) -> Result<()> {
 		let mut file = File::create(file)?;
 
 		#[cfg(target_family = "unix")]
@@ -444,7 +452,11 @@ impl KeystoreInner {
 			file.set_permissions(fs::Permissions::from_mode(0o600))?;
 		}
 
-		serde_json::to_writer(&file, data)?;
+		let stored = StoredKeyFile::V2 {
+			public: array_bytes::bytes2hex("", public),
+			secret_uri: data.to_owned(),
+		};
+		serde_json::to_writer(&file, &stored)?;
 		file.flush()?;
 		Ok(())
 	}
@@ -476,8 +488,11 @@ impl KeystoreInner {
 
 		if path.exists() {
 			let file = File::open(path)?;
-
-			serde_json::from_reader(&file).map_err(Into::into).map(Some)
+			let stored: StoredKeyFile = serde_json::from_reader(&file)?;
+			match stored {
+				StoredKeyFile::Legacy(secret_uri) => Ok(Some(secret_uri)),
+				StoredKeyFile::V2 { secret_uri, .. } => Ok(Some(secret_uri)),
+			}
 		} else {
 			Ok(None)
 		}
@@ -510,7 +525,7 @@ impl KeystoreInner {
 	fn key_file_path(&self, public: &[u8], key_type: KeyTypeId) -> Option<PathBuf> {
 		let mut buf = self.path.as_ref()?.clone();
 		let key_type = array_bytes::bytes2hex("", &key_type.0);
-		let key = array_bytes::bytes2hex("", public);
+		let key = array_bytes::bytes2hex("", &sp_core::blake2_256(public));
 		buf.push(key_type + key.as_str());
 		Some(buf)
 	}
@@ -532,12 +547,21 @@ impl KeystoreInner {
 				// skip directories and non-unicode file names (hex is unicode)
 				if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
 					match array_bytes::hex2bytes(name) {
-						Ok(ref hex) if hex.len() > 4 => {
-							if hex[0..4] != key_type.0 {
-								continue
+						Ok(ref hex) if hex.len() > 4 && hex[0..4] == key_type.0 => {
+							// New filename format stores the actual public key in file content.
+							if let Ok(file) = File::open(&path) {
+								if let Ok(StoredKeyFile::V2 { public, .. }) =
+									serde_json::from_reader::<_, StoredKeyFile>(&file)
+								{
+									if let Ok(public_raw) = array_bytes::hex2bytes(&public) {
+										public_keys.push(public_raw);
+										continue
+									}
+								}
 							}
-							let public = hex[4..].to_vec();
-							public_keys.push(public);
+
+							// Legacy filename format: key_type (4 bytes) + full public key.
+							public_keys.push(hex[4..].to_vec());
 						},
 						_ => continue,
 					}
