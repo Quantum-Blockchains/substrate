@@ -24,10 +24,11 @@ use codec::Encode;
 use sc_service::construct_genesis_block;
 use sp_core::{
 	sr25519,
+	mldsa44,
 	storage::{well_known_keys, StateVersion, Storage},
 	Pair,
 };
-use sp_keyring::{AccountKeyring, Sr25519Keyring};
+use sp_keyring::{AccountKeyring, Mldsa44Keyring, Sr25519Keyring};
 use sp_runtime::{
 	traits::{Block as BlockT, Hash as HashT, Header as HeaderT},
 	BuildStorage,
@@ -39,6 +40,10 @@ use sp_runtime::{
 pub struct GenesisStorageBuilder {
 	/// Authorities accounts used by any component requiring an authority set (e.g. babe).
 	authorities: Vec<AccountId>,
+	/// Authorities used by Aura in substrate-test pallet.
+	///
+	/// These are independent from `authorities` as Aura and Babe can use different crypto.
+	authorities_aura_mldsa44: Vec<mldsa44::Public>,
 	/// Accounts to be endowed with some funds.
 	balances: Vec<(AccountId, u64)>,
 	/// Override default number of heap pages.
@@ -82,8 +87,14 @@ impl GenesisStorageBuilder {
 		endowed_accounts: Vec<AccountId>,
 		balance: Balance,
 	) -> Self {
+		let authorities_aura_mldsa44 = Mldsa44Keyring::iter()
+			.take(authorities.len())
+			.map(mldsa44::Public::from)
+			.collect();
+
 		GenesisStorageBuilder {
 			authorities,
+			authorities_aura_mldsa44,
 			balances: endowed_accounts.into_iter().map(|a| (a, balance)).collect(),
 			heap_pages_override: None,
 			extra_storage: Default::default(),
@@ -104,6 +115,12 @@ impl GenesisStorageBuilder {
 
 	pub fn with_extra_storage(mut self, storage: Storage) -> Self {
 		self.extra_storage = storage;
+		self
+	}
+
+	/// Override Aura authorities used by substrate-test pallet.
+	pub fn with_aura_authorities(mut self, authorities: Vec<mldsa44::Public>) -> Self {
+		self.authorities_aura_mldsa44 = authorities;
 		self
 	}
 
@@ -131,7 +148,7 @@ impl GenesisStorageBuilder {
 				..Default::default()
 			},
 			substrate_test: substrate_test_pallet::GenesisConfig {
-				authorities: authorities_sr25519.clone(),
+				authorities: self.authorities_aura_mldsa44.clone(),
 				..Default::default()
 			},
 			balances: pallet_balances::GenesisConfig { balances: self.balances.clone() },

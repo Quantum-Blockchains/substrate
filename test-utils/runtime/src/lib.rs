@@ -68,7 +68,7 @@ pub use sp_consensus_babe::{AllowedSlots, BabeEpochConfiguration, Slot};
 
 pub use pallet_balances::Call as BalancesCall;
 
-pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;
+pub type AuraId = sp_consensus_aura::mldsa44::AuthorityId;
 #[cfg(feature = "std")]
 pub use extrinsic::{ExtrinsicBuilder, Transfer};
 

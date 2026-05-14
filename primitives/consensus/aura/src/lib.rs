@@ -62,6 +62,24 @@ pub mod ed25519 {
 	pub type AuthorityId = app_ed25519::Public;
 }
 
+pub mod mldsa44 {
+	mod app_mldsa44 {
+		use sp_application_crypto::{app_crypto, mldsa44, key_types::AURA};
+		app_crypto!(mldsa44, AURA);
+	}
+
+	sp_application_crypto::with_pair! {
+		/// An Aura authority keypair using MLDSA44 as its crypto.
+		pub type AuthorityPair = app_mldsa44::Pair;
+	}
+
+	/// An Aura authority signature using MLDSA44 as its crypto.
+	pub type AuthoritySignature = app_mldsa44::Signature;
+
+	/// An Aura authority identifier using MLDSA44 as its crypto.
+	pub type AuthorityId = app_mldsa44::Public;
+}
+
 pub use sp_consensus_slots::{Slot, SlotDuration};
 
 /// The `ConsensusEngineId` of AuRa.

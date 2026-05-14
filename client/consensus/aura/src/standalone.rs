@@ -320,10 +320,10 @@ where
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use sp_keyring::sr25519::Keyring;
+	#[cfg(test)]
+	mod tests {
+		use super::*;
+		use sp_keyring::mldsa44::Keyring;
 
 	#[test]
 	fn authorities_call_works() {

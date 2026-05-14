@@ -9,7 +9,7 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager, WarpSyncParams};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
-use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
+use sp_consensus_aura::mldsa44::AuthorityPair as AuraPair;
 use std::{sync::Arc, time::Duration};
 
 // Our native executor instance.

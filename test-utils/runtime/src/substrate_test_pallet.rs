@@ -22,7 +22,7 @@
 //! of them requires signing. Refer to `pallet::Call` for further details.
 
 use frame_support::{pallet_prelude::*, storage};
-use sp_core::sr25519::Public;
+use sp_core::mldsa44::Public;
 use sp_runtime::{
 	traits::Hash,
 	transaction_validity::{
