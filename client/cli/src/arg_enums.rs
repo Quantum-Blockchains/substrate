@@ -141,6 +141,13 @@ pub enum CryptoScheme {
 	Mldsa44,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "kebab-case")]
+pub enum HandshakeMode {
+	Classic,
+	Pqkd,
+}
+
 /// The type of the output format.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum)]
 #[value(rename_all = "kebab-case")]

@@ -180,7 +180,7 @@ pub trait CliConfiguration<DCV: DefaultConfigurationValues = ()>: Sized {
 				node_name,
 				node_key,
 				default_listen_port,
-			)
+			)?
 		} else {
 			NetworkConfiguration::new(
 				node_name,

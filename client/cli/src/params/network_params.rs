@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	arg_enums::SyncMode, params::node_key_params::NodeKeyParams,
+	arg_enums::{HandshakeMode, SyncMode}, params::node_key_params::NodeKeyParams,
 	params::pqkd_params::PqkdParams,
 };
 use clap::Args;
@@ -112,6 +112,10 @@ pub struct NetworkParams {
 	#[clap(flatten)]
 	pub node_key_params: NodeKeyParams,
 
+	/// Transport handshake mode.
+	#[arg(long, value_enum, ignore_case = true, default_value_t = HandshakeMode::Classic)]
+	pub handshake_mode: HandshakeMode,
+
 	#[allow(missing_docs)]
 	#[clap(flatten)]
 	pub pqkd_params: PqkdParams,
@@ -160,6 +164,29 @@ pub struct NetworkParams {
 }
 
 impl NetworkParams {
+	fn validate_handshake_params(&self) -> Result<(), String> {
+		match self.handshake_mode {
+			HandshakeMode::Pqkd => {
+				if self.pqkd_params.sae_id.is_none() || self.pqkd_params.addr_pqkd.is_none() {
+					return Err(
+						"`--handshake-mode pqkd` wymaga podania `--sae-id` oraz `--addr-pqkd`."
+							.to_string(),
+					)
+				}
+			},
+			HandshakeMode::Classic => {
+				if self.pqkd_params.sae_id.is_some() || self.pqkd_params.addr_pqkd.is_some() {
+					return Err(
+						"`--handshake-mode classic` nie pozwala podawać `--sae-id` ani `--addr-pqkd`."
+							.to_string(),
+					)
+				}
+			},
+		}
+
+		Ok(())
+	}
+
 	/// Fill the given `NetworkConfiguration` by looking at the cli parameters.
 	pub fn network_config(
 		&self,
@@ -171,7 +198,9 @@ impl NetworkParams {
 		node_name: &str,
 		node_key: NodeKeyConfig,
 		default_listen_port: u16,
-	) -> NetworkConfiguration {
+	) -> Result<NetworkConfiguration, String> {
+		self.validate_handshake_params()?;
+
 		let port = self.port.unwrap_or(default_listen_port);
 
 		let listen_addresses = if self.listen_addr.is_empty() {
@@ -221,7 +250,17 @@ impl NetworkParams {
 			},
 		};
 
-		NetworkConfiguration {
+		let handshake_mode = match self.handshake_mode {
+			HandshakeMode::Classic => sc_network::config::HandshakeMode::Classic,
+			HandshakeMode::Pqkd => sc_network::config::HandshakeMode::Pqkd,
+		};
+
+		let pqkd = match self.handshake_mode {
+			HandshakeMode::Classic => None,
+			HandshakeMode::Pqkd => Some(self.pqkd_params.pqkd_config_required()?),
+		};
+
+		Ok(NetworkConfiguration {
 			boot_nodes,
 			net_config_path,
 			default_peers_set: SetConfig {
@@ -238,7 +277,8 @@ impl NetworkParams {
 			listen_addresses,
 			public_addresses,
 			node_key,
-			pqkd: self.pqkd_params.pqkd_config(),
+			handshake_mode,
+			pqkd,
 			node_name: node_name.to_string(),
 			client_version: client_id.to_string(),
 			transport: TransportConfig::Normal {
@@ -254,7 +294,7 @@ impl NetworkParams {
 			yamux_window_size: None,
 			ipfs_server: self.ipfs_server,
 			sync_mode: self.sync.into(),
-		}
+		})
 	}
 }
 

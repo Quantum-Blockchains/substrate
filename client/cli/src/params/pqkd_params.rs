@@ -37,12 +37,19 @@ pub struct PqkdParams {
 }
 
 impl PqkdParams {
-	/// Create a 'PqkdConfig' from the given 'PqkdParams'
-	pub fn pqkd_config(&self) -> PqkdConfig {
-		let sae_id = self.sae_id.clone().unwrap_or("TestSAE".to_string());
-		let addr_pqkd = self.addr_pqkd.clone().unwrap_or("192.168.0.80:8082".to_string());
+	/// Create a `PqkdConfig` from the given `PqkdParams`.
+	///
+	/// `sae_id` and `addr_pqkd` are required for PQKD mode.
+	pub fn pqkd_config_required(&self) -> Result<PqkdConfig, String> {
+		let sae_id = self
+			.sae_id
+			.clone()
+			.ok_or_else(|| "Missing required `--sae-id` for `--handshake-mode pqkd`.".to_string())?;
+		let addr_pqkd = self.addr_pqkd.clone().ok_or_else(|| {
+			"Missing required `--addr-pqkd` for `--handshake-mode pqkd`.".to_string()
+		})?;
 		let addr_qrng = self.addr_qrng.clone().unwrap_or("192.168.0.80:8085".to_string());
 
-		PqkdConfig { sae_id, addr_pqkd, addr_qrng }
+		Ok(PqkdConfig { sae_id, addr_pqkd, addr_qrng })
 	}
 }

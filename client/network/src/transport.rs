@@ -30,7 +30,9 @@ use libp2p::{
 use std::{sync::Arc, time::Duration};
 
 pub use libp2p::bandwidth::BandwidthSinks;
-use libp2p_noise_pqkd as noise;
+use libp2p::noise;
+use libp2p_noise_pqkd as noise_pqkd;
+use crate::config::HandshakeMode;
 
 /// Builds the transport that serves as a common ground for all connections.
 ///
@@ -52,6 +54,7 @@ pub fn build_transport(
 	memory_only: bool,
 	yamux_window_size: Option<u32>,
 	yamux_maximum_buffer_size: usize,
+	handshake_mode: HandshakeMode,
 	sae_id_pqkd: &str,
 	addr_pqkd: &str,
 ) -> (Boxed<(PeerId, StreamMuxerBox)>, Arc<BandwidthSinks>) {
@@ -83,8 +86,6 @@ pub fn build_transport(
 		Either::Right(OptionalTransport::some(libp2p::core::transport::MemoryTransport::default()))
 	};
 
-	let authentication_config =
-		noise::Config::new(&keypair, sae_id_pqkd, addr_pqkd).expect("Can create noise config. qed");
 	let multiplexing_config = {
 		let mut yamux_config = libp2p::yamux::Config::default();
 		// Enable proper flow-control: window updates are only sent when
@@ -99,12 +100,25 @@ pub fn build_transport(
 		yamux_config
 	};
 
-	let transport = transport
-		.upgrade(upgrade::Version::V1Lazy)
-		.authenticate(authentication_config)
-		.multiplex(multiplexing_config)
-		.timeout(Duration::from_secs(20))
-		.boxed();
-
+	let transport = match handshake_mode {
+		HandshakeMode::Pqkd => {
+			let authentication_config = noise_pqkd::Config::new(&keypair, sae_id_pqkd, addr_pqkd).expect("Can create noise config. qed");
+			transport
+				.upgrade(upgrade::Version::V1Lazy)
+				.authenticate(authentication_config)
+				.multiplex(multiplexing_config)
+				.timeout(Duration::from_secs(20))
+				.boxed()
+		},
+		HandshakeMode::Classic => {
+			let authentication_config = noise::Config::new(&keypair).expect("Can create noise config. qed");
+			transport
+				.upgrade(upgrade::Version::V1Lazy)
+				.authenticate(authentication_config)
+				.multiplex(multiplexing_config)
+				.timeout(Duration::from_secs(20))
+				.boxed()
+		},
+	};
 	transport.with_bandwidth_logging()
 }

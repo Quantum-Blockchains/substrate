@@ -254,13 +254,24 @@ where
 					.saturating_add(10)
 			};
 
+			let (sae_id_pqkd, addr_pqkd) = match network_config.handshake_mode {
+				crate::config::HandshakeMode::Classic => ("", ""),
+				crate::config::HandshakeMode::Pqkd => {
+					let pqkd = network_config.pqkd.as_ref().expect(
+						"PQKD config must be present when handshake_mode is Pqkd; validated by CLI; qed",
+					);
+					(pqkd.sae_id.as_str(), pqkd.addr_pqkd.as_str())
+				},
+			};
+
 			transport::build_transport(
 				local_identity.clone(),
 				config_mem,
 				network_config.yamux_window_size,
 				yamux_maximum_buffer_size,
-				&network_config.pqkd.sae_id,
-				&network_config.pqkd.addr_pqkd,
+				network_config.handshake_mode.clone(),
+				sae_id_pqkd,
+				addr_pqkd,
 			)
 		};
 

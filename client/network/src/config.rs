@@ -546,8 +546,12 @@ pub struct NetworkConfiguration {
 	/// The node key configuration, which determines the node's network identity keypair.
 	pub node_key: NodeKeyConfig,
 
-	/// The pqkd configuration
-	pub pqkd: PqkdConfig,
+	pub handshake_mode: HandshakeMode,
+
+	/// The PQKD configuration.
+	///
+	/// Present only when `handshake_mode` is set to `Pqkd`.
+	pub pqkd: Option<PqkdConfig>,
 
 	/// Configuration for the default set of nodes used for block syncing and transactions.
 	pub default_peers_set: SetConfig,
@@ -634,7 +638,8 @@ impl NetworkConfiguration {
 			public_addresses: Vec::new(),
 			boot_nodes: Vec::new(),
 			node_key,
-			pqkd: PqkdConfig { sae_id: String::new(), addr_pqkd: String::new(), addr_qrng: String::new() },
+			handshake_mode: HandshakeMode::Classic,
+			pqkd: None,
 			default_peers_set_num_full: default_peers_set.in_peers + default_peers_set.out_peers,
 			default_peers_set,
 			client_version: client_version.into(),
@@ -759,6 +764,12 @@ impl FullNetworkConfiguration {
 	pub fn add_request_response_protocol(&mut self, config: RequestResponseConfig) {
 		self.request_response_protocols.push(config);
 	}
+}
+
+#[derive(Clone, Debug)]
+pub enum HandshakeMode {
+	Classic,
+	Pqkd,
 }
 
 #[cfg(test)]
