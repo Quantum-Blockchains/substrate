@@ -29,7 +29,7 @@ use frame_support::{
 };
 use frame_system::{EventRecord, Phase};
 use sp_core::H256;
-use sp_keyring::Ed25519Keyring;
+use sp_keyring::Mldsa44Keyring;
 use sp_runtime::testing::Digest;
 
 #[test]
@@ -309,7 +309,7 @@ fn time_slot_have_sane_ord() {
 /// Returns a list with 3 authorities with known keys:
 /// Alice, Bob and Charlie.
 pub fn test_authorities() -> AuthorityList {
-	let authorities = vec![Ed25519Keyring::Alice, Ed25519Keyring::Bob, Ed25519Keyring::Charlie];
+	let authorities = vec![Mldsa44Keyring::Alice, Mldsa44Keyring::Bob, Mldsa44Keyring::Charlie];
 
 	authorities.into_iter().map(|id| (id.public().into(), 1u64)).collect()
 }
@@ -645,14 +645,14 @@ fn report_equivocation_invalid_equivocation_proof() {
 		assert_invalid_equivocation_proof(generate_equivocation_proof(
 			set_id,
 			(1, H256::random(), 10, &equivocation_keyring),
-			(1, H256::random(), 10, &Ed25519Keyring::Charlie),
+			(1, H256::random(), 10, &Mldsa44Keyring::Charlie),
 		));
 
 		// votes signed with a key that isn't part of the authority set
 		assert_invalid_equivocation_proof(generate_equivocation_proof(
 			set_id,
 			(1, H256::random(), 10, &equivocation_keyring),
-			(1, H256::random(), 10, &Ed25519Keyring::Dave),
+			(1, H256::random(), 10, &Mldsa44Keyring::Dave),
 		));
 	});
 }

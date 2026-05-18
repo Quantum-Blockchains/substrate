@@ -148,7 +148,7 @@ mod tests {
 	};
 	use sp_blockchain::HeaderBackend;
 	use sp_core::{crypto::ByteArray, testing::TaskExecutor};
-	use sp_keyring::Ed25519Keyring;
+	use sp_keyring::Mldsa44Keyring;
 	use sp_runtime::traits::{Block as BlockT, Header as HeaderT};
 	use substrate_test_runtime_client::{
 		runtime::{Block, Header, H256},
@@ -164,8 +164,8 @@ mod tests {
 	}
 
 	fn voters() -> HashSet<AuthorityId> {
-		let voter_id_1 = AuthorityId::from_slice(&[1; 32]).unwrap();
-		let voter_id_2 = AuthorityId::from_slice(&[2; 32]).unwrap();
+		let voter_id_1 = AuthorityId::from_slice(&[1; 1312]).unwrap();
+		let voter_id_2 = AuthorityId::from_slice(&[2; 1312]).unwrap();
 
 		vec![voter_id_1, voter_id_2].into_iter().collect()
 	}
@@ -213,7 +213,7 @@ mod tests {
 
 	impl ReportVoterState for TestVoterState {
 		fn get(&self) -> Option<report::VoterState<AuthorityId>> {
-			let voter_id_1 = AuthorityId::from_slice(&[1; 32]).unwrap();
+			let voter_id_1 = AuthorityId::from_slice(&[1; 1312]).unwrap();
 			let voters_best: HashSet<_> = vec![voter_id_1].into_iter().collect();
 
 			let best_round_state = sc_consensus_grandpa::report::RoundState {
@@ -332,7 +332,7 @@ mod tests {
 	}
 
 	fn create_justification() -> GrandpaJustification<Block> {
-		let peers = &[Ed25519Keyring::Alice];
+		let peers = &[Mldsa44Keyring::Alice];
 
 		let builder = TestClientBuilder::new();
 		let backend = builder.backend();

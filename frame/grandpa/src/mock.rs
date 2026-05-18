@@ -30,7 +30,7 @@ use frame_support::{
 use pallet_session::historical as pallet_session_historical;
 use sp_consensus_grandpa::{RoundNumber, SetId, GRANDPA_ENGINE_ID};
 use sp_core::{crypto::KeyTypeId, H256};
-use sp_keyring::Ed25519Keyring;
+use sp_keyring::Mldsa44Keyring;
 use sp_runtime::{
 	curve::PiecewiseLinear,
 	impl_opaque_keys,
@@ -233,16 +233,36 @@ pub fn grandpa_log(log: ConsensusLog<u64>) -> DigestItem {
 	DigestItem::Consensus(GRANDPA_ENGINE_ID, log.encode())
 }
 
+pub fn mldsa44_pair_from_uint(id: u64) -> sp_core::mldsa44::Pair {
+	use sp_core::Pair as _;
+
+	let mut seed = [0u8; 32];
+	seed[..8].copy_from_slice(&id.to_le_bytes());
+
+	sp_core::mldsa44::Pair::from_seed(&seed)
+}
+
 pub fn to_authorities(vec: Vec<(u64, u64)>) -> AuthorityList {
+	use sp_core::Pair as _;
+
 	vec.into_iter()
-		.map(|(id, weight)| (UintAuthorityId(id).to_public_key::<AuthorityId>(), weight))
+		.map(|(id, weight)| {
+			let pair = mldsa44_pair_from_uint(id);
+			(pair.public().into(), weight)
+		})
 		.collect()
 }
 
-pub fn extract_keyring(id: &AuthorityId) -> Ed25519Keyring {
-	let mut raw_public = [0; 32];
+// pub fn to_authorities(vec: Vec<(u64, u64)>) -> AuthorityList {
+// 	vec.into_iter()
+// 		.map(|(id, weight)| (UintAuthorityId(id).to_public_key::<AuthorityId>(), weight))
+// 		.collect()
+// }
+
+pub fn extract_keyring(id: &AuthorityId) -> Mldsa44Keyring {
+	let mut raw_public = [0; 1312];
 	raw_public.copy_from_slice(id.as_ref());
-	Ed25519Keyring::from_raw_public(raw_public).unwrap()
+	Mldsa44Keyring::from_raw_public(raw_public).unwrap()
 }
 
 pub fn new_test_ext(vec: Vec<(u64, u64)>) -> sp_io::TestExternalities {
@@ -336,10 +356,10 @@ pub fn initialize_block(number: u64, parent_hash: H256) {
 
 pub fn generate_equivocation_proof(
 	set_id: SetId,
-	vote1: (RoundNumber, H256, u64, &Ed25519Keyring),
-	vote2: (RoundNumber, H256, u64, &Ed25519Keyring),
+	vote1: (RoundNumber, H256, u64, &Mldsa44Keyring),
+	vote2: (RoundNumber, H256, u64, &Mldsa44Keyring),
 ) -> sp_consensus_grandpa::EquivocationProof<H256, u64> {
-	let signed_prevote = |round, hash, number, keyring: &Ed25519Keyring| {
+	let signed_prevote = |round, hash, number, keyring: &Mldsa44Keyring| {
 		let prevote = finality_grandpa::Prevote { target_hash: hash, target_number: number };
 
 		let prevote_msg = finality_grandpa::Message::Prevote(prevote.clone());

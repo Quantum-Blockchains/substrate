@@ -19,6 +19,7 @@ scale-info = { version = "2.5.0", default-features = false, features = ["derive"
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, path = "../benchmarking" }
 frame-support = { version = "4.0.0-dev", default-features = false, path = "../support" }
 frame-system = { version = "4.0.0-dev", default-features = false, path = "../system" }
+grandpa = { package = "finality-grandpa", version = "0.16.2", default-features = false, features = ["derive-codec"] }
 pallet-authorship = { version = "4.0.0-dev", default-features = false, path = "../authorship" }
 pallet-session = { version = "4.0.0-dev", default-features = false, path = "../session" }
 sp-application-crypto = { version = "23.0.0", default-features = false, path = "../../primitives/application-crypto", features = ["serde"] }
@@ -31,7 +32,6 @@ sp-staking = { version = "4.0.0-dev", default-features = false, path = "../../pr
 sp-std = { version = "8.0.0", default-features = false, path = "../../primitives/std" }
 
 [dev-dependencies]
-grandpa = { package = "finality-grandpa", version = "0.16.2", features = ["derive-codec"] }
 frame-benchmarking = { version = "4.0.0-dev", path = "../benchmarking" }
 frame-election-provider-support = { version = "4.0.0-dev", path = "../election-provider-support" }
 pallet-balances = { version = "4.0.0-dev", path = "../balances" }
@@ -48,6 +48,7 @@ std = [
 	"frame-benchmarking?/std",
 	"frame-support/std",
 	"frame-system/std",
+	"grandpa/std",
 	"log/std",
 	"pallet-authorship/std",
 	"pallet-session/std",

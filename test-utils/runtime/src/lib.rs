@@ -43,7 +43,7 @@ use frame_system::{
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
-use sp_application_crypto::{ecdsa, ed25519, sr25519, RuntimeAppPublic};
+use sp_application_crypto::{dilithium2, ecdsa, ed25519, mldsa44, sr25519, RuntimeAppPublic};
 use sp_core::{OpaqueMetadata, RuntimeDebug};
 use sp_trie::{
 	trie_types::{TrieDBBuilder, TrieDBMutBuilderV1},
@@ -206,6 +206,14 @@ decl_runtime_apis! {
 		///
 		/// Returns the signature generated for the message `ecdsa`.
 		fn test_ecdsa_crypto() -> (ecdsa::AppSignature, ecdsa::AppPublic);
+		/// Test that `dilithium2` crypto works in the runtime.
+		///
+		/// Returns the signature generated for the message `dilithium2`.
+		fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic);
+		/// Test that `mldsa44` crypto works in the runtime.
+		///
+		/// Returns the signature generated for the message `mldsa44`.
+		fn test_mldsa44_crypto() -> (mldsa44::AppSignature, mldsa44::AppPublic);
 		/// Run various tests against storage.
 		fn test_storage();
 		/// Check a witness.
@@ -583,6 +591,14 @@ impl_runtime_apis! {
 			test_ecdsa_crypto()
 		}
 
+		fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic) {
+			test_dilithium2_crypto()
+		}
+
+		fn test_mldsa44_crypto() -> (mldsa44::AppSignature, mldsa44::AppPublic) {
+			test_mldsa44_crypto()
+		}
+
 		fn test_storage() {
 			test_read_storage();
 			test_read_child_storage();
@@ -761,6 +777,39 @@ fn test_ecdsa_crypto() -> (ecdsa::AppSignature, ecdsa::AppPublic) {
 	let signature = public0.sign(&"ecdsa").expect("Generates a valid `ecdsa` signature.");
 
 	assert!(public0.verify(&"ecdsa", &signature));
+	(signature, public0)
+}
+
+fn test_dilithium2_crypto() -> (dilithium2::AppSignature, dilithium2::AppPublic) {
+	let public0 = dilithium2::AppPublic::generate_pair(None);
+	let public1 = dilithium2::AppPublic::generate_pair(None);
+	let public2 = dilithium2::AppPublic::generate_pair(None);
+
+	let all = dilithium2::AppPublic::all();
+	assert!(all.contains(&public0));
+	assert!(all.contains(&public1));
+	assert!(all.contains(&public2));
+
+	let signature =
+		public0.sign(&"dilithium2").expect("Generates a valid `dilithium2` signature.");
+
+	assert!(public0.verify(&"dilithium2", &signature));
+	(signature, public0)
+}
+
+fn test_mldsa44_crypto() -> (mldsa44::AppSignature, mldsa44::AppPublic) {
+	let public0 = mldsa44::AppPublic::generate_pair(None);
+	let public1 = mldsa44::AppPublic::generate_pair(None);
+	let public2 = mldsa44::AppPublic::generate_pair(None);
+
+	let all = mldsa44::AppPublic::all();
+	assert!(all.contains(&public0));
+	assert!(all.contains(&public1));
+	assert!(all.contains(&public2));
+
+	let signature = public0.sign(&"mldsa44").expect("Generates a valid `mldsa44` signature.");
+
+	assert!(public0.verify(&"mldsa44", &signature));
 	(signature, public0)
 }
 

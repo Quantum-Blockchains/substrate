@@ -21,7 +21,7 @@
 use codec::Encode;
 use kitchensink_runtime::{CheckedExtrinsic, SessionKeys, SignedExtra, UncheckedExtrinsic};
 use node_primitives::{AccountId, Balance, Nonce};
-use sp_keyring::{AccountKeyring, Ed25519Keyring, Sr25519Keyring};
+use sp_keyring::{AccountKeyring, Mldsa44Keyring, Sr25519Keyring};
 use sp_runtime::generic::Era;
 
 /// Alice's account id.
@@ -56,11 +56,11 @@ pub fn ferdie() -> AccountId {
 
 /// Convert keyrings into `SessionKeys`.
 pub fn to_session_keys(
-	ed25519_keyring: &Ed25519Keyring,
+	mldsa44_keyring: &Mldsa44Keyring,
 	sr25519_keyring: &Sr25519Keyring,
 ) -> SessionKeys {
 	SessionKeys {
-		grandpa: ed25519_keyring.to_owned().public().into(),
+		grandpa: mldsa44_keyring.to_owned().public().into(),
 		babe: sr25519_keyring.to_owned().public().into(),
 		im_online: sr25519_keyring.to_owned().public().into(),
 		authority_discovery: sr25519_keyring.to_owned().public().into(),

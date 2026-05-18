@@ -18,40 +18,54 @@
 //! Benchmarks for the GRANDPA pallet.
 
 use super::{Pallet as Grandpa, *};
+use ::grandpa as finality_grandpa;
 use frame_benchmarking::v1::benchmarks;
 use frame_system::RawOrigin;
-use sp_core::H256;
+use sp_core::{mldsa44, H256, Pair as _};
+
+fn mldsa44_pair_from_seed(seed: [u8; 32]) -> mldsa44::Pair {
+	mldsa44::Pair::from_seed(&seed)
+}
+
+fn generate_benchmark_equivocation_proof(
+	set_id: sp_consensus_grandpa::SetId,
+	vote1: (sp_consensus_grandpa::RoundNumber, H256, u64, &mldsa44::Pair),
+	vote2: (sp_consensus_grandpa::RoundNumber, H256, u64, &mldsa44::Pair),
+) -> sp_consensus_grandpa::EquivocationProof<H256, u64> {
+	let signed_prevote = |round, hash, number, pair: &mldsa44::Pair| {
+		let prevote = finality_grandpa::Prevote { target_hash: hash, target_number: number };
+		let prevote_msg = finality_grandpa::Message::Prevote(prevote.clone());
+		let payload = sp_consensus_grandpa::localized_payload(round, set_id, &prevote_msg);
+		let signed = pair.sign(&payload).into();
+		(prevote, signed)
+	};
+
+	let (prevote1, signed1) = signed_prevote(vote1.0, vote1.1, vote1.2, vote1.3);
+	let (prevote2, signed2) = signed_prevote(vote2.0, vote2.1, vote2.2, vote2.3);
+
+	sp_consensus_grandpa::EquivocationProof::new(
+		set_id,
+		sp_consensus_grandpa::Equivocation::Prevote(finality_grandpa::Equivocation {
+			round_number: vote1.0,
+			identity: vote1.3.public().into(),
+			first: (prevote1, signed1),
+			second: (prevote2, signed2),
+		}),
+	)
+}
 
 benchmarks! {
 	check_equivocation_proof {
 		let x in 0 .. 1;
 
-		// NOTE: generated with the test below `test_generate_equivocation_report_blob`.
-		// the output should be deterministic since the keys we use are static.
-		// with the current benchmark setup it is not possible to generate this
-		// programatically from the benchmark setup.
-		const EQUIVOCATION_PROOF_BLOB: [u8; 257] = [
-			1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 136, 220, 52, 23,
-			213, 5, 142, 196, 180, 80, 62, 12, 18, 234, 26, 10, 137, 190, 32,
-			15, 233, 137, 34, 66, 61, 67, 52, 1, 79, 166, 176, 238, 207, 48,
-			195, 55, 171, 225, 252, 130, 161, 56, 151, 29, 193, 32, 25, 157,
-			249, 39, 80, 193, 214, 96, 167, 147, 25, 130, 45, 42, 64, 208, 182,
-			164, 10, 0, 0, 0, 0, 0, 0, 0, 234, 236, 231, 45, 70, 171, 135, 246,
-			136, 153, 38, 167, 91, 134, 150, 242, 215, 83, 56, 238, 16, 119, 55,
-			170, 32, 69, 255, 248, 164, 20, 57, 50, 122, 115, 135, 96, 80, 203,
-			131, 232, 73, 23, 149, 86, 174, 59, 193, 92, 121, 76, 154, 211, 44,
-			96, 10, 84, 159, 133, 211, 56, 103, 0, 59, 2, 96, 20, 69, 2, 32,
-			179, 16, 184, 108, 76, 215, 64, 195, 78, 143, 73, 177, 139, 20, 144,
-			98, 231, 41, 117, 255, 220, 115, 41, 59, 27, 75, 56, 10, 0, 0, 0, 0,
-			0, 0, 0, 128, 179, 250, 48, 211, 76, 10, 70, 74, 230, 219, 139, 96,
-			78, 88, 112, 33, 170, 44, 184, 59, 200, 155, 143, 128, 40, 222, 179,
-			210, 190, 84, 16, 182, 21, 34, 94, 28, 193, 163, 226, 51, 251, 134,
-			233, 187, 121, 63, 157, 240, 165, 203, 92, 16, 146, 120, 190, 229,
-			251, 129, 29, 45, 32, 29, 6
-		];
+		let alice_pair = mldsa44_pair_from_seed([1u8; 32]);
+		let set_id = 1u64;
 
-		let equivocation_proof1: sp_consensus_grandpa::EquivocationProof<H256, u64> =
-			Decode::decode(&mut &EQUIVOCATION_PROOF_BLOB[..]).unwrap();
+		let equivocation_proof1 = generate_benchmark_equivocation_proof(
+			set_id,
+			(1, H256::repeat_byte(1), 10, &alice_pair),
+			(1, H256::repeat_byte(2), 10, &alice_pair),
+		);
 
 		let equivocation_proof2 = equivocation_proof1.clone();
 	}: {

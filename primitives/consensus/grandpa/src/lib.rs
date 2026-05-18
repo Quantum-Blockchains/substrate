@@ -44,8 +44,8 @@ pub const RUNTIME_LOG_TARGET: &str = "runtime::grandpa";
 pub const KEY_TYPE: sp_core::crypto::KeyTypeId = sp_application_crypto::key_types::GRANDPA;
 
 mod app {
-	use sp_application_crypto::{app_crypto, ed25519, key_types::GRANDPA};
-	app_crypto!(ed25519, GRANDPA);
+	use sp_application_crypto::{app_crypto, mldsa44, key_types::GRANDPA};
+	app_crypto!(mldsa44, GRANDPA);
 }
 
 sp_application_crypto::with_pair! {
@@ -455,7 +455,7 @@ where
 
 	let encoded = localized_payload(round, set_id, &message);
 	let signature = keystore
-		.ed25519_sign(AuthorityId::ID, public.as_ref(), &encoded[..])
+		.mldsa44_sign(AuthorityId::ID, public.as_ref(), &encoded[..])
 		.ok()
 		.flatten()?
 		.try_into()

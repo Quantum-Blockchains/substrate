@@ -41,7 +41,7 @@ use sc_network_gossip::Validator;
 use sc_network_test::{Block, Hash};
 use sc_utils::mpsc::{tracing_unbounded, TracingUnboundedReceiver, TracingUnboundedSender};
 use sp_consensus_grandpa::AuthorityList;
-use sp_keyring::Ed25519Keyring;
+use sp_keyring::Mldsa44Keyring;
 use sp_runtime::traits::NumberFor;
 use std::{
 	collections::HashSet,
@@ -264,7 +264,7 @@ fn voter_set_state() -> SharedVoterSetState<Block> {
 	let state = RoundState::genesis((H256::zero(), 0));
 	let base = state.prevote_ghost.unwrap();
 
-	let voters = vec![(AuthorityId::from_slice(&[1; 32]).unwrap(), 1)];
+	let voters = vec![(AuthorityId::from_slice(&[1; 1312]).unwrap(), 1)];
 	let voters = AuthoritySet::genesis(voters).unwrap();
 
 	let set_state = VoterSetState::live(0, &voters, base);
@@ -302,7 +302,7 @@ pub(crate) fn make_test_network() -> (impl Future<Output = Tester>, TestNetwork)
 	)
 }
 
-fn make_ids(keys: &[Ed25519Keyring]) -> AuthorityList {
+fn make_ids(keys: &[Mldsa44Keyring]) -> AuthorityList {
 	keys.iter().map(|&key| key.public().into()).map(|id| (id, 1)).collect()
 }
 
@@ -317,7 +317,7 @@ impl sc_network_gossip::ValidatorContext<Block> for NoopContext {
 
 #[test]
 fn good_commit_leads_to_relay() {
-	let private = [Ed25519Keyring::Alice, Ed25519Keyring::Bob, Ed25519Keyring::Charlie];
+	let private = [Mldsa44Keyring::Alice, Mldsa44Keyring::Bob, Mldsa44Keyring::Charlie];
 	let public = make_ids(&private[..]);
 	let voter_set = Arc::new(VoterSet::new(public.iter().cloned()).unwrap());
 
@@ -469,7 +469,7 @@ fn good_commit_leads_to_relay() {
 #[test]
 fn bad_commit_leads_to_report() {
 	sp_tracing::try_init_simple();
-	let private = [Ed25519Keyring::Alice, Ed25519Keyring::Bob, Ed25519Keyring::Charlie];
+	let private = [Mldsa44Keyring::Alice, Mldsa44Keyring::Bob, Mldsa44Keyring::Charlie];
 	let public = make_ids(&private[..]);
 	let voter_set = Arc::new(VoterSet::new(public.iter().cloned()).unwrap());
 
